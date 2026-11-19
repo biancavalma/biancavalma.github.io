@@ -1,7 +1,7 @@
 :root{
-  --bg:#f5f0ff; --card:#ffffff; --ink:#2d2440; --soft:#665b7d; --pill:#e9e0ff;
-  --pink:#ff9cc8; --butter:#ffe27a; --on:#2d2440; --face:#2d2440; --ring:#ffffff;
-  --shadow:0 6px 18px rgba(98,70,160,.10); --inp:17px; --ps:.735;
+  --bg:#F3F0FF; --card:#ffffff; --ink:#2A2350; --soft:#6B6490; --pill:#E8E3FF;
+  --pink:#B9AEFF; --butter:#BFF0DC; --on:#2A2350; --mint:#7DDCB5; --mintink:#0B4D36; --face:#2d2440; --ring:#ffffff;
+  --shadow:0 6px 18px rgba(91,76,200,.10); --inp:17px; --ps:.735;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -182,3 +182,14 @@ input,textarea{font-size:var(--inp)}
 .frow .tx{flex:1;min-width:0;font-weight:800}
 .frow button{height:34px;padding:0 12px;border-radius:999px;background:var(--pill);font-weight:800;font-size:13px}
 .sep{height:1px;background:var(--pill);margin:10px 0 4px}
+
+/* overlap feed */
+.ovc{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:12px 12px 12px 14px;margin-bottom:8px}
+.ovc .tx{flex:1;min-width:0}
+.ovc b{display:block;font-size:15.5px;font-weight:800}
+.ovc i{display:block;font-style:normal;font-size:13px;color:var(--soft)}
+.wa{flex:none;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 13px;border-radius:999px;background:var(--mint);color:var(--mintink);font-weight:800;font-size:13.5px;text-decoration:none}
+.ovh{font-size:13px;font-weight:800;color:var(--soft);margin:6px 4px 8px}
+.cal2{display:flex;gap:8px;margin-top:16px}
+.cal2 a{flex:1;display:flex;align-items:center;justify-content:center;height:44px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13.5px;text-decoration:none}
+.tabs{grid-template-columns:1fr 1fr 1fr}

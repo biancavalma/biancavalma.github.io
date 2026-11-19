@@ -87,19 +87,19 @@ import * as api from './api.js';
   }
   function face(i,size,ring){
     if(i===0)return '<svg role="img" aria-label="You" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
-      +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="#ff9cc8"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
-      +'<circle cx="14" cy="18" r="2.6" fill="#2d2440"/><circle cx="26" cy="18" r="2.6" fill="#2d2440"/>'
-      +'<path d="M14 24.5c2 3 10 3 12 0" fill="none" stroke="#2d2440" stroke-width="2.6" stroke-linecap="round"/>'
-      +'<circle cx="9.5" cy="23" r="2.6" fill="#f0508f" opacity=".6"/><circle cx="30.5" cy="23" r="2.6" fill="#f0508f" opacity=".6"/></svg>';
+      +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="#B9AEFF"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
+      +'<circle cx="14" cy="18" r="2.6" fill="#2A2350"/><circle cx="26" cy="18" r="2.6" fill="#2A2350"/>'
+      +'<path d="M14 24.5c2 3 10 3 12 0" fill="none" stroke="#2A2350" stroke-width="2.6" stroke-linecap="round"/>'
+      +'<circle cx="9.5" cy="23" r="2.6" fill="#8B7CF6" opacity=".6"/><circle cx="30.5" cy="23" r="2.6" fill="#8B7CF6" opacity=".6"/></svg>';
     var t=lab(i);
     return '<svg role="img" aria-label="'+esc(people[i].n)+'" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
       +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="'+COL[i%COL.length]+'"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
-      +'<text x="20" y="'+(t.length>1?26.5:27.5)+'" text-anchor="middle" font-family="Fredoka,Nunito,sans-serif" font-weight="600" font-size="'+(t.length>1?18:22)+'" fill="#2d2440">'+esc(t)+'</text></svg>';
+      +'<text x="20" y="'+(t.length>1?26.5:27.5)+'" text-anchor="middle" font-family="Fredoka,Nunito,sans-serif" font-weight="600" font-size="'+(t.length>1?18:22)+'" fill="#2A2350">'+esc(t)+'</text></svg>';
   }
-  var HEART='<svg width="12" height="12" viewBox="0 0 24 24" fill="#2d2440" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
+  var HEART='<svg width="12" height="12" viewBox="0 0 24 24" fill="#2A2350" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
-  var tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
+  var tab='ov', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
   var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false;
 
   function index(){
@@ -155,9 +155,48 @@ import * as api from './api.js';
   $('me').onclick=function(){sheet='home';selD=null;renderSheet()};
 
   function renderTabs(){
-    $('t-cal').className='tab'+(tab==='cal'?' on':'');$('t-fr').className='tab'+(tab==='fr'?' on':'');
-    $('v-cal').hidden=tab!=='cal';$('v-fr').hidden=tab!=='fr';
+    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});
   }
+  $('t-ov').onclick=function(){tab='ov';renderAll()};
+
+  /* the overlap feed: every run of days in the next 6 months where a friend and you are in the same city and one of you travels */
+  var WA='<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.4.1.1.1.7-.1 1.3z"/></svg>';
+  function overlaps(){
+    var runs=[], open={}, d=T, end=iso(n0.getFullYear(),n0.getMonth()+6,n0.getDate());
+    while(d<=end){
+      var L=where(0,d);
+      for(var f=1;f<people.length;f++){
+        var k=f+'|'+L, ok=L&&where(f,d)===L&&(tripAt(0,d)||tripAt(f,d));
+        if(ok){ if(open[k]&&open[k].b===prev(d))open[k].b=d; else {open[k]={p:f,city:L,a:d,b:d,home:!tripAt(0,d)};runs.push(open[k])} }
+      }
+      d=next(d);
+    }
+    return runs.sort(function(x,y){return x.a<y.a?-1:x.a>y.a?1:0});
+  }
+  function prev(s){var p=parts(s),x=new Date(p.y,p.m,p.d-1,12);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
+  function waText(r){
+    var who=people[r.p].n;
+    return r.home?'Hi '+who+'! I saw on Overlap you\u2019ll be in '+r.city+' '+range(r.a,r.b)+'. I\u2019m home then, let\u2019s meet?'
+      :'Hi '+who+'! I\u2019ll be in '+r.city+' too, '+range(r.a,r.b)+'. Shall we meet? (from Overlap)';
+  }
+  function renderOverlaps(){
+    var rs=overlaps(), h='';
+    if(!people[0].home){h='<div class="card list"><div class="hd">Start with where you live</div><p class="hint">You show up in your home city every day. Add a trip whenever you travel.</p><button type="button" class="ghost" data-home="1" style="margin:0 0 6px">Set my home city</button></div>'}
+    else if(!rs.length){h='<div class="card list"><div class="hd">No overlaps yet</div><p class="hint">'+(people.length<2?'Invite a friend, then you see here when you are in the same city.':'Add your next trip and you see here who will be there too.')+'</p>'+(people.length<2?'<button type="button" class="ghost" id="ovinv" style="margin:0 0 6px">Invite a friend</button>':'')+'</div>'}
+    else{
+      h='<p class="ovh">Coming up</p>';
+      rs.forEach(function(r){
+        var em=emoFor(r.p,r.city);
+        h+='<div class="ovc">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.city)+'</b><i>'+range(r.a,r.b)+(r.home?', in your city':', with you')+'</i></span>'
+          +'<a class="wa" href="https://wa.me/?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+'Message</a></div>';
+      });
+    }
+    $('ovlist').innerHTML=h;
+    if($('ovinv'))$('ovinv').onclick=function(){sheet='invite';renderSheet()};
+  }
+  $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
+  $('add2').onclick=function(){$('add').click()};
+  $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   $('t-cal').onclick=function(){tab='cal';renderAll()};
   $('t-fr').onclick=function(){tab='fr';renderAll()};
 
@@ -331,7 +370,7 @@ import * as api from './api.js';
         +'<div class="f"><label for="fc">City</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words"><div class="sug" id="sug"></div>'
         +'<p class="when" id="when"></p><div class="pk"><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
-        +(edit!==null?'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
+        +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
@@ -474,6 +513,15 @@ import * as api from './api.js';
   /* one calendar for both dates: first tap is the arrival, second tap is the last day */
   var ra=null, rb=null, ry=n0.getFullYear(), rm=n0.getMonth(), edit=null;
   /* tapping your own day opens the same calendar, already filled in, so a trip can be moved, renamed or removed */
+  /* add a trip to the phone's own calendar: Google Calendar link, or an .ics file for Apple and Outlook */
+  function calLinks(st){
+    if(!st)return '';
+    var a=st.a.replace(/-/g,''), b=next(st.b).replace(/-/g,''), t=(st.e||emoFor(0,st.city))+' '+st.city;
+    var g='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(t)+'&dates='+a+'/'+b+'&details='+encodeURIComponent('Added from Overlap');
+    var ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Overlap//EN\r\nBEGIN:VEVENT\r\nUID:'+a+st.city.replace(/\W/g,'')+'@overlap\r\nDTSTAMP:'+a+'T000000Z\r\nDTSTART;VALUE=DATE:'+a+'\r\nDTEND;VALUE=DATE:'+b+'\r\nSUMMARY:'+t+'\r\nEND:VEVENT\r\nEND:VCALENDAR';
+    return '<div class="cal2"><a href="'+g+'" target="_blank" rel="noopener" data-ext="1">Google Calendar</a><a href="data:text/calendar;charset=utf-8,'+encodeURIComponent(ics)+'" download="overlap-trip.ics">Apple / Outlook</a></div>';
+  }
+  $('sheet').addEventListener('click',function(e){var a=e.target.closest('a[data-ext]');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   function openEdit(i){
     var s=people[0].stays[i];if(!s)return;
     edit=i;trip=null;ra=s.a;rb=s.b;pe=s.e||null;
@@ -733,6 +781,6 @@ import * as api from './api.js';
   }
   fit();window.addEventListener('resize',fit);window.addEventListener('orientationchange',fit);
 
-  function renderAll(){renderTop();renderReqs();renderAlerts();renderTabs();renderPills();renderGrid();renderList();renderFriends();renderSheet()}
+  function renderAll(){renderTop();renderReqs();renderAlerts();renderTabs();renderOverlaps();renderPills();renderGrid();renderList();renderFriends();renderSheet()}
   $('keyh').innerHTML=HEART;
   boot();
