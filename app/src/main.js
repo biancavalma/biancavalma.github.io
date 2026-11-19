@@ -247,7 +247,7 @@ import * as api from './api.js';
       var st=d>=T&&shows(0,d)?stayAt(0,d):null;
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var cls='cell'+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD||d===gs?' sel':'');
+      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
       who.slice(0,who.length>3?2:3).forEach(function(x){h+=x===0&&st?'<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>':face(x,who.length>3?16:who.length>2?17:20,true)});
       if(who.length>3)h+='<span class="more">+'+(who.length-2)+'</span>';
@@ -404,6 +404,7 @@ import * as api from './api.js';
     }else if(sheet==='share'){
       h+=head('Your plans as text')
         +'<p class="hint">Copy it and paste it into any chat, for friends who are not on Overlap.</p>'
+        +'<div class="sug" id="plang">'+[['en','English'],['it','Italiano'],['de','Deutsch'],['fr','Français'],['es','Español']].map(function(o){return '<button type="button" data-l="'+o[0]+'"'+(o[0]===plang?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div>'
         +'<textarea class="ptx" id="ptx" readonly></textarea>'
         +'<button type="button" class="add hd" id="copy" style="margin-top:8px">Copy text</button>'
         +(navigator.share?'<button type="button" class="ghost" id="nshare">Send with…</button>':'');
@@ -503,7 +504,8 @@ import * as api from './api.js';
     }
     if(sheet==='install')$('ok').onclick=close;
     if(sheet==='share'){
-      var tx=plainPlans();$('ptx').value=tx;
+      var tx=plainPlans(plang);$('ptx').value=tx;
+      $('plang').onclick=function(e){var b=e.target.closest('button');if(!b)return;plang=b.getAttribute('data-l');try{localStorage.setItem('ovlang',plang)}catch(x){}renderSheet()};
       $('copy').onclick=function(){
         var b=this,done=function(){b.textContent='Copied ✓';setTimeout(function(){if(b.isConnected)b.textContent='Copy text'},1800)};
         var old=function(){var t=$('ptx');t.focus();t.select();t.setSelectionRange(0,tx.length);var ok=false;try{ok=document.execCommand('copy')}catch(e){}t.blur();if(ok)done();else b.textContent='Select the text above and copy'};
@@ -677,21 +679,32 @@ import * as api from './api.js';
     asked=true;sheet='hello';selD=null;renderSheet();
   }
   /* your plans as plain text: home base, then every upcoming trip in date order */
-  function dayY(s){var x=parts(s);return x.d+' '+M3[x.m]+(x.y!==n0.getFullYear()?' '+x.y:'')}
-  function plainPlans(){
-    var me=people[0], st=me.stays.filter(function(s){return s.b>=T}).sort(function(x,y){return x.a<y.a?-1:x.a>y.a?1:0});
-    var l=['My plans'];
-    if(me.home)l.push('Home base: '+me.home);
+  var PL={
+    en:{f:'',t:'My plans',h:'Home base: ',none:'No trips planned yet.',noneH:'No trips planned yet, so I am in {c}.',to:' to ',oth:'Otherwise in {c}.'},
+    it:{f:'dal ',t:'I miei piani',h:'Casa: ',none:'Nessun viaggio in programma.',noneH:'Nessun viaggio in programma, quindi sono a {c}.',to:' al ',oth:'Per il resto sono a {c}.'},
+    de:{f:'',t:'Meine Pläne',h:'Zuhause: ',none:'Noch keine Reisen geplant.',noneH:'Noch keine Reisen geplant, ich bin also in {c}.',to:' bis ',oth:'Sonst bin ich in {c}.'},
+    fr:{f:'du ',t:'Mes plans',h:'À la maison : ',none:'Aucun voyage prévu.',noneH:'Aucun voyage prévu, je suis donc à {c}.',to:' au ',oth:'Sinon je suis à {c}.'},
+    es:{f:'del ',t:'Mis planes',h:'Casa: ',none:'Aún no hay viajes.',noneH:'Aún no hay viajes, así que estoy en {c}.',to:' al ',oth:'El resto del tiempo estoy en {c}.'}
+  };
+  var plang=(function(){try{var v=localStorage.getItem('ovlang');if(PL[v])return v}catch(e){}var n=(navigator.language||'en').slice(0,2);return PL[n]?n:'en'})();
+  function plainPlans(lg){
+    lg=PL[lg]?lg:'en';var w=PL[lg], me=people[0];
+    var mf=new Intl.DateTimeFormat(lg,{month:'short'});
+    function mon(x){return mf.format(new Date(x.y,x.m,1)).replace('.','')}
+    function dayY(s){var x=parts(s);return x.d+' '+mon(x)+(x.y!==n0.getFullYear()?' '+x.y:'')}
+    var st=me.stays.filter(function(s){return s.b>=T}).sort(function(x,y){return x.a<y.a?-1:x.a>y.a?1:0});
+    var l=[w.t];
+    if(me.home)l.push(w.h+me.home);
     l.push('');
-    if(!st.length)l.push(me.home?'No trips planned yet, so I am in '+me.home+'.':'No trips planned yet.');
+    if(!st.length)l.push(me.home?w.noneH.replace('{c}',me.home):w.none);
     st.forEach(function(s){
       var x=parts(s.a),y=parts(s.b),r;
       if(s.a===s.b)r=dayY(s.a);
-      else if(x.m===y.m&&x.y===y.y)r=x.d+' to '+dayY(s.b);
-      else r=(x.y===y.y?x.d+' '+M3[x.m]:dayY(s.a))+' to '+dayY(s.b);
+      else if(x.m===y.m&&x.y===y.y)r=w.f+x.d+w.to+dayY(s.b);
+      else r=w.f+(x.y===y.y?x.d+' '+mon(x):dayY(s.a))+w.to+dayY(s.b);
       l.push((s.e||emoFor(0,s.city))+' '+s.city+': '+r);
     });
-    if(st.length&&me.home)l.push('','Otherwise in '+me.home+'.');
+    if(st.length&&me.home)l.push('',w.oth.replace('{c}',me.home));
     return l.join('\n');
   }
   $('share').onclick=function(){sheet='share';selD=null;renderSheet()};

@@ -200,3 +200,9 @@ input,textarea{font-size:var(--inp)}
 .gbar b{font-size:15px}.gbar i{font-style:normal;font-size:13px;opacity:.75}
 .gbar button{flex:none;height:36px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font-weight:800;font-size:13px}
 .gbar .x{width:36px;padding:0;font-size:20px}
+/* weekends: one soft band behind Saturday and Sunday */
+.grid{position:relative;--sx:calc((100% - 12px)*5/7 + 10px)}
+.grid>*{position:relative;z-index:1}
+.grid::before{content:"";position:absolute;pointer-events:none;z-index:0;left:calc(var(--sx) - 1px);right:0;top:0;bottom:0;border-radius:18px;background:color-mix(in srgb,var(--pill) 65%,transparent)}
+.sug button.on{background:var(--ink);color:var(--bg)}
+#plang{margin:0 0 10px}
