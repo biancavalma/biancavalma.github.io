@@ -1,0 +1,37 @@
+# Sets up TestFlight: owner as internal tester, "Amici" group with public link, latest build, beta review.
+name: TestFlight setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      review:
+        description: Send the latest build to Apple's beta review
+        type: boolean
+        default: false
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ios-app
+    env:
+      EXPO_ASC_KEY_ID: V5JXP95HSG
+      EXPO_ASC_ISSUER_ID: 4bad4f17-f8fe-4b02-a968-6f35809a69a3
+      ASC_APP_ID: '6836661604'
+      OWNER_EMAIL: bianca.valmarana@gmail.com
+      OWNER_FIRST: Bianca
+      OWNER_LAST: Valmarana
+      FEEDBACK_EMAIL: hello.overlap.app@gmail.com
+      OWNER_PHONE: ${{ secrets.OWNER_PHONE }}
+      REVIEW: ${{ inputs.review && 'yes' || 'no' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apple key
+        run: |
+          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > asc.p8
+          echo "EXPO_ASC_API_KEY_PATH=$PWD/asc.p8" >> "$GITHUB_ENV"
+      - run: node scripts/testflight.mjs
