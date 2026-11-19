@@ -249,8 +249,8 @@ import * as api from './api.js';
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
-      who.slice(0,who.length>3?2:3).forEach(function(x){h+=x===0&&st?'<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>':face(x,who.length>3?16:who.length>2?17:20,true)});
-      if(who.length>3)h+='<span class="more">+'+(who.length-2)+'</span>';
+      who.slice(0,who.length>2?1:2).forEach(function(x){h+=x===0&&st?'<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>':face(x,16,true)});
+      if(who.length>2)h+='<span class="more">+'+(who.length-1)+'</span>';
       h+='</span>'+bar+'</button>';
     }
     $('grid').innerHTML=h;
@@ -259,33 +259,25 @@ import * as api from './api.js';
   var gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
     gbar.hidden=!gs;if(!gs)return;
-    var p=parts(gs), wd=DW[(new Date(p.y,p.m,p.d).getDay()+6)%7], rows='', mineAway=false;
-    people.forEach(function(x,i){
-      var c=where(i,gs);if(!c)return;
-      var away=!!tripAt(i,gs), w=i>0&&c===where(0,gs)&&(away||tripAt(0,gs));
-      if(i===0)mineAway=away;
-      rows+='<div class="grow'+(w?' with':'')+'">'+face(i,28,false)+'<b>'+(i===0?'You':esc(x.n))+'</b><i>'+(away?(emoFor(i,c)+' '):'')+esc(c)+(away?'':', home')+'</i>'+(w?'<span>'+HEART+'</span>':'')+'</div>';
-    });
-    gbar.innerHTML='<div class="gh"><b>'+wd+' '+day(gs)+'</b><button type="button" class="x" id="gx" aria-label="Close">×</button></div>'
-      +'<div class="gl">'+(rows||'<p>Nobody has shared plans for this day.</p>')+'</div>'
-      +'<div class="gf"><span>Tap your last day to add a trip</span>'+(mineAway?'<button type="button" id="ged">Edit my trip</button>':'')+'</div>';
-    /* keep the rest of the month visible above the window, so the last day can still be tapped */
-    requestAnimationFrame(function(){
-      var g=$('grid').getBoundingClientRect(), top=innerHeight-gbar.offsetHeight-16, dy=g.bottom-top;
-      if(dy>0)window.scrollBy({top:Math.min(dy,g.top-8),behavior:'smooth'});
-    });
+    var fr=[];for(var i=1;i<people.length;i++)if(where(i,gs))fr.push(i);
+    gbar.innerHTML='<button type="button" class="gi" id="gwho"><b>'+day(gs)+' → ?</b><i>Tap your last day'+(fr.length?' · '+fr.length+' friend'+(fr.length>1?'s':'')+' on this day ›':'')+'</i></button>'
+      +'<button type="button" class="g1" id="g1">Just this day</button><button type="button" class="x" id="gx" aria-label="Clear">×</button>';
+    $('gwho').onclick=function(){if(!fr.length)return;selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
+    $('g1').onclick=function(){openRange(gs,gs)};
     $('gx').onclick=function(){gs=null;showBar();renderGrid()};
-    if($('ged'))$('ged').onclick=function(){selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
+  }
+  function openRange(a,d){
+    gs=null;showBar();
+    edit=null;trip=null;pe=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
+    sheet='add';renderGrid();renderSheet();
+    if($('fc'))$('fc').focus();
   }
   $('grid').addEventListener('click',function(e){
     var c=e.target.closest('.cell');if(!c)return;
     var d=c.getAttribute('data-d');
     if(d<T){selD=d;sheet='day';renderGrid();renderSheet();return}
     if(!gs||d<gs){gs=d;selD=null;showBar();renderGrid();return}
-    var a=gs;gs=null;showBar();
-    edit=null;trip=null;pe=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
-    sheet='add';renderGrid();renderSheet();
-    if($('fc'))$('fc').focus();
+    openRange(gs,d);
   });
   function move(k){vm+=k;if(vm<0){vm=11;vy--}if(vm>11){vm=0;vy++}selD=null;renderGrid();renderList()}
   $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();selD=null;renderGrid();renderList()};
