@@ -259,9 +259,23 @@ import * as api from './api.js';
   var gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
     gbar.hidden=!gs;if(!gs)return;
-    gbar.innerHTML='<span><b>From '+day(gs)+'</b><i>Now tap your last day</i></span><button type="button" id="gwho">Who\u2019s there</button><button type="button" class="x" id="gx" aria-label="Cancel">\u00d7</button>';
-    $('gwho').onclick=function(){selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
+    var p=parts(gs), wd=DW[(new Date(p.y,p.m,p.d).getDay()+6)%7], rows='', mineAway=false;
+    people.forEach(function(x,i){
+      var c=where(i,gs);if(!c)return;
+      var away=!!tripAt(i,gs), w=i>0&&c===where(0,gs)&&(away||tripAt(0,gs));
+      if(i===0)mineAway=away;
+      rows+='<div class="grow'+(w?' with':'')+'">'+face(i,28,false)+'<b>'+(i===0?'You':esc(x.n))+'</b><i>'+(away?(emoFor(i,c)+' '):'')+esc(c)+(away?'':', home')+'</i>'+(w?'<span>'+HEART+'</span>':'')+'</div>';
+    });
+    gbar.innerHTML='<div class="gh"><b>'+wd+' '+day(gs)+'</b><button type="button" class="x" id="gx" aria-label="Close">×</button></div>'
+      +'<div class="gl">'+(rows||'<p>Nobody has shared plans for this day.</p>')+'</div>'
+      +'<div class="gf"><span>Tap your last day to add a trip</span>'+(mineAway?'<button type="button" id="ged">Edit my trip</button>':'')+'</div>';
+    /* keep the rest of the month visible above the window, so the last day can still be tapped */
+    requestAnimationFrame(function(){
+      var g=$('grid').getBoundingClientRect(), top=innerHeight-gbar.offsetHeight-16, dy=g.bottom-top;
+      if(dy>0)window.scrollBy({top:Math.min(dy,g.top-8),behavior:'smooth'});
+    });
     $('gx').onclick=function(){gs=null;showBar();renderGrid()};
+    if($('ged'))$('ged').onclick=function(){selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
   }
   $('grid').addEventListener('click',function(e){
     var c=e.target.closest('.cell');if(!c)return;
