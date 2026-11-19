@@ -77,7 +77,7 @@ export async function unfriend(id) {
 // Me, my friends, all trips we can see (from two months ago on), and requests waiting for me
 export async function loadAll(uid) {
   const [p, t, r] = await Promise.all([
-    sb.from('profiles').select('id, name, home, invite_code'),
+    sb.from('profiles').select('id, name, home, invite_code, phone').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
     sb.from('trips').select('id, user_id, city, start_date, end_date, emoji').gte('end_date', back(62)).order('start_date'),
     sb.rpc('my_requests'),
   ]);
@@ -98,6 +98,11 @@ export async function loadAll(uid) {
 }
 
 export async function saveProfile(uid, fields) {
+  if ('phone' in fields) {
+    const r = await sb.from('profiles').update(fields).eq('id', uid);
+    if (!r.error) return;
+    delete fields.phone; // the phone column is not in the database yet
+  }
   const { error } = await sb.from('profiles').update(fields).eq('id', uid);
   if (error) throw error;
 }

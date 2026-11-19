@@ -173,6 +173,7 @@ import * as api from './api.js';
     }
     return runs.sort(function(x,y){return x.a<y.a?-1:x.a>y.a?1:0});
   }
+  function cleanPhone(v){v=String(v||'').trim();var plus=v.charAt(0)==='+';v=v.replace(/\D/g,'');if(!v)return '';if(!plus&&v.indexOf('00')===0)v=v.slice(2);return '+'+v.slice(0,15)}
   function prev(s){var p=parts(s),x=new Date(p.y,p.m,p.d-1,12);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
   function waText(r){
     var who=people[r.p].n;
@@ -188,7 +189,7 @@ import * as api from './api.js';
       rs.forEach(function(r){
         var em=emoFor(r.p,r.city);
         h+='<div class="ovc">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.city)+'</b><i>'+range(r.a,r.b)+(r.home?', in your city':', with you')+'</i></span>'
-          +'<a class="wa" href="https://wa.me/?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+'Message</a></div>';
+          +'<a class="wa" href="https://wa.me/'+(people[r.p].phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+'Message</a></div>';
       });
     }
     $('ovlist').innerHTML=h;
@@ -374,7 +375,7 @@ import * as api from './api.js';
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
-        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
+        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||'')+'"><label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="savew">Start</button></div>';
     }else if(sheet==='share'){
       h+=head('Your plans as text')
@@ -404,7 +405,7 @@ import * as api from './api.js';
       var ps=api.pushState();
       h+=head('Your settings')
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
-        +'<label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'">'
+        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'">'
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="saveh">Save</button></div>'
         +'<div class="sep"></div>'
@@ -567,7 +568,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name, so friends know who you are.';return}
     if(!c){$('err').textContent='Type your city or tap one above.';return}
     people[0].home=known(c);people[0].full=n;
-    keep(api.saveProfile(uid,{name:n,home:people[0].home}));index();sheet=null;renderAll();window.scrollTo(0,0);
+    people[0].phone=cleanPhone($('fp')&&$('fp').value);keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();window.scrollTo(0,0);
   }
   /* the first time someone opens the page without a home city, ask for it before anything else */
   var asked=false, ready=false;
@@ -599,7 +600,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name.';return}
     if(!c){$('err').textContent='Add the city where you live.';return}
     people[0].home=known(c);people[0].full=n;
-    keep(api.saveProfile(uid,{name:n,home:people[0].home}));index();sheet=null;renderAll();
+    people[0].phone=cleanPhone($('fp')&&$('fp').value);keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
   }
   $('add').onclick=function(){sheet='add';edit=null;pe=null;selD=null;ra=rb=null;ry=vy;rm=vm;if(iso(ry,rm,28)<T){ry=n0.getFullYear();rm=n0.getMonth()}renderSheet()};
 
@@ -652,10 +653,10 @@ import * as api from './api.js';
 
   function apply(d){
     var me=d.me;
-    people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].stays=me.stays;
+    people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].stays=me.stays;
     myCode=me.invite_code||'';requests=d.requests;
     people=[people[0]].concat(d.friends.map(function(f){
-      return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',stays:f.stays};
+      return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',stays:f.stays};
     }));
     index();
   }
