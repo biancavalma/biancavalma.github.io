@@ -173,6 +173,14 @@ import * as api from './api.js';
     }
     return runs.sort(function(x,y){return x.a<y.a?-1:x.a>y.a?1:0});
   }
+  /* first guesses for the welcome screen: the name from the sign-in email, the city from the phone's time zone */
+  function guessName(){
+    var u=String(gEmail||'').split('@')[0].replace(/[0-9_]+/g,' ').split(/[.\-\s]+/).filter(function(w){return w.length>1}).slice(0,2);
+    return u.map(function(w){return w.charAt(0).toUpperCase()+w.slice(1)}).join(' ');
+  }
+  function guessCity(){
+    try{var z=Intl.DateTimeFormat().resolvedOptions().timeZone||'';var c=z.split('/').pop().replace(/_/g,' ');return /^[A-Za-z ]+$/.test(c)&&z.indexOf('/')>0&&!/^(UTC|GMT)/.test(z)?c:''}catch(e){return ''}
+  }
   function cleanPhone(v){v=String(v||'').trim();var plus=v.charAt(0)==='+';v=v.replace(/\D/g,'');if(!v)return '';if(!plus&&v.indexOf('00')===0)v=v.slice(2);return '+'+v.slice(0,15)}
   function prev(s){var p=parts(s),x=new Date(p.y,p.m,p.d-1,12);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
   function waText(r){
@@ -375,7 +383,7 @@ import * as api from './api.js';
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
-        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||'')+'"><label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
+        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||guessName())+'"><label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done" value="'+esc(guessCity())+'"><button type="button" class="link" id="gps" style="margin:6px 2px 0;font-size:13.5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use my location</button><div class="sug" id="wsug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="savew">Start</button></div>';
     }else if(sheet==='share'){
       h+=head('Your plans as text')
@@ -489,6 +497,14 @@ import * as api from './api.js';
     if(sheet==='hello'){
       var ws=function(){var v=$('fw').value.trim().toLowerCase();$('wsug').innerHTML=COMMON.filter(function(c){return !v||c.toLowerCase().indexOf(v)===0}).slice(0,6).map(function(c){return '<button type="button" data-c="'+esc(c)+'">'+esc(c)+'</button>'}).join('')};
       ws();$('fw').addEventListener('input',function(){$('err').textContent='';ws()});
+      $('gps').onclick=function(){
+        var b=this;if(!navigator.geolocation){b.textContent='Location not available here';return}
+        b.textContent='Finding you…';
+        navigator.geolocation.getCurrentPosition(function(p){
+          fetch('https://api.bigdatacloud.net/data/reverse-geocode-client?localityLanguage=en&latitude='+p.coords.latitude+'&longitude='+p.coords.longitude)
+            .then(function(r){return r.json()}).then(function(j){var c=j.city||j.locality||'';if(c){$('fw').value=cap(c);ws();b.textContent='Found you ✓'}else b.textContent='City not found, type it'},function(){b.textContent='City not found, type it'});
+        },function(){b.textContent='Location is off, type your city'},{timeout:10000,maximumAge:600000});
+      };
       $('fw').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveWelcome()}});
       $('wsug').onclick=function(e){var b=e.target.closest('button');if(!b)return;$('fw').value=b.getAttribute('data-c');$('err').textContent='';ws()};
       $('savew').onclick=saveWelcome;

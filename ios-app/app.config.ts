@@ -24,6 +24,7 @@ const config: ExpoConfig = {
     buildNumber: '1',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSLocationWhenInUseUsageDescription: 'Overlap uses your location once, only when you tap "Use my location", to fill in your city.',
     },
   },
   android: {
