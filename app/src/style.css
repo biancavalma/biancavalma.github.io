@@ -194,3 +194,9 @@ input,textarea{font-size:var(--inp)}
 .cal2 a{flex:1;display:flex;align-items:center;justify-content:center;height:44px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13.5px;text-decoration:none}
 .tabs{grid-template-columns:1fr 1fr 1fr}
 .sug button small{font-weight:600;opacity:.7;margin-left:4px;font-size:11px}
+.gbar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:8px;padding:10px 10px 10px 16px;border-radius:20px;background:var(--ink);color:#fff;box-shadow:0 8px 24px rgba(42,35,80,.3)}
+.gbar[hidden]{display:none}
+.gbar span{flex:1;min-width:0;display:flex;flex-direction:column}
+.gbar b{font-size:15px}.gbar i{font-style:normal;font-size:13px;opacity:.75}
+.gbar button{flex:none;height:36px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font-weight:800;font-size:13px}
+.gbar .x{width:36px;padding:0;font-size:20px}

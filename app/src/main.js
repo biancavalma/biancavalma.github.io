@@ -247,7 +247,7 @@ import * as api from './api.js';
       var st=d>=T&&shows(0,d)?stayAt(0,d):null;
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var cls='cell'+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD?' sel':'');
+      var cls='cell'+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
       who.slice(0,who.length>3?2:3).forEach(function(x){h+=x===0&&st?'<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>':face(x,who.length>3?16:who.length>2?17:20,true)});
       if(who.length>3)h+='<span class="more">+'+(who.length-2)+'</span>';
@@ -255,9 +255,23 @@ import * as api from './api.js';
     }
     $('grid').innerHTML=h;
   }
+  /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
+  var gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
+  function showBar(){
+    gbar.hidden=!gs;if(!gs)return;
+    gbar.innerHTML='<span><b>From '+day(gs)+'</b><i>Now tap your last day</i></span><button type="button" id="gwho">Who\u2019s there</button><button type="button" class="x" id="gx" aria-label="Cancel">\u00d7</button>';
+    $('gwho').onclick=function(){selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
+    $('gx').onclick=function(){gs=null;showBar();renderGrid()};
+  }
   $('grid').addEventListener('click',function(e){
     var c=e.target.closest('.cell');if(!c)return;
-    selD=c.getAttribute('data-d');sheet='day';renderGrid();renderSheet();
+    var d=c.getAttribute('data-d');
+    if(d<T){selD=d;sheet='day';renderGrid();renderSheet();return}
+    if(!gs||d<gs){gs=d;selD=null;showBar();renderGrid();return}
+    var a=gs;gs=null;showBar();
+    edit=null;trip=null;pe=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
+    sheet='add';renderGrid();renderSheet();
+    if($('fc'))$('fc').focus();
   });
   function move(k){vm+=k;if(vm<0){vm=11;vy--}if(vm>11){vm=0;vy++}selD=null;renderGrid();renderList()}
   $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();selD=null;renderGrid();renderList()};
@@ -346,7 +360,7 @@ import * as api from './api.js';
   $('q').addEventListener('input',function(){q=this.value.trim();renderFriends()});
   $('q').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur()});
 
-  function close(){sheet=null;selD=null;trip=null;edit=null;selF=null;renderGrid();renderSheet()}
+  function close(){gs=null;showBar();sheet=null;selD=null;trip=null;edit=null;selF=null;renderGrid();renderSheet()}
   $('veil').onclick=close;
   function head(t){return '<div class="shd"><div class="hd">'+t+'</div><button type="button" class="x" id="x" aria-label="Close">×</button></div>'}
   function renderSheet(){
