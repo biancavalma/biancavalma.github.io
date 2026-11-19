@@ -260,7 +260,7 @@ import * as api from './api.js';
   function showBar(){
     gbar.hidden=!gs;if(!gs)return;
     var fr=[];for(var i=1;i<people.length;i++)if(where(i,gs))fr.push(i);
-    gbar.innerHTML='<button type="button" class="gi" id="gwho"><b>'+day(gs)+' → ?</b><i>Tap your last day'+(fr.length?' · '+fr.length+' friend'+(fr.length>1?'s':'')+' on this day ›':'')+'</i></button>'
+    gbar.innerHTML='<button type="button" class="gi" id="gwho"><b>'+day(gs)+' → ?</b><i>Tap last day'+(fr.length?' · '+fr.length+' friend'+(fr.length>1?'s':'')+' ›':'')+'</i></button>'
       +'<button type="button" class="g1" id="g1">Just this day</button><button type="button" class="x" id="gx" aria-label="Clear">×</button>';
     $('gwho').onclick=function(){if(!fr.length)return;selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
     $('g1').onclick=function(){openRange(gs,gs)};
