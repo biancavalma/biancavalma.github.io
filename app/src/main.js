@@ -166,8 +166,9 @@ import * as api from './api.js';
     while(d<=end){
       var L=where(0,d);
       for(var f=1;f<people.length;f++){
-        var k=f+'|'+L, ok=L&&where(f,d)===L&&(tripAt(0,d)||tripAt(f,d));
-        if(ok){ if(open[k]&&open[k].b===prev(d))open[k].b=d; else {open[k]={p:f,city:L,a:d,b:d,home:!tripAt(0,d)};runs.push(open[k])} }
+        var W=where(f,d), trav=tripAt(0,d)||tripAt(f,d), k=f+'|'+L+'|'+W, dk=0;
+        var ok=L&&W&&trav&&(W===L||(dk=km(L,W))<=NEAR);
+        if(ok){ if(open[k]&&open[k].b===prev(d))open[k].b=d; else {open[k]={p:f,city:L,fc:W,km:W===L?0:dk,a:d,b:d,home:!tripAt(0,d)};runs.push(open[k])} }
       }
       d=next(d);
     }
@@ -185,6 +186,7 @@ import * as api from './api.js';
   function prev(s){var p=parts(s),x=new Date(p.y,p.m,p.d-1,12);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
   function waText(r){
     var who=people[r.p].n;
+    if(r.km)return 'Hi '+who+'! I saw on Overlap you\u2019ll be in '+r.fc+' '+range(r.a,r.b)+'. I\u2019ll be in '+r.city+', only about '+r.km+' km away. Shall we meet?';
     return r.home?'Hi '+who+'! I saw on Overlap you\u2019ll be in '+r.city+' '+range(r.a,r.b)+'. I\u2019m home then, let\u2019s meet?'
       :'Hi '+who+'! I\u2019ll be in '+r.city+' too, '+range(r.a,r.b)+'. Shall we meet? (from Overlap)';
   }
@@ -195,8 +197,8 @@ import * as api from './api.js';
     else{
       h='<p class="ovh">Coming up</p>';
       rs.forEach(function(r){
-        var em=emoFor(r.p,r.city);
-        h+='<div class="ovc">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.city)+'</b><i>'+range(r.a,r.b)+(r.home?', in your city':', with you')+'</i></span>'
+        var em=emoFor(r.p,r.fc);
+        h+='<div class="ovc'+(r.km?' near':'')+'">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.fc)+'</b><i>'+range(r.a,r.b)+(r.km?', '+r.km+' km from you in '+esc(r.city):r.home?', in your city':', with you')+'</i></span>'
           +'<a class="wa" href="https://wa.me/'+(people[r.p].phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+'Message</a></div>';
       });
     }
@@ -413,7 +415,7 @@ import * as api from './api.js';
       var ps=api.pushState();
       h+=head('Your settings')
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
-        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'">'
+        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="saveh">Save</button></div>'
         +'<div class="sep"></div>'
@@ -439,7 +441,7 @@ import * as api from './api.js';
     }
     if(sheet==='add'){
       if(edit!==null&&me.stays[edit])$('fc').value=me.stays[edit].city;
-      $('save').onclick=saveTrip;renderSug();renderPick();
+      $('save').onclick=saveTrip;renderPick();
       $('pkp').onclick=function(){rm--;if(rm<0){rm=11;ry--}renderPick()};
       $('pkn').onclick=function(){rm++;if(rm>11){rm=0;ry++}renderPick()};
       $('pkg').onclick=function(e){
@@ -448,11 +450,10 @@ import * as api from './api.js';
         if(!ra||rb||d<ra){ra=d;rb=null}else{rb=d}
         $('err').textContent='';renderPick();
       };
-      $('fc').addEventListener('input',renderSug);
-      $('sug').onclick=function(e){var b=e.target.closest('button');if(!b)return;$('fc').value=b.getAttribute('data-c');$('err').textContent='';renderSug()};
+      citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent=''});
     }
     if(sheet==='home'){
-      $('saveh').onclick=saveHome;
+      $('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),function(){return COMMON});
       if($('pon'))$('pon').onclick=function(){turnOnAlerts().then(function(){renderSheet()})};
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
       if($('phow'))$('phow').onclick=function(){sheet='install';renderSheet()};
@@ -495,10 +496,9 @@ import * as api from './api.js';
       if($('nshare'))$('nshare').onclick=function(){try{navigator.share({title:'My plans',text:tx}).catch(function(){})}catch(e){}};
     }
     if(sheet==='hello'){
-      var ws=function(){var v=$('fw').value.trim().toLowerCase();$('wsug').innerHTML=COMMON.filter(function(c){return !v||c.toLowerCase().indexOf(v)===0}).slice(0,6).map(function(c){return '<button type="button" data-c="'+esc(c)+'">'+esc(c)+'</button>'}).join('')};
-      ws();$('fw').addEventListener('input',function(){$('err').textContent='';ws()});
+      citySug($('fw'),$('wsug'),function(){return COMMON},function(){$('err').textContent=''});
+      $('fw').addEventListener('input',function(){$('err').textContent=''});
       $('fw').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveWelcome()}});
-      $('wsug').onclick=function(e){var b=e.target.closest('button');if(!b)return;$('fw').value=b.getAttribute('data-c');$('err').textContent='';ws()};
       $('savew').onclick=saveWelcome;
     }
     if(sheet==='add'&&$('del'))$('del').onclick=function(){var s=people[0].stays.splice(edit,1)[0];if(s&&s.id)keep(api.deleteTrip(s.id));edit=null;index();close();renderAll()};
@@ -506,18 +506,12 @@ import * as api from './api.js';
   /* suggestions: your own past cities first, then where friends are going, then a few common ones */
   var COMMON=['Florence','Milan','London','Paris','Rome','Barcelona','Lisbon','Munich'];
   var pe=null;
-  function renderSug(){
-    var el=$('sug');if(!el)return;
-    var v=$('fc').value.trim().toLowerCase(), count={}, list=[], seen={};
+  function tripCities(){
+    var count={}, list=[], seen={};
     people[0].stays.forEach(function(s){if(!count[s.city]){count[s.city]=0;list.push(s.city)}count[s.city]++});
     list.sort(function(x,y){return count[y]-count[x]});
     UP.forEach(function(s){if(s.p>0)list.push(s.city)});
-    list=list.concat(COMMON).filter(function(c){
-      var k=c.toLowerCase();
-      if(seen[k]||c===people[0].home||k===v||(v&&k.indexOf(v)!==0))return false;
-      seen[k]=1;return true;
-    }).slice(0,5);
-    el.innerHTML=list.map(function(c){return '<button type="button" data-c="'+esc(c)+'">'+esc(c)+'</button>'}).join('');
+    return list.concat(COMMON).filter(function(c){var k=c.toLowerCase();if(seen[k]||c===people[0].home)return false;seen[k]=1;return true});
   }
   /* one calendar for both dates: first tap is the arrival, second tap is the last day */
   var ra=null, rb=null, ry=n0.getFullYear(), rm=n0.getMonth(), edit=null;
@@ -557,26 +551,99 @@ import * as api from './api.js';
     $('pkp').disabled=ry===n0.getFullYear()&&rm===n0.getMonth();
     $('when').textContent=!ra?'Tap the day you arrive, then your last day':!rb?'From '+day(ra)+'. Now tap your last day':range(ra,rb);
   }
-  function known(c){return cities().filter(function(k){return k.toLowerCase()===c.toLowerCase()})[0]||c}
+
+  /* ---------- one name per city ----------
+     Cities come from a free world list (Photon, OpenStreetMap), always in English, so
+     "Zurigo", "Zürich" and "zurich" all become "Zurich". Each city's position is kept on
+     this phone so nearby cities (under NEAR km) also count as an overlap. */
+  var NEAR=60, GEO={};
+  try{GEO=JSON.parse(localStorage.getItem('ovgeo')||'{}')||{}}catch(e){GEO={}}
+  function saveGeo(){try{localStorage.setItem('ovgeo',JSON.stringify(GEO))}catch(e){}}
+  function fold(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+  var SKIP={country:1,state:1,region:1,province:1,county:1,continent:1,archipelago:1,ocean:1,sea:1,municipality:0};
+  function photon(q,n){
+    return fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit='+(n||6)+'&lang=en&osm_tag=place')
+      .then(function(r){return r.json()}).then(function(j){
+        var out=[],seen={};
+        (j.features||[]).forEach(function(f){
+          var p=f.properties||{}, nm=p.name;
+          if(!nm||SKIP[p.osm_value]||seen[fold(nm)])return;seen[fold(nm)]=1;
+          var c=f.geometry&&f.geometry.coordinates;
+          if(c&&!GEO[nm]){GEO[nm]=[c[1],c[0]];saveGeo()}
+          out.push({c:nm,w:p.state&&p.state!==nm?p.state:(p.country||'')});
+        });
+        return out;
+      }).catch(function(){return []});
+  }
+  function lev(a,b){var m=a.length,n=b.length,d=[],i,j;for(i=0;i<=m;i++)d[i]=[i];for(j=0;j<=n;j++)d[0][j]=j;
+    for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
+  /* text typed -> one canonical city name, or '' when nothing real matches */
+  function resolveCity(t){
+    var f=fold(t);if(!f)return Promise.resolve('');
+    var mine=cities().concat(COMMON,Object.keys(GEO)), hit=mine.filter(function(k){return fold(k)===f})[0];
+    if(hit)return Promise.resolve(hit);
+    var close=mine.filter(function(k){return f.length>3&&lev(fold(k),f)<=Math.min(2,Math.floor(f.length/4))})[0];
+    function tryQ(q,left){return photon(q,1).then(function(r){return r[0]?r[0].c:left>0&&q.length>4?tryQ(q.slice(0,-1),left-1):''})}
+    return tryQ(t.trim(),3).then(function(c){return c||close||''});
+  }
+  function geo(c){
+    if(GEO[c])return GEO[c];
+    if(!geo.busy[c]){geo.busy[c]=1;photon(c,1).then(function(r){
+      if(r[0]&&!GEO[c]&&GEO[r[0].c]){GEO[c]=GEO[r[0].c];saveGeo()}
+      if(GEO[c])renderAll();
+    })}
+    return null;
+  }
+  geo.busy={};
+  function km(a,b){
+    if(a===b)return 0;var p=geo(a),q=geo(b);if(!p||!q)return 1e9;
+    var r=Math.PI/180,x=Math.sin((q[0]-p[0])*r/2),y=Math.sin((q[1]-p[1])*r/2);
+    return Math.round(12742*Math.asin(Math.sqrt(x*x+Math.cos(p[0]*r)*Math.cos(q[0]*r)*y*y)));
+  }
+  /* live suggestions under a city box: your own cities first, then the world list */
+  function citySug(inp,box,local,pick){
+    var tm=null, n=0;
+    function chips(list){box.innerHTML=list.slice(0,6).map(function(o){return '<button type="button" data-c="'+esc(o.c)+'">'+esc(o.c)+(o.w?' <small>'+esc(o.w)+'</small>':'')+'</button>'}).join('')}
+    function run(){
+      var v=fold(inp.value), base=local().filter(function(c){return !v||fold(c).indexOf(v)===0}).map(function(c){return {c:c}});
+      chips(base);clearTimeout(tm);
+      if(v.length<2)return;
+      var my=++n;
+      tm=setTimeout(function(){photon(inp.value.trim(),6).then(function(r){
+        if(my!==n)return;var seen={};base.forEach(function(o){seen[fold(o.c)]=1});
+        chips(base.concat(r.filter(function(o){return !seen[fold(o.c)]})));
+      })},250);
+    }
+    inp.addEventListener('input',run);
+    box.onclick=function(e){var b=e.target.closest('button');if(!b)return;inp.value=b.getAttribute('data-c');if(pick)pick();run()};
+    run();
+  }
   function saveTrip(){
     var c=cap($('fc').value), a=ra||'', b=rb||a;
     if(!c){$('err').textContent='Add a city.';return}
     if(!ISO.test(a)){$('err').textContent='Tap the day you arrive in the calendar.';return}
     if(!ISO.test(b)||b<a){$('err').textContent='The last day is before the first one.';return}
-    c=known(c);
+    var bt=$('save');bt.disabled=true;
+    resolveCity(c).then(function(r){bt.disabled=false;
+    if(!r){$('err').textContent='Pick the city from the list, so friends can match it.';return}
+    c=r;
     var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e}, old=edit!==null?people[0].stays[edit]:null;
     if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns))}
     else{people[0].stays.push(ns);keep(api.addTrip(ns).then(function(id){ns.id=id}))}
     pe=null;
     edit=null;index();
     selC=null;selP=null;sheet=null;selD=null;var p=parts(a);vy=p.y;vm=p.m;renderAll();window.scrollTo(0,0);
+    });
   }
   function saveWelcome(){
     var n=String($('fn').value||'').trim().slice(0,40), c=cap($('fw').value);
     if(!n){$('err').textContent='Add your name, so friends know who you are.';return}
     if(!c){$('err').textContent='Type your city or tap one above.';return}
-    people[0].home=known(c);people[0].full=n;
-    people[0].phone=cleanPhone($('fp')&&$('fp').value);keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();window.scrollTo(0,0);
+    var ph=cleanPhone($('fp')&&$('fp').value);
+    resolveCity(c).then(function(r){
+    if(!r){$('err').textContent='Pick your city from the list, so friends can match it.';return}
+    people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();window.scrollTo(0,0);
+    });
   }
   /* the first time someone opens the page without a home city, ask for it before anything else */
   var asked=false, ready=false;
@@ -607,8 +674,11 @@ import * as api from './api.js';
     var n=String($('fn').value||'').trim().slice(0,40), c=cap($('fh').value);
     if(!n){$('err').textContent='Add your name.';return}
     if(!c){$('err').textContent='Add the city where you live.';return}
-    people[0].home=known(c);people[0].full=n;
-    people[0].phone=cleanPhone($('fp')&&$('fp').value);keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
+    var ph=cleanPhone($('fp')&&$('fp').value);
+    resolveCity(c).then(function(r){
+    if(!r){$('err').textContent='Pick your city from the list, so friends can match it.';return}
+    people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
+    });
   }
   $('add').onclick=function(){sheet='add';edit=null;pe=null;selD=null;ra=rb=null;ry=vy;rm=vm;if(iso(ry,rm,28)<T){ry=n0.getFullYear();rm=n0.getMonth()}renderSheet()};
 

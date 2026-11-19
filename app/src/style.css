@@ -193,3 +193,4 @@ input,textarea{font-size:var(--inp)}
 .cal2{display:flex;gap:8px;margin-top:16px}
 .cal2 a{flex:1;display:flex;align-items:center;justify-content:center;height:44px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13.5px;text-decoration:none}
 .tabs{grid-template-columns:1fr 1fr 1fr}
+.sug button small{font-weight:600;opacity:.7;margin-left:4px;font-size:11px}
