@@ -588,6 +588,16 @@ import * as api from './api.js';
     function tryQ(q,left){return photon(q,1).then(function(r){return r[0]?r[0].c:left>0&&q.length>4?tryQ(q.slice(0,-1),left-1):''})}
     return tryQ(t.trim(),3).then(function(c){return c||close||''});
   }
+  /* never correct a city silently: if the list knows it under another name, ask first */
+  function checkCity(inp,t,go){
+    resolveCity(t).then(function(r){
+      var e=$('err');
+      if(!r){e.textContent='We could not find "'+t+'". Check the spelling or tap a city in the list.';return}
+      if(fold(r)===fold(t))return go(r);
+      e.innerHTML='Did you mean <b>'+esc(r)+'</b>? <button type="button" class="ghost" id="cyes" style="margin:8px 0 0">Yes, '+esc(r)+'</button>';
+      $('cyes').onclick=function(){inp.value=r;e.textContent='';go(r)};
+    });
+  }
   function geo(c){
     if(GEO[c])return GEO[c];
     if(!geo.busy[c]){geo.busy[c]=1;photon(c,1).then(function(r){
@@ -625,9 +635,9 @@ import * as api from './api.js';
     if(!c){$('err').textContent='Add a city.';return}
     if(!ISO.test(a)){$('err').textContent='Tap the day you arrive in the calendar.';return}
     if(!ISO.test(b)||b<a){$('err').textContent='The last day is before the first one.';return}
-    var bt=$('save');bt.disabled=true;
-    resolveCity(c).then(function(r){bt.disabled=false;
-    if(!r){$('err').textContent='Pick the city from the list, so friends can match it.';return}
+    var bt=$('save');
+    bt.disabled=false;
+    checkCity($('fc'),c,function(r){
     c=r;
     var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e}, old=edit!==null?people[0].stays[edit]:null;
     if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns))}
@@ -642,8 +652,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name, so friends know who you are.';return}
     if(!c){$('err').textContent='Type your city or tap one above.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
-    resolveCity(c).then(function(r){
-    if(!r){$('err').textContent='Pick your city from the list, so friends can match it.';return}
+    checkCity($('fw'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();window.scrollTo(0,0);
     });
   }
@@ -677,8 +686,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name.';return}
     if(!c){$('err').textContent='Add the city where you live.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
-    resolveCity(c).then(function(r){
-    if(!r){$('err').textContent='Pick your city from the list, so friends can match it.';return}
+    checkCity($('fh'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
   }
