@@ -377,9 +377,9 @@ import * as api from './api.js';
     }else if(sheet==='list'){
       h+=head(LT)+LB;
     }else if(sheet==='add'){
-      h+=head(edit!==null?'Edit your trip':'Where will you be?')
-        +'<div class="f"><label for="fc">City</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words"><div class="sug" id="sug"></div>'
-        +'<p class="when" id="when"></p><div class="pk"><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
+      h+=head(edit!==null?'Edit your trip':'When are you away?')
+        +'<div class="f"><p class="when" id="when"></p><div class="pk"><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
+        +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
     }else if(sheet==='hello'){
@@ -449,8 +449,10 @@ import * as api from './api.js';
         var d=b.getAttribute('data-d');
         if(!ra||rb||d<ra){ra=d;rb=null}else{rb=d}
         $('err').textContent='';renderPick();
+        if(rb&&!$('fc').value){$('fc').focus();$('fc').scrollIntoView({block:'center',behavior:'smooth'})}
       };
-      citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent=''});
+      citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent='';if(ra&&edit===null)saveTrip()});
+      $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
       $('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),function(){return COMMON});
