@@ -199,7 +199,7 @@ import * as api from './api.js';
       rs.forEach(function(r){
         var em=emoFor(r.p,r.fc);
         h+='<div class="ovc'+(r.km?' near':'')+'">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.fc)+'</b><i>'+range(r.a,r.b)+(r.km?', '+r.km+' km from you in '+esc(r.city):r.home?', in your city':', with you')+'</i></span>'
-          +'<a class="wa" href="https://wa.me/'+(people[r.p].phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+'Message</a></div>';
+          +'<a class="wa" href="https://wa.me/'+(people[r.p].phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+(people[r.p].phone?'Message':'Pick chat')+'</a></div>';
       });
     }
     $('ovlist').innerHTML=h;
