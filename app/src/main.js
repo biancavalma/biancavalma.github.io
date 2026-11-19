@@ -643,7 +643,7 @@ import * as api from './api.js';
       $('gsend').disabled=true;$('gsend').textContent='Sending…';
       api.sendCode(em).then(function(){showCode()},function(e){
         $('gsend').disabled=false;$('gsend').textContent='Send me a code';
-        $('err').textContent=/rate|seconds/i.test(e&&e.message||'')?'Too many tries. Wait a minute and try again.':'Could not send the code. Try again.';
+        $('err').textContent=/rate|seconds/i.test(e&&e.message||'')?'Too many tries. Wait a minute and try again.':'Could not send the code. Try again.'+(e&&e.message?' ('+String(e.message).slice(0,120)+')':'');
       });
     };
     $('gsend').onclick=go;
