@@ -87,16 +87,16 @@ import * as api from './api.js';
   }
   function face(i,size,ring){
     if(i===0)return '<svg role="img" aria-label="You" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
-      +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="#B9AEFF"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
-      +'<circle cx="14" cy="18" r="2.6" fill="#2A2350"/><circle cx="26" cy="18" r="2.6" fill="#2A2350"/>'
-      +'<path d="M14 24.5c2 3 10 3 12 0" fill="none" stroke="#2A2350" stroke-width="2.6" stroke-linecap="round"/>'
-      +'<circle cx="9.5" cy="23" r="2.6" fill="#8B7CF6" opacity=".6"/><circle cx="30.5" cy="23" r="2.6" fill="#8B7CF6" opacity=".6"/></svg>';
+      +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="#FF8A65"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
+      +'<circle cx="14" cy="18" r="2.6" fill="#2B1A1F"/><circle cx="26" cy="18" r="2.6" fill="#2B1A1F"/>'
+      +'<path d="M14 24.5c2 3 10 3 12 0" fill="none" stroke="#2B1A1F" stroke-width="2.6" stroke-linecap="round"/>'
+      +'<circle cx="9.5" cy="23" r="2.6" fill="#E8603C" opacity=".6"/><circle cx="30.5" cy="23" r="2.6" fill="#E8603C" opacity=".6"/></svg>';
     var t=lab(i);
     return '<svg role="img" aria-label="'+esc(people[i].n)+'" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
       +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="'+COL[i%COL.length]+'"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
-      +'<text x="20" y="'+(t.length>1?26.5:27.5)+'" text-anchor="middle" font-family="Fredoka,Nunito,sans-serif" font-weight="600" font-size="'+(t.length>1?18:22)+'" fill="#2A2350">'+esc(t)+'</text></svg>';
+      +'<text x="20" y="'+(t.length>1?26.5:27.5)+'" text-anchor="middle" font-family="Fredoka,Nunito,sans-serif" font-weight="600" font-size="'+(t.length>1?18:22)+'" fill="#2B1A1F">'+esc(t)+'</text></svg>';
   }
-  var HEART='<svg width="12" height="12" viewBox="0 0 24 24" fill="#2A2350" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
+  var HEART='<svg width="12" height="12" viewBox="0 0 24 24" fill="#2B1A1F" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
   var tab='ov', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;

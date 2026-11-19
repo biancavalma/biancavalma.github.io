@@ -1,18 +1,18 @@
 :root{
-  --bg:#F3F0FF; --card:#ffffff; --ink:#2A2350; --soft:#6B6490; --pill:#E8E3FF;
-  --pink:#B9AEFF; --butter:#BFF0DC; --on:#2A2350; --mint:#7DDCB5; --mintink:#0B4D36; --face:#2d2440; --ring:#ffffff;
-  --shadow:0 6px 18px rgba(91,76,200,.10); --inp:17px; --ps:.735;
+  --bg:#FFF5F0; --card:#ffffff; --ink:#2B1A1F; --soft:#7A6066; --pill:#FFE6DC;
+  --pink:#FF8A65; --butter:#C9F2EC; --on:#2B1A1F; --mint:#4FD1C5; --mintink:#0D4D47; --face:#2B1A1F; --ring:#ffffff;
+  --shadow:0 6px 18px rgba(200,90,60,.10); --inp:17px; --ps:.735;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#1b1530; --card:#2a2244; --ink:#f3eeff; --soft:#b5aad1; --pill:#3b3160; --ring:#2a2244;
+    --bg:#1E1416; --card:#2C1F22; --ink:#FFF1EB; --soft:#C9AFA8; --pill:#3D2A2D; --ring:#2C1F22;
     --shadow:0 6px 18px rgba(0,0,0,.35);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#1b1530; --card:#2a2244; --ink:#f3eeff; --soft:#b5aad1; --pill:#3b3160; --ring:#2a2244;
+  --bg:#1E1416; --card:#2C1F22; --ink:#FFF1EB; --soft:#C9AFA8; --pill:#3D2A2D; --ring:#2C1F22;
   --shadow:0 6px 18px rgba(0,0,0,.35);
 }
 *,*::before,*::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent}
@@ -194,7 +194,7 @@ input,textarea{font-size:var(--inp)}
 .cal2 a{flex:1;display:flex;align-items:center;justify-content:center;height:44px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13.5px;text-decoration:none}
 .tabs{grid-template-columns:1fr 1fr 1fr}
 .sug button small{font-weight:600;opacity:.7;margin-left:4px;font-size:11px}
-.gbar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:6px;padding:8px 8px 8px 16px;border-radius:20px;background:var(--ink);color:var(--bg);box-shadow:0 8px 24px rgba(42,35,80,.3)}
+.gbar{position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:6px;padding:8px 8px 8px 16px;border-radius:20px;background:var(--ink);color:var(--bg);box-shadow:0 8px 24px rgba(43,26,31,.3)}
 .gbar[hidden]{display:none}
 .gbar .gi{flex:1;min-width:0;text-align:left;color:inherit;display:flex;flex-direction:column}
 .gbar .gi b{font-size:15px}
