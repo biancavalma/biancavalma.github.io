@@ -6,7 +6,8 @@
   "build": {
     "production": {
       "autoIncrement": true,
-      "env": {}
+      "env": {},
+      "credentialsSource": "local"
     }
   },
   "submit": {
