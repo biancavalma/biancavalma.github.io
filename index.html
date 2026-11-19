@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Overlap</title>
+<meta name="description" content="See when your friends will be in the same city as you.">
+<meta name="theme-color" content="#f5f0ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Overlap">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="wrap gate" id="gate">
+  <div class="wel"><svg width="64" height="64" viewBox="10 0 44 44" aria-hidden="true"><defs><clipPath id="lgc"><path transform="translate(32 34) rotate(-22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z"/></clipPath></defs><path transform="translate(32 34) rotate(-22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" fill="#ff9cc8"/><path transform="translate(32 34) rotate(22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" fill="#ffe27a"/><g clip-path="url(#lgc)"><path transform="translate(32 34) rotate(22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" fill="#f26aa5"/></g><circle transform="translate(32 34) rotate(-22) translate(0 -20)" r="5" fill="#fff"/><circle transform="translate(32 34) rotate(22) translate(0 -20)" r="5" fill="#fff"/></svg><div class="hd" style="font-size:30px">Overlap</div></div>
+  <div class="card gcard" id="gbody"><p class="hint" style="text-align:center">Loading…</p></div>
+</div>
+<div class="wrap" id="app" hidden>
+  <div class="top">
+    <div class="brand hd">
+      <svg width="36" height="36" viewBox="10 0 44 44" aria-hidden="true"><defs><clipPath id="lgc"><path transform="translate(32 34) rotate(-22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z"/></clipPath></defs><path transform="translate(32 34) rotate(-22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" fill="#ff9cc8"/><path transform="translate(32 34) rotate(22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" fill="#ffe27a"/><g clip-path="url(#lgc)"><path transform="translate(32 34) rotate(22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" fill="#f26aa5"/></g><circle transform="translate(32 34) rotate(-22) translate(0 -20)" r="5" fill="#fff"/><circle transform="translate(32 34) rotate(22) translate(0 -20)" r="5" fill="#fff"/></svg>
+      Overlap
+    </div>
+    <button type="button" class="mebtn" id="me" aria-label="Your settings"></button>
+  </div>
+
+  <div id="reqs"></div>
+
+  <div class="tabs">
+    <button type="button" class="tab" id="t-cal">Calendar</button>
+    <button type="button" class="tab" id="t-fr">Friends</button>
+  </div>
+
+  <div id="v-cal" style="display:flex;flex-direction:column;gap:12px">
+    <div class="pills" id="pills"><span id="pa" class="pg"></span><label class="pillb psr"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span class="pin"><input id="cq" type="text" placeholder="Search" aria-label="Search a city" autocomplete="off" autocapitalize="words" enterkeyhint="search" maxlength="30"></span></label><span id="pc" class="pg"></span></div>
+    <div class="card">
+      <div class="mbar">
+        <div class="hd" id="mlabel"></div>
+        <div class="nav">
+          <button type="button" id="tod" hidden>Today</button>
+          <button type="button" id="prev" aria-label="Previous month"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button type="button" id="nextm" aria-label="Next month"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="dows"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="card alerts" id="alerts" hidden></div>
+    <div class="card list" id="list"></div>
+    <button type="button" class="add hd" id="add">Add trip</button>
+    <button type="button" class="share" id="share"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>Share my plans as text</button>
+  </div>
+
+  <div id="v-fr" hidden style="display:flex;flex-direction:column;gap:12px">
+    <label class="search">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="q" type="text" placeholder="Search a friend or a city" aria-label="Search a friend or a city" autocomplete="off" enterkeyhint="search">
+    </label>
+    <div class="key"><span id="keyh"></span>Yellow means you are there too</div>
+    <div id="friends"></div>
+    <button type="button" class="add hd" id="invite">Invite a friend</button>
+  </div>
+
+  <p class="note" id="note"></p>
+</div>
+<div class="veil" id="veil" hidden></div>
+<div class="sheet" id="sheet" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

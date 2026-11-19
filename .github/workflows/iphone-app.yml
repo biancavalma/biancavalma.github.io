@@ -1,0 +1,45 @@
+# Builds the Overlap iPhone app in Expo's cloud.
+# Run it from GitHub: Actions > Build iPhone app > Run workflow.
+# Secrets needed (Settings > Secrets and variables > Actions):
+#   EXPO_TOKEN    from expo.dev > Account settings > Access tokens
+#   ASC_KEY_P8    the full text of the Apple key file AuthKey_V5JXP95HSG.p8
+name: Build iPhone app
+
+on:
+  workflow_dispatch:
+    inputs:
+      submit:
+        description: Send to TestFlight after building
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ios-app
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EXPO_ASC_KEY_ID: V5JXP95HSG
+      EXPO_ASC_ISSUER_ID: 4bad4f17-f8fe-4b02-a968-6f35809a69a3
+      EXPO_APPLE_TEAM_ID: 93VV2F4VS5
+      EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ios-app/package-lock.json
+
+      - run: npm ci
+
+      - name: Apple key
+        run: |
+          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > "$RUNNER_TEMP/asc.p8"
+          echo "EXPO_ASC_API_KEY_PATH=$RUNNER_TEMP/asc.p8" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: npx --yes eas-cli@latest build --platform ios --profile production --non-interactive --wait ${{ inputs.submit && '--auto-submit' || '' }}
