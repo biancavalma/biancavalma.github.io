@@ -8,8 +8,12 @@ name: Build iPhone app
 on:
   workflow_dispatch:
     inputs:
+      build:
+        description: Build a new version (off = only send the latest finished build to TestFlight)
+        type: boolean
+        default: true
       submit:
-        description: Send to TestFlight after building
+        description: Send to TestFlight
         type: boolean
         default: true
 
@@ -38,11 +42,28 @@ jobs:
 
       - name: Apple key
         run: |
-          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > "$RUNNER_TEMP/asc.p8"
-          echo "EXPO_ASC_API_KEY_PATH=$RUNNER_TEMP/asc.p8" >> "$GITHUB_ENV"
+          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > asc.p8
+          echo "EXPO_ASC_API_KEY_PATH=$PWD/asc.p8" >> "$GITHUB_ENV"
 
       - name: Apple signing files
+        if: ${{ inputs.build }}
         run: BUNDLE_ID=$(node -p "require('./overlap.json').bundleId") node scripts/apple-signing.mjs
 
       - name: Build
-        run: npx --yes eas-cli@latest build --platform ios --profile production --non-interactive --wait ${{ inputs.submit && '--auto-submit' || '' }}
+        if: ${{ inputs.build }}
+        run: npx --yes eas-cli@latest build --platform ios --profile production --non-interactive --wait
+
+      - name: Wait for the latest build
+        if: ${{ inputs.submit && !inputs.build }}
+        run: |
+          for i in $(seq 1 90); do
+            S=$(npx --yes eas-cli@latest build:list --platform ios --limit 1 --json --non-interactive | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>console.log(JSON.parse(d)[0].status))")
+            echo "Latest build: $S"
+            case "$S" in FINISHED) exit 0;; ERRORED|CANCELED) exit 1;; esac
+            sleep 60
+          done
+          exit 1
+
+      - name: Send to TestFlight
+        if: ${{ inputs.submit }}
+        run: npx --yes eas-cli@latest submit --platform ios --profile production --latest --non-interactive

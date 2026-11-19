@@ -13,7 +13,10 @@
   "submit": {
     "production": {
       "ios": {
-        "ascAppId": "6836661604"
+        "ascAppId": "6836661604",
+        "ascApiKeyPath": "./asc.p8",
+        "ascApiKeyId": "V5JXP95HSG",
+        "ascApiKeyIssuerId": "4bad4f17-f8fe-4b02-a968-6f35809a69a3"
       }
     }
   }
