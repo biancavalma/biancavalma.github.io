@@ -261,3 +261,4 @@ input,textarea{font-size:var(--inp)}
 .ufield{display:flex;align-items:center;gap:0;position:relative}
 .ufield span{position:absolute;left:16px;font-weight:800;color:var(--soft);pointer-events:none}
 .ufield input{flex:1;padding-left:34px}
+.sharebtn{display:block;width:100%;margin-top:10px;height:42px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:14.5px}
