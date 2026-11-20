@@ -37,3 +37,9 @@ export const today = () => d(0);
 export const searchPeople = async (q) => [{ id: 'x1', name: 'Marta Rossi', username: 'marta.r', status: 'none' }, { id: 'x2', name: 'Martina', username: 'tina', status: 'sent' }].filter((p) => (p.name + p.username).toLowerCase().includes(q.toLowerCase().replace('@', '')));
 export const requestUser = async () => 'sent';
 export const setUsername = async () => {};
+
+export const calendarSupported = new URLSearchParams(location.search).has('ios');
+export const calendarEvents = async () => ({ state: 'granted', events: [
+  { title: 'Flight to London', location: 'Heathrow Airport', start: '2026-12-02T08:00:00Z', end: '2026-12-02T10:00:00Z', allDay: false },
+  { title: 'Hotel', location: 'Hotel Arts Barcelona', start: '2026-12-09T00:00:00Z', end: '2026-12-13T00:00:00Z', allDay: true },
+  { title: 'Dentist', location: 'Zurich', start: '2026-12-05T08:00:00Z', end: '2026-12-05T09:00:00Z', allDay: false } ] });

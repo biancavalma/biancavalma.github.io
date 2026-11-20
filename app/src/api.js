@@ -192,12 +192,12 @@ if (native) {
     if (f) { delete waiting[id]; f(data); }
   };
 }
-function ask(type) {
+function ask(type, wait = 20000) {
   return new Promise((resolve) => {
     const id = ++seq;
     waiting[id] = resolve;
     window.ReactNativeWebView.postMessage(JSON.stringify({ type, id }));
-    setTimeout(() => { if (waiting[id]) { delete waiting[id]; resolve({ state: 'error' }); } }, 20000);
+    setTimeout(() => { if (waiting[id]) { delete waiting[id]; resolve({ state: 'error' }); } }, wait);
   });
 }
 let nativeState = 'default', nativeToken = '';
@@ -281,3 +281,9 @@ export async function deleteAccount() {
 }
 
 export { today };
+
+// the phone's calendar, read only when the person taps "From my calendar" (iPhone app 1.0.0 build 7 and later)
+export const calendarSupported = native && !!window.OverlapNative.calendar;
+export function calendarEvents() {
+  return ask('calendar-events', 90000);
+}

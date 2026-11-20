@@ -33,7 +33,8 @@ const config: ExpoConfig = {
   },
   plugins: [
     ['expo-splash-screen', { image: './assets/splash-icon.png', imageWidth: 160, resizeMode: 'contain', backgroundColor: '#FFF6F9' }],
-    ['expo-notifications', { color: '#B9AEFF' }],
+    ['expo-notifications', { color: '#FF8FB8' }],
+    ['expo-calendar', { calendarPermission: 'Overlap reads your calendar only when you tap "From my calendar", to suggest trips you can add with one tap.' }],
   ],
   extra: {
     appUrl: appUrl || 'https://example.com',

@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { WebView as RNWebView, type WebViewMessageEvent } from 'react-native-webview';
 import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
 import * as Notifications from 'expo-notifications';
+import * as Calendar from 'expo-calendar';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
@@ -30,11 +31,29 @@ Notifications.setNotificationHandler({
 
 // tells the page it runs inside the iPhone app, before any of its code runs
 const BRIDGE = `
-  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)} };
+  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true };
   true;
 `;
 
-type Msg = { type: 'push-state' | 'push-request' | 'open-external'; url?: string; id?: number };
+type Msg = { type: 'push-state' | 'push-request' | 'open-external' | 'calendar-events'; url?: string; id?: number };
+
+// Next 6 months of events from the phone's calendars, read only when the person taps "From my calendar".
+async function calendarEvents() {
+  const p = await Calendar.requestCalendarPermissionsAsync();
+  if (p.status !== 'granted') return { state: 'denied' };
+  const cals = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+  const start = new Date();
+  const end = new Date(start.getTime() + 183 * 864e5);
+  const ev = await Calendar.getEventsAsync(cals.map((c) => c.id), start, end);
+  const events = ev.slice(0, 400).map((e) => ({
+    title: (e.title || '').slice(0, 120),
+    location: (e.location || '').slice(0, 160),
+    start: new Date(e.startDate).toISOString(),
+    end: new Date(e.endDate).toISOString(),
+    allDay: !!e.allDay,
+  }));
+  return { state: 'granted', events };
+}
 
 async function permission(): Promise<'granted' | 'denied' | 'default'> {
   const p = await Notifications.getPermissionsAsync();
@@ -93,6 +112,14 @@ export default function App() {
       }
       if (m.type === 'open-external' && m.url && /^(https?|mailto|tel|sms):/i.test(m.url)) {
         Linking.openURL(m.url).catch(() => {});
+        return;
+      }
+      if (m.type === 'calendar-events') {
+        try {
+          reply(m.id, await calendarEvents());
+        } catch {
+          reply(m.id, { state: 'error' });
+        }
         return;
       }
       if (m.type === 'push-state' || m.type === 'push-request') {

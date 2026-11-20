@@ -422,7 +422,9 @@ import * as api from './api.js';
       h+=head(LT)+LB;
     }else if(sheet==='add'){
       h+=head(edit!==null?'Edit your trip':'When are you away?')
+        +(edit===null?'<div class="imp"><button type="button" id="ipaste">\ud83d\udccb Paste plans</button>'+(api.calendarSupported?'<button type="button" id="ical">\ud83d\udcc5 From my calendar</button>':'')+'</div>':'')
         +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
+        +(edit===null?'<label style="margin-top:14px">Repeat</label><div class="sug rep" id="frep">'+[['0','Just once'],['7','Every week'],['14','Every 2 weeks']].map(function(o){return '<button type="button" data-r="'+o[0]+'"'+(o[0]==='0'?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div><p class="hint" id="rephint" hidden>Repeats for the next 3 months.</p>':'')
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
         +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note, e.g. for Marta\u2019s wedding" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
         +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span>Only me</button></div>'
@@ -431,8 +433,17 @@ import * as api from './api.js';
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
-        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||guessName())+'"><label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
+        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||guessName())+'">'+(people[0].userCol?'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(people[0].user||slug(people[0].full||guessName()))+'"></div>':'')+'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="savew">Start</button></div>';
+    }else if(sheet==='import'){
+      h+=head(imp.mode==='cal'?'From my calendar':'Paste your plans');
+      if(imp.mode==='paste'&&!imp.list)h+='<p class="hint">Paste or type your trips, one per line. For example:<br><b>London 2-4 Dec</b><br><b>Ibiza 9/12-13/12</b><br><b>Paris 28 Dec - 2 Jan</b></p><div class="f"><textarea id="ptxt" rows="5" placeholder="London 2-4 Dec"></textarea></div><p class="err" id="err"></p><button type="button" class="add hd" id="pfind">Find my trips</button>';
+      else if(!imp.list)h+='<p class="hint">Looking for trips in your calendar\u2026</p>';
+      else{
+        h+=imp.list.length?'<p class="hint">Tap the ones to add.</p><div class="ilist">'+imp.list.map(function(t,i){return '<div class="irow"><span class="tx"><b>'+emoFor(0,t.city)+' '+esc(t.city)+'</b><i>'+range(t.a,t.b)+(t.from?' \u00b7 '+esc(t.from):'')+'</i></span><button type="button" class="padd'+(t.done?' done':'')+'" data-i="'+i+'"'+(t.done?' disabled':'')+'>'+(t.done?'Added':'Add')+'</button></div>'}).join('')+'</div>'
+          +(imp.list.some(function(t){return !t.done})?'<button type="button" class="add hd" id="iall">Add all</button>':'<button type="button" class="add hd" id="idone">Done</button>')
+          :'<p class="hint">'+esc(imp.msg||'No trips found.')+'</p>'+(imp.mode==='paste'?'<button type="button" class="ghost" id="iback">Try again</button>':'');
+      }
     }else if(sheet==='share'){
       h+=head('Your plans as text')
         +'<p class="hint">Copy it and paste it into any chat, for friends who are not on Overlap.</p>'
@@ -500,6 +511,9 @@ import * as api from './api.js';
         $('err').textContent='';renderPick();
         if(rb&&edit===null){pkHide=true;document.querySelector('.pk').hidden=true;$('chg').hidden=false}
       };
+      if($('frep'))$('frep').onclick=function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});$('rephint').hidden=b.getAttribute('data-r')==='0'};
+      if($('ipaste'))$('ipaste').onclick=function(){imp={mode:'paste',list:null};sheet='import';renderSheet()};
+      if($('ical'))$('ical').onclick=function(){imp={mode:'cal',list:null};sheet='import';renderSheet();fromCalendar()};
       $('fpriv').onclick=function(){var on=!this.classList.contains('on');this.classList.toggle('on',on);this.setAttribute('aria-pressed',on)};
       $('chg').onclick=function(){pkHide=false;document.querySelector('.pk').hidden=false;$('chg').hidden=true};
       citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent='';if(ra&&edit===null)saveTrip()});
@@ -540,6 +554,20 @@ import * as api from './api.js';
       $('fsee').onclick=function(){var i=selF;sheet=null;selP=i;selC=null;selD=null;tab='cal';jump();renderAll();window.scrollTo(0,0)};
     }
     if(sheet==='install')$('ok').onclick=close;
+    if(sheet==='import'){
+      function addOne(t){if(t.done)return;t.done=true;addMine({city:t.city,a:t.a,b:t.b,e:emoFor(0,t.city),note:'',priv:false})}
+      if($('pfind'))$('pfind').onclick=function(){
+        var found=parsePlans($('ptxt').value);
+        if(!found.length){$('err').textContent='No dates found. Try "London 2-4 Dec".';return}
+        this.disabled=true;this.textContent='Finding…';
+        resolveAll(found).then(function(r){imp.list=r;imp.msg='Those trips are already in your calendar, or the cities were not found.';renderSheet()});
+      };
+      if($('iback'))$('iback').onclick=function(){imp.list=null;renderSheet()};
+      var il=document.querySelector('.ilist');
+      if(il)il.onclick=function(e){var b=e.target.closest('[data-i]');if(!b)return;addOne(imp.list[+b.getAttribute('data-i')]);index();renderAll()};
+      if($('iall'))$('iall').onclick=function(){imp.list.forEach(addOne);index();sheet=null;renderAll();toast('Trips added')};
+      if($('idone'))$('idone').onclick=function(){sheet=null;renderAll()};
+    }
     if(sheet==='share'){
       var tx=plainPlans(plang);$('ptx').value=tx;
       $('plang').onclick=function(e){var b=e.target.closest('button');if(!b)return;plang=b.getAttribute('data-l');try{localStorage.setItem('ovlang',plang)}catch(x){}renderSheet()};
@@ -667,6 +695,67 @@ import * as api from './api.js';
     return Math.round(12742*Math.asin(Math.sqrt(x*x+Math.cos(p[0]*r)*Math.cos(q[0]*r)*y*y)));
   }
   /* live suggestions under a city box: your own cities first, then the world list */
+  /* ---------- quicker ways to add trips ---------- */
+  function addDays(d,n){var p=parts(d);var x=new Date(p.y,p.m,p.d+n);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
+  function addMine(ns){people[0].stays.push(ns);keep(api.addTrip(ns).then(function(id){ns.id=id}))}
+  function covered(c,a,b){return people[0].stays.some(function(s){return s.city===c&&s.a<=b&&s.b>=a})}
+  var imp=null;
+  var MON={gen:0,jan:0,ene:0,feb:1,fev:1,fév:1,mar:2,mär:2,mrz:2,apr:3,avr:3,abr:3,mag:4,may:4,mai:4,giu:5,jun:5,jui:5,lug:6,jul:6,ago:7,aug:7,aou:7,aoû:7,set:8,sep:8,ott:9,oct:9,okt:9,nov:10,dic:11,dec:11,déc:11,dez:11};
+  function mon(w){w=String(w||'').toLowerCase().slice(0,3);if(w==='jui')return null;return MON[w]!==undefined?MON[w]:null}
+  function nextDate(d,m){var y=n0.getFullYear(),x=iso(y,m,d);if(x<addDays(T,-1))x=iso(y+1,m,d);return x}
+  /* "Londra 2-4 dic", "Paris 28 Dec - 2 Jan", "Ibiza 9/12-13/12", "Rome 5 dic" -> {city text, a, b} */
+  function parsePlans(t){
+    var out=[];
+    String(t||'').split(/\n|;|,(?![^(]*\))/).forEach(function(line){
+      var L=line.trim();if(!L)return;var m,a,b,rest;
+      if((m=L.match(/(\d{1,2})\s*([a-zà-ü]{3,})\.?\s*(?:-|–|—|to|al|bis|au|a)\s*(\d{1,2})\s*([a-zà-ü]{3,})/i))&&mon(m[2])!==null&&mon(m[4])!==null){a=nextDate(+m[1],mon(m[2]));b=nextDate(+m[3],mon(m[4]));if(b<a)b=iso(+b.slice(0,4)+1,mon(m[4]),+m[3])}
+      else if((m=L.match(/(\d{1,2})\s*(?:-|–|—|to|al|bis|au|a)\s*(\d{1,2})\s*([a-zà-ü]{3,})/i))&&mon(m[3])!==null){a=nextDate(+m[1],mon(m[3]));b=nextDate(+m[2],mon(m[3]))}
+      else if(m=L.match(/(\d{1,2})[.\/](\d{1,2})(?:[.\/]\d{2,4})?\s*(?:-|–|—|to|al|bis|au|a)\s*(\d{1,2})[.\/](\d{1,2})(?:[.\/]\d{2,4})?/)){a=nextDate(+m[1],+m[2]-1);b=nextDate(+m[3],+m[4]-1)}
+      else if((m=L.match(/(\d{1,2})\s*([a-zà-ü]{3,})/i))&&mon(m[2])!==null){a=b=nextDate(+m[1],mon(m[2]))}
+      if(!m||!a)return;
+      rest=L.replace(m[0],' ').replace(/\b(dal|dall'|al|from|to|in|a|à|en|nach|von|bis|del|le|il|the|on)\b/gi,' ').replace(/[:\-–—()]/g,' ').replace(/\s+/g,' ').trim();
+      if(rest.length<2)return;
+      out.push({t:rest,a:a,b:b<a?a:b});
+    });
+    return out;
+  }
+  function resolveAll(list){
+    return Promise.all(list.map(function(x){return resolveCity(x.t).then(function(c){return c?{city:c,a:x.a,b:x.b,from:x.t}:null})})).then(function(r){
+      return r.filter(function(x){return x&&!covered(x.city,x.a,x.b)});
+    });
+  }
+  /* calendar events -> trips: events whose place is in another city, joined when they follow each other */
+  function fromCalendar(){
+    api.calendarEvents().then(function(r){
+      if(!r||r.state!=='granted'){imp.list=[];imp.msg=r&&r.state==='denied'?'Overlap can’t see your calendar. You can allow it in iPhone Settings, Overlap, Calendars.':'Could not read your calendar.';renderSheet();return}
+      var evs=(r.events||[]).filter(function(e){return e.location&&e.location.trim()});
+      var locs={};evs.forEach(function(e){locs[e.location.trim()]=1});
+      var keys=Object.keys(locs).slice(0,40);
+      Promise.all(keys.map(function(k){return photonCity(k).then(function(c){locs[k]=c})})).then(function(){
+        var home=people[0].home, trips=[];
+        evs.forEach(function(e){
+          var c=locs[e.location.trim()];if(!c||c===home)return;
+          var a=e.start.slice(0,10), b=e.end.slice(0,10);
+          if(e.allDay&&b>a)b=addDays(b,-1);
+          if(b<a)b=a;
+          var last=trips.filter(function(t){return t.city===c})[0];
+          if(last&&a<=addDays(last.b,1)&&b>=addDays(last.a,-1)){if(a<last.a)last.a=a;if(b>last.b)last.b=b}
+          else trips.push({city:c,a:a,b:b,from:e.title||e.location});
+        });
+        imp.list=trips.filter(function(t){return t.b>=T&&!covered(t.city,t.a,t.b)}).sort(function(x,y){return x.a<y.a?-1:1});
+        if(!imp.list.length)imp.msg='No trips found in your calendar for the next 6 months.';
+        renderSheet();
+      });
+    });
+  }
+  function photonCity(q){
+    return fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit=1&lang=en').then(function(r){return r.json()}).then(function(j){
+      var f=(j.features||[])[0];if(!f)return '';var p=f.properties||{};
+      var c=p.city||(p.osm_key==='place'&&!SKIP[p.osm_value]?p.name:'')||'';
+      if(c&&f.geometry&&!GEO[c]){GEO[c]=[f.geometry.coordinates[1],f.geometry.coordinates[0]];saveGeo()}
+      return c;
+    }).catch(function(){return ''});
+  }
   /* colour palettes: each person picks their own, kept on this phone */
   var PALS={"lampone": ["Lampone", "#FFF6F9", "#FF8FB8", "#FFE14D"], "matcha": ["Matcha", "#F4F7EE", "#A8D672", "#FF9FB2"], "albicocca": ["Albicocca", "#FFF7EC", "#FFB86B", "#6FA3FF"], "cielo": ["Cielo", "#F1F7FF", "#8EC5FF", "#FF9F5A"], "sabbia": ["Sabbia", "#F6F1E8", "#F2C14E", "#3E8E63"], "fucsia": ["Fucsia", "#FFF0FA", "#FF7FD1", "#2FD9C0"], "corallo": ["Corallo", "#FFF5F0", "#FF8A65", "#4FD1C5"], "lavanda": ["Lavanda", "#F3F0FF", "#B9AEFF", "#7DDCB5"]};
   function curPal(){var p=document.documentElement.getAttribute('data-pal');return PALS[p]?p:'lampone'}
@@ -722,17 +811,31 @@ import * as api from './api.js';
     c=r;
     var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e,note:String($('fnote').value||'').trim().slice(0,200),priv:$('fpriv').classList.contains('on')}, old=edit!==null?people[0].stays[edit]:null;
     if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns))}
-    else{people[0].stays.push(ns);keep(api.addTrip(ns).then(function(id){ns.id=id}))}
+    else{
+      var ron=$('frep')&&$('frep').querySelector('.on'), every=ron?+ron.getAttribute('data-r'):0;
+      addMine(ns);
+      if(every){var lim=addDays(a,92);for(var k=every;addDays(a,k)<=lim;k+=every){var cp={city:c,a:addDays(a,k),b:addDays(b,k),e:e,note:ns.note,priv:ns.priv};addMine(cp)}}
+    }
     pe=null;
     edit=null;index();
     selC=null;selP=null;sheet=null;selD=null;var p=parts(a);vy=p.y;vm=p.m;renderAll();
     });
+  }
+  /* username is required once the database has the column; returns true when nothing is left to save */
+  function userOk(again){
+    if(!$('fu')||!people[0].userCol)return true;
+    var un=String($('fu').value||'').trim().replace(/^@/,'').toLowerCase();
+    if(un===(people[0].user||'')&&un)return true;
+    if(!/^[a-z0-9._]{3,20}$/.test(un)){$('err').textContent='Pick a username: 3 to 20 letters, numbers, dots or underscores.';return false}
+    api.setUsername(uid,un).then(function(){people[0].user=un;again()},function(e){$('err').textContent=e&&e.code==='23505'?'@'+un+' is taken. Try another.':'Could not save the username.'});
+    return false;
   }
   function saveWelcome(){
     var n=String($('fn').value||'').trim().slice(0,40), c=cap($('fw').value);
     if(!n){$('err').textContent='Add your name, so friends know who you are.';return}
     if(!c){$('err').textContent='Type your city or tap one above.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
+    if(!userOk(saveWelcome))return;
     checkCity($('fw'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
@@ -740,7 +843,7 @@ import * as api from './api.js';
   /* the first time someone opens the page without a home city, ask for it before anything else */
   var asked=false, ready=false;
   function welcome(){
-    if(asked||!ready||(people[0].home&&people[0].full)||sheet)return;
+    if(asked||!ready||(people[0].home&&people[0].full&&(people[0].user||!people[0].userCol))||sheet)return;
     asked=true;sheet='hello';selD=null;renderSheet();
   }
   /* your plans as plain text: home base, then every upcoming trip in date order */
@@ -778,12 +881,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name.';return}
     if(!c){$('err').textContent='Add the city where you live.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
-    var un=String($('fu').value||'').trim().replace(/^@/,'').toLowerCase();
-    if(un!==(people[0].user||'')){
-      if(!/^[a-z0-9._]{3,20}$/.test(un)){$('err').textContent='Username: 3 to 20 letters, numbers, dots or underscores.';return}
-      api.setUsername(uid,un).then(function(){people[0].user=un;saveHome()},function(e){$('err').textContent=e&&e.code==='23505'?'That username is taken. Try another.':'Could not save the username.'});
-      return;
-    }
+    if(!userOk(saveHome))return;
     checkCity($('fh'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
@@ -853,7 +951,7 @@ import * as api from './api.js';
   function apply(d){
     var me=d.me;
     people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].stays=me.stays;
-    people[0].user=me.username||'';autoUser(me);
+    people[0].user=me.username||'';people[0].userCol=me.username!==undefined;autoUser(me);
     myCode=me.invite_code||'';requests=d.requests;
     allF=d.friends.map(function(f){
       return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',stays:f.stays};
@@ -887,7 +985,7 @@ import * as api from './api.js';
       +'<div class="hd">Log in or sign up</div>'
       +'<div class="f"><label for="gem">Your email</label><input id="gem" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="you@email.com" enterkeyhint="go" value="'+esc(gEmail)+'"></div>'
       +'<p class="err" id="err"></p><button type="button" class="add hd" id="gsend">Send me a code</button>'
-      +'<p class="hint" style="margin-top:8px">Sorry for the extra step! We just need to verify your email. It takes 1 minute.</p>');
+      +'<p class="hint" style="margin-top:8px">No password. We email you a code.<br>Sorry for the extra step: we just need to check it\u2019s really your email, to keep your plans private.</p>');
     var go=function(){
       var em=String($('gem').value||'').trim().toLowerCase();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('err').textContent='Check your email address.';return}
