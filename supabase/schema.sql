@@ -23,6 +23,8 @@ create table public.trips (
   start_date date not null,
   end_date date not null,
   emoji text check (char_length(emoji) <= 8),
+  note text check (char_length(note) <= 200),
+  private boolean not null default false,
   created_at timestamptz not null default now(),
   check (end_date >= start_date and end_date - start_date <= 400)
 );
@@ -97,7 +99,7 @@ $$;
 create or replace function public.city_on(u uuid, d date) returns text
 language sql stable security definer set search_path = public as $$
   select coalesce(
-    (select city from trips where user_id = u and d between start_date and end_date order by created_at desc limit 1),
+    (select city from trips where user_id = u and not private and d between start_date and end_date order by created_at desc limit 1),
     nullif((select home from profiles where id = u), '')
   );
 $$;
@@ -143,8 +145,8 @@ begin
       from generate_series(greatest(d0, current_date), least(d1, current_date + 400), interval '1 day') g
     ), w as (
       select d, city_on(u, d) as cu, city_on(f, d) as cf,
-        exists (select 1 from trips t where t.user_id = u and d between t.start_date and t.end_date) as tu,
-        exists (select 1 from trips t where t.user_id = f and d between t.start_date and t.end_date) as tf
+        exists (select 1 from trips t where t.user_id = u and not t.private and d between t.start_date and t.end_date) as tu,
+        exists (select 1 from trips t where t.user_id = f and not t.private and d between t.start_date and t.end_date) as tf
       from days
     ), hits as (
       select d, cu from w where cu is not null and lower(trim(cu)) = lower(trim(cf)) and (tu or tf)
@@ -347,7 +349,7 @@ alter table public.overlap_seen enable row level security;
 create policy "see me and friends" on public.profiles for select using (id = auth.uid() or is_friend(id));
 create policy "edit me" on public.profiles for update using (id = auth.uid()) with check (id = auth.uid());
 
-create policy "see my and friends trips" on public.trips for select using (user_id = auth.uid() or is_friend(user_id));
+create policy "see my and friends trips" on public.trips for select using (user_id = auth.uid() or (is_friend(user_id) and not private));
 create policy "add my trips" on public.trips for insert with check (user_id = auth.uid());
 create policy "edit my trips" on public.trips for update using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "remove my trips" on public.trips for delete using (user_id = auth.uid());

@@ -25,7 +25,8 @@ export const acceptRequest = async () => { db.requests = []; }, ignoreRequest = 
 export const loadAll = async () => JSON.parse(JSON.stringify(db));
 export const saveProfile = async (u, f) => { db.me.name = f.name; db.me.home = f.home; };
 export const addTrip = async (s) => { const id = 'n' + Math.random(); db.me.stays.push({ ...s, id }); return id; };
-export const updateTrip = async () => {}, deleteTrip = async () => {};
+export const updateTrip = async (id, s) => { const i = db.me.stays.findIndex((x) => x.id === id); if (i >= 0) db.me.stays[i] = { ...s, id }; }, deleteTrip = async () => {};
+export const tripExtrasReady = () => true;
 export const watch = () => () => {};
 let perm = P.has('alerts') ? 'granted' : 'default';
 export const pushState = () => (isIOS && !standalone ? 'install' : perm);

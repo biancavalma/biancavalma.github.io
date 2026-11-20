@@ -78,7 +78,7 @@ export async function unfriend(id) {
 export async function loadAll(uid) {
   const [p, t, r] = await Promise.all([
     sb.from('profiles').select('id, name, home, invite_code, phone').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
-    sb.from('trips').select('id, user_id, city, start_date, end_date, emoji').gte('end_date', back(62)).order('start_date'),
+    tripsQuery(),
     sb.rpc('my_requests'),
   ]);
   if (p.error) throw p.error;
@@ -89,7 +89,7 @@ export async function loadAll(uid) {
   const stays = (id) =>
     (t.data || [])
       .filter((s) => s.user_id === id)
-      .map((s) => ({ id: s.id, city: s.city, a: s.start_date, b: s.end_date, e: s.emoji || undefined }));
+      .map((s) => ({ id: s.id, city: s.city, a: s.start_date, b: s.end_date, e: s.emoji || undefined, note: s.note || '', priv: !!s.private }));
   return {
     me: { ...me, stays: stays(uid) },
     friends: friends.map((f) => ({ ...f, stays: stays(f.id) })),
@@ -107,14 +107,33 @@ export async function saveProfile(uid, fields) {
   if (error) throw error;
 }
 
+// notes and private trips need update-4-trips.sql; until it has run, trips save without them
+let tripExtras = true;
+const missingCol = (e) => e && (e.code === '42703' || e.code === 'PGRST204' || /column/i.test(e.message || ''));
+function tripRow(s) {
+  const r = { city: s.city, start_date: s.a, end_date: s.b, emoji: s.e || null };
+  if (tripExtras) { r.note = s.note || null; r.private = !!s.priv; }
+  return r;
+}
+async function tripsQuery() {
+  const q = (cols) => sb.from('trips').select(cols).gte('end_date', back(62)).order('start_date');
+  const r = await q('id, user_id, city, start_date, end_date, emoji, note, private');
+  if (r.error && missingCol(r.error)) { tripExtras = false; return q('id, user_id, city, start_date, end_date, emoji'); }
+  return r;
+}
+export const tripExtrasReady = () => tripExtras;
+
 export async function addTrip(s) {
-  const { data, error } = await sb
-    .from('trips')
-    .insert({ city: s.city, start_date: s.a, end_date: s.b, emoji: s.e || null })
-    .select('id')
-    .single();
-  if (error) throw error;
-  return data.id;
+  let r = await sb.from('trips').insert(tripRow(s)).select('id').single();
+  if (r.error && missingCol(r.error) && tripExtras) { tripExtras = false; r = await sb.from('trips').insert(tripRow(s)).select('id').single(); }
+  if (r.error) throw r.error;
+  return r.data.id;
+}
+
+export async function updateTrip(id, s) {
+  let r = await sb.from('trips').update(tripRow(s)).eq('id', id);
+  if (r.error && missingCol(r.error) && tripExtras) { tripExtras = false; r = await sb.from('trips').update(tripRow(s)).eq('id', id); }
+  if (r.error) throw r.error;
 }
 
 export async function updateTrip(id, s) {

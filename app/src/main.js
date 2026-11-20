@@ -99,7 +99,7 @@ import * as api from './api.js';
   var HEART='<svg width="12" height="12" viewBox="0 0 24 24" style="fill:var(--face)" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
-  var tab='ov', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
+  var tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
   var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false;
 
   function index(){
@@ -156,6 +156,7 @@ import * as api from './api.js';
 
   function renderTabs(){
     ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});
+    var nov=overlaps().length;$('t-ov').innerHTML='Overlaps'+(nov?'<b class="badge">'+nov+'</b>':'');
   }
   $('t-ov').onclick=function(){tab='ov';renderAll()};
 
@@ -198,7 +199,7 @@ import * as api from './api.js';
       h='<p class="ovh">Coming up</p>';
       rs.forEach(function(r){
         var em=emoFor(r.p,r.fc);
-        h+='<div class="ovc'+(r.km?' near':'')+'">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.fc)+'</b><i>'+range(r.a,r.b)+(r.km?', '+r.km+' km from you in '+esc(r.city):r.home?', in your city':', with you')+'</i></span>'
+        h+='<div class="ovc'+(r.km?' near':'')+'">'+face(r.p,40,false)+'<span class="tx"><b>'+esc(people[r.p].n)+' \u00b7 '+em+' '+esc(r.fc)+'</b><i>'+range(r.a,r.b)+(r.km?', '+r.km+' km from you in '+esc(r.city):r.home?', in your city':', with you')+'</i>'+(function(){var fs=stayAt(r.p,r.a);return fs&&fs.note?'<i class="note">\u201c'+esc(fs.note)+'\u201d</i>':''})()+'</span>'
           +'<a class="wa" href="https://wa.me/'+(people[r.p].phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(waText(r))+'" target="_blank" rel="noopener">'+WA+(people[r.p].phone?'Message':'Pick chat')+'</a></div>';
       });
     }
@@ -259,9 +260,11 @@ import * as api from './api.js';
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
     gbar.hidden=!gs;if(!gs)return;
-    var fr=[];for(var i=1;i<people.length;i++)if(where(i,gs))fr.push(i);
-    gbar.innerHTML='<button type="button" class="gi" id="gwho"><b>'+day(gs)+' → ?</b><i>Tap last day'+(fr.length?' · '+fr.length+' friend'+(fr.length>1?'s':'')+' ›':'')+'</i></button>'
-      +'<button type="button" class="g1" id="g1">Just this day</button><button type="button" class="x" id="gx" aria-label="Clear">×</button>';
+    var mc=where(0,gs), ms=stayAt(0,gs), fr=[], names=[];
+    for(var i=1;i<people.length;i++){var c=where(i,gs);if(c){fr.push(i);if(tripAt(i,gs)||c===mc)names.push(people[i].n+' '+(c===mc?'\u2764\ufe0f':'in '+c))}}
+    var line1=day(gs)+' \u00b7 '+(mc?(ms?(ms.e||emoFor(0,mc))+' ':'')+mc:'')+(ms&&ms.note?' \u00b7 '+ms.note:'');
+    gbar.innerHTML='<button type="button" class="gi" id="gwho"><b>'+esc(line1)+'</b><i>'+(names.length?esc(names.slice(0,2).join(', '))+(names.length>2?' +'+(names.length-2):'')+' \u203a':'Tap your last day to add a trip')+'</i></button>'
+      +'<button type="button" class="g1" id="g1">Just this day</button><button type="button" class="x" id="gx" aria-label="Clear">\u00d7</button>';
     $('gwho').onclick=function(){if(!fr.length)return;selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
     $('g1').onclick=function(){openRange(gs,gs)};
     $('gx').onclick=function(){gs=null;showBar();renderGrid()};
@@ -349,16 +352,22 @@ import * as api from './api.js';
       if(i===0)return;
       var st=UP.filter(function(s){return s.p===i});
       if(v&&p.n.toLowerCase().indexOf(v)<0&&p.home.toLowerCase().indexOf(v)<0&&!st.some(function(s){return s.city.toLowerCase().indexOf(v)>=0}))return;
-      h+='<button type="button" class="fcard" data-p="'+i+'">'+face(i,46,false)+'<span class="tx"><span><span class="hd" style="display:block">'+esc(p.n)+'</span><i>'+esc(status(i))+'</i></span><span class="pl">';
+      h+='<div class="fline"><button type="button" class="fcard" data-p="'+i+'">'+face(i,46,false)+'<span class="tx"><span><span class="hd" style="display:block">'+esc(p.n)+'</span><i>'+esc(status(i))+'</i></span><span class="pl">';
       st.forEach(function(s){var w=shared(s);h+='<span'+(w?' class="hit"':'')+'>'+(w?HEART:'')+esc(s.city)+', '+range(s.a,s.b)+'</span>'});
-      h+='</span></span></button>';
+      h+='</span></span></button><button type="button" class="fsw on" data-mute="'+esc(p.id)+'" aria-label="Hide '+esc(p.n)+' from my calendar" aria-pressed="true"><span class="sw"></span></button></div>';
     });
-    if(people.length<2)h='<div class="card list"><div class="hd">No friends here yet</div><p class="hint">People whose plans you can see show up here, with where they are and where they are going next.</p></div>';
+    var off=allF.filter(function(f){return MUTE[f.id]});
+    if(off.length){h+='<p class="fsub">Switched off</p>';off.forEach(function(f){
+      h+='<div class="fline off"><span class="fcard"><span class="tx"><span><span class="hd" style="display:block">'+esc(f.n)+'</span><i>Not on your calendar</i></span></span></span><button type="button" class="fsw" data-unmute="'+esc(f.id)+'" aria-label="Show '+esc(f.n)+' again" aria-pressed="false"><span class="sw"></span></button></div>'})}
+    if(people.length<2&&!allF.length)h='<div class="card list"><div class="hd">No friends here yet</div><p class="hint">People whose plans you can see show up here, with where they are and where they are going next.</p></div>';
     $('friends').innerHTML=h||'<p class="empty">No friend or city matches that.</p>';
   }
   var selF=null;
   $('friends').addEventListener('click',function(e){
-    var c=e.target.closest('.fcard');if(!c)return;
+    var m=e.target.closest('[data-mute]'),u=e.target.closest('[data-unmute]');
+    if(m){setMute(m.getAttribute('data-mute'),true);return}
+    if(u){setMute(u.getAttribute('data-unmute'),false);return}
+    var c=e.target.closest('button.fcard');if(!c)return;
     selF=+c.getAttribute('data-p');sheet='friend';selD=null;renderSheet();
   });
   $('invite').onclick=function(){sheet='invite';selD=null;renderSheet()};
@@ -399,6 +408,8 @@ import * as api from './api.js';
       h+=head(edit!==null?'Edit your trip':'When are you away?')
         +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
+        +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note, e.g. for Marta\u2019s wedding" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
+        +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span>Only me</button></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
     }else if(sheet==='hello'){
@@ -471,6 +482,7 @@ import * as api from './api.js';
         $('err').textContent='';renderPick();
         if(rb&&edit===null){pkHide=true;document.querySelector('.pk').hidden=true;$('chg').hidden=false}
       };
+      $('fpriv').onclick=function(){var on=!this.classList.contains('on');this.classList.toggle('on',on);this.setAttribute('aria-pressed',on)};
       $('chg').onclick=function(){pkHide=false;document.querySelector('.pk').hidden=false;$('chg').hidden=true};
       citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent='';if(ra&&edit===null)saveTrip()});
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
@@ -690,7 +702,7 @@ import * as api from './api.js';
     bt.disabled=false;
     checkCity($('fc'),c,function(r){
     c=r;
-    var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e}, old=edit!==null?people[0].stays[edit]:null;
+    var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e,note:String($('fnote').value||'').trim().slice(0,200),priv:$('fpriv').classList.contains('on')}, old=edit!==null?people[0].stays[edit]:null;
     if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns))}
     else{people[0].stays.push(ns);keep(api.addTrip(ns).then(function(id){ns.id=id}))}
     pe=null;
@@ -801,13 +813,19 @@ import * as api from './api.js';
     },function(){toast('Could not turn on alerts, try again.')});
   }
 
+  /* friends switched off stay friends, but leave your calendar and overlaps (kept on this phone) */
+  var allF=[], lastD=null, MUTE={};
+  try{MUTE=JSON.parse(localStorage.getItem('ovmute')||'{}')||{}}catch(e){MUTE={}}
+  function setMute(id,off){if(off)MUTE[id]=1;else delete MUTE[id];try{localStorage.setItem('ovmute',JSON.stringify(MUTE))}catch(e){}if(lastD)apply(lastD);renderAll()}
   function apply(d){
     var me=d.me;
     people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].stays=me.stays;
     myCode=me.invite_code||'';requests=d.requests;
-    people=[people[0]].concat(d.friends.map(function(f){
+    allF=d.friends.map(function(f){
       return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',stays:f.stays};
-    }));
+    });
+    lastD=d;
+    people=[people[0]].concat(allF.filter(function(f){return !MUTE[f.id]}));
     index();
   }
   var loading=null;
