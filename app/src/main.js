@@ -695,7 +695,7 @@ import * as api from './api.js';
     else{people[0].stays.push(ns);keep(api.addTrip(ns).then(function(id){ns.id=id}))}
     pe=null;
     edit=null;index();
-    selC=null;selP=null;sheet=null;selD=null;var p=parts(a);vy=p.y;vm=p.m;renderAll();window.scrollTo(0,0);
+    selC=null;selP=null;sheet=null;selD=null;var p=parts(a);vy=p.y;vm=p.m;renderAll();
     });
   }
   function saveWelcome(){
@@ -704,7 +704,7 @@ import * as api from './api.js';
     if(!c){$('err').textContent='Type your city or tap one above.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
     checkCity($('fw'),c,function(r){
-    people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();window.scrollTo(0,0);
+    people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
   }
   /* the first time someone opens the page without a home city, ask for it before anything else */
