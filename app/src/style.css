@@ -250,3 +250,14 @@ input,textarea{font-size:var(--inp)}
 .fsw.on .sw{background:var(--ink)}
 .fline.off .fcard{opacity:.6;display:flex;padding:12px 16px}
 .fsub{margin:14px 4px 6px;font-weight:800;color:var(--soft);font-size:13px}
+/* people search */
+.pcard{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:10px 12px;margin-bottom:8px}
+.pav{width:40px;height:40px;border-radius:50%;background:var(--pill);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex:none}
+.pcard .tx{flex:1;min-width:0;display:flex;flex-direction:column}
+.pcard b{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard i{font-style:normal;font-size:13px;color:var(--soft)}
+.padd{flex:none;height:36px;padding:0 16px;border-radius:999px;background:var(--pink);color:var(--on);font-weight:800;font-size:14px}
+.padd.done{background:var(--pill);color:var(--soft)}
+.ufield{display:flex;align-items:center;gap:0;position:relative}
+.ufield span{position:absolute;left:16px;font-weight:800;color:var(--soft);pointer-events:none}
+.ufield input{flex:1;padding-left:34px}

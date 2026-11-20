@@ -360,10 +360,26 @@ import * as api from './api.js';
     if(off.length){h+='<p class="fsub">Switched off</p>';off.forEach(function(f){
       h+='<div class="fline off"><span class="fcard"><span class="tx"><span><span class="hd" style="display:block">'+esc(f.n)+'</span><i>Not on your calendar</i></span></span></span><button type="button" class="fsw" data-unmute="'+esc(f.id)+'" aria-label="Show '+esc(f.n)+' again" aria-pressed="false"><span class="sw"></span></button></div>'})}
     if(people.length<2&&!allF.length)h='<div class="card list"><div class="hd">No friends here yet</div><p class="hint">People whose plans you can see show up here, with where they are and where they are going next.</p></div>';
+    if(v.length>=2)h+='<p class="fsub">People on Overlap</p><div id="people"><p class="empty">Searching\u2026</p></div>';
     $('friends').innerHTML=h||'<p class="empty">No friend or city matches that.</p>';
+    if(v.length>=2)findPeople(q);
+  }
+  var pt=null, pn=0;
+  function findPeople(t){
+    clearTimeout(pt);var my=++pn;
+    pt=setTimeout(function(){api.searchPeople(t).then(function(r){
+      if(my!==pn||!$('people'))return;
+      r=r.filter(function(x){return x.status!=='friend'});
+      $('people').innerHTML=r.length?r.map(function(x){
+        var b=x.status==='sent'?'<button type="button" class="padd done" disabled>Requested</button>':'<button type="button" class="padd" data-req="'+esc(x.id)+'">'+(x.status==='asked you'?'Accept':'Add')+'</button>';
+        return '<div class="pcard"><span class="pav">'+esc(String(x.name||'?').trim().charAt(0).toUpperCase()||'?')+'</span><span class="tx"><b>'+esc(x.name||'')+'</b><i>'+(x.username?'@'+esc(x.username):'')+'</i></span>'+b+'</div>'}).join('')
+        :'<p class="empty">Nobody found. Invite them below.</p>';
+    },function(){if($('people'))$('people').innerHTML='<p class="empty">Search will work after the last database update.</p>'})},300);
   }
   var selF=null;
   $('friends').addEventListener('click',function(e){
+    var rq=e.target.closest('[data-req]');
+    if(rq){rq.disabled=true;api.requestUser(rq.getAttribute('data-req')).then(function(st){rq.textContent=st==='friend'?'Friends!':'Requested';rq.classList.add('done');if(st==='friend')reload()},function(){rq.disabled=false;toast('Could not send that. Try again.')});return}
     var m=e.target.closest('[data-mute]'),u=e.target.closest('[data-unmute]');
     if(m){setMute(m.getAttribute('data-mute'),true);return}
     if(u){setMute(u.getAttribute('data-unmute'),false);return}
@@ -427,6 +443,7 @@ import * as api from './api.js';
     }else if(sheet==='invite'){
       h+=head('Invite a friend')
         +'<p class="hint">Send your personal link. When they join, you see each other\u2019s plans. People you invite never see each other unless they are friends too.</p>'
+        +(me.user?'<p class="hint">Or tell them your username <b>@'+esc(me.user)+'</b>: they can search it in Friends.</p>':'')
         +'<div class="f"><input id="ilink" type="text" readonly aria-label="Your invite link"></div>'
         +'<button type="button" class="add hd" id="icopy">Copy link</button>'
         +(navigator.share?'<button type="button" class="ghost" id="ishare">Send with\u2026</button>':'')
@@ -446,6 +463,7 @@ import * as api from './api.js';
       var ps=api.pushState();
       h+=head('Your settings')
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
+        +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
         +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="saveh">Save</button></div>'
@@ -760,6 +778,12 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name.';return}
     if(!c){$('err').textContent='Add the city where you live.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
+    var un=String($('fu').value||'').trim().replace(/^@/,'').toLowerCase();
+    if(un!==(people[0].user||'')){
+      if(!/^[a-z0-9._]{3,20}$/.test(un)){$('err').textContent='Username: 3 to 20 letters, numbers, dots or underscores.';return}
+      api.setUsername(uid,un).then(function(){people[0].user=un;saveHome()},function(e){$('err').textContent=e&&e.code==='23505'?'That username is taken. Try another.':'Could not save the username.'});
+      return;
+    }
     checkCity($('fh'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
@@ -817,9 +841,19 @@ import * as api from './api.js';
   var allF=[], lastD=null, MUTE={};
   try{MUTE=JSON.parse(localStorage.getItem('ovmute')||'{}')||{}}catch(e){MUTE={}}
   function setMute(id,off){if(off)MUTE[id]=1;else delete MUTE[id];try{localStorage.setItem('ovmute',JSON.stringify(MUTE))}catch(e){}if(lastD)apply(lastD);renderAll()}
+  /* @username: made from the first name once, changeable in settings */
+  var userTried=false;
+  function slug(t){return fold(t).replace(/\s+/g,'').replace(/[^a-z0-9._]/g,'').slice(0,16)}
+  function autoUser(me){
+    if(userTried||me.username===undefined||me.username||!me.name)return;userTried=true;
+    var base=slug(String(me.name).split(' ')[0]);if(base.length<3)base=(base+'overlap').slice(0,8);
+    var tries=[base,base+Math.floor(10+Math.random()*90),base+Math.floor(100+Math.random()*900)];
+    (function next(i){if(i>=tries.length)return;api.setUsername(uid,tries[i]).then(function(){people[0].user=tries[i]},function(){next(i+1)})})(0);
+  }
   function apply(d){
     var me=d.me;
     people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].stays=me.stays;
+    people[0].user=me.username||'';autoUser(me);
     myCode=me.invite_code||'';requests=d.requests;
     allF=d.friends.map(function(f){
       return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',stays:f.stays};

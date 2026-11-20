@@ -50,6 +50,22 @@ export async function requestByCode(code, email) {
   if (error) throw error;
 }
 
+// people search and @usernames (need update-5-usernames.sql)
+export async function searchPeople(q) {
+  const { data, error } = await sb.rpc('search_people', { q });
+  if (error) throw error;
+  return data || [];
+}
+export async function requestUser(id) {
+  const { data, error } = await sb.rpc('request_user', { other: id });
+  if (error) throw error;
+  return data;
+}
+export async function setUsername(uid, username) {
+  const { error } = await sb.from('profiles').update({ username }).eq('id', uid);
+  if (error) throw error;
+}
+
 export async function requestByEmail(email) {
   const { error } = await sb.rpc('request_by_email', { email });
   if (error) throw error;
@@ -77,7 +93,7 @@ export async function unfriend(id) {
 // Me, my friends, all trips we can see (from two months ago on), and requests waiting for me
 export async function loadAll(uid) {
   const [p, t, r] = await Promise.all([
-    sb.from('profiles').select('id, name, home, invite_code, phone').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
+    sb.from('profiles').select('id, name, home, invite_code, phone, username').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
     tripsQuery(),
     sb.rpc('my_requests'),
   ]);

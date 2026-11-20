@@ -33,3 +33,7 @@ export const pushState = () => (isIOS && !standalone ? 'install' : perm);
 export const enablePush = async () => (perm = 'granted');
 export const syncPush = async () => {}, disablePush = async () => { perm = 'default'; };
 export const today = () => d(0);
+
+export const searchPeople = async (q) => [{ id: 'x1', name: 'Marta Rossi', username: 'marta.r', status: 'none' }, { id: 'x2', name: 'Martina', username: 'tina', status: 'sent' }].filter((p) => (p.name + p.username).toLowerCase().includes(q.toLowerCase().replace('@', '')));
+export const requestUser = async () => 'sent';
+export const setUsername = async () => {};
