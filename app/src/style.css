@@ -211,3 +211,6 @@ input,textarea{font-size:var(--inp)}
 .cell.sel .n{background:var(--card);color:var(--ink);box-shadow:0 0 0 2.5px var(--ink)}
 .cell .em{font-size:14px;line-height:16px}
 .sug button.loc{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--pink)}
+.whenrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.whenrow .when{margin:0}
+.chg{flex:none;height:34px;padding:0 14px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13px}

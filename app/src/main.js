@@ -256,7 +256,7 @@ import * as api from './api.js';
     $('grid').innerHTML=h;
   }
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
-  var gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
+  var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
     gbar.hidden=!gs;if(!gs)return;
     var fr=[];for(var i=1;i<people.length;i++)if(where(i,gs))fr.push(i);
@@ -267,10 +267,9 @@ import * as api from './api.js';
     $('gx').onclick=function(){gs=null;showBar();renderGrid()};
   }
   function openRange(a,d){
-    gs=null;showBar();
+    gs=null;showBar();pkHide=true;
     edit=null;trip=null;pe=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
     sheet='add';renderGrid();renderSheet();
-    if($('fc'))$('fc').focus();
   }
   $('grid').addEventListener('click',function(e){
     var c=e.target.closest('.cell');if(!c)return;
@@ -366,7 +365,7 @@ import * as api from './api.js';
   $('q').addEventListener('input',function(){q=this.value.trim();renderFriends()});
   $('q').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur()});
 
-  function close(){gs=null;showBar();sheet=null;selD=null;trip=null;edit=null;selF=null;renderGrid();renderSheet()}
+  function close(){pkHide=false;gs=null;showBar();sheet=null;selD=null;trip=null;edit=null;selF=null;renderGrid();renderSheet()}
   $('veil').onclick=close;
   function head(t){return '<div class="shd"><div class="hd">'+t+'</div><button type="button" class="x" id="x" aria-label="Close">×</button></div>'}
   function renderSheet(){
@@ -398,7 +397,7 @@ import * as api from './api.js';
       h+=head(LT)+LB;
     }else if(sheet==='add'){
       h+=head(edit!==null?'Edit your trip':'When are you away?')
-        +'<div class="f"><p class="when" id="when"></p><div class="pk"><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
+        +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
@@ -470,8 +469,9 @@ import * as api from './api.js';
         var d=b.getAttribute('data-d');
         if(!ra||rb||d<ra){ra=d;rb=null}else{rb=d}
         $('err').textContent='';renderPick();
-        if(rb&&!$('fc').value){$('fc').focus();$('fc').scrollIntoView({block:'center',behavior:'smooth'})}
+        if(rb&&edit===null){pkHide=true;document.querySelector('.pk').hidden=true;$('chg').hidden=false}
       };
+      $('chg').onclick=function(){pkHide=false;document.querySelector('.pk').hidden=false;$('chg').hidden=true};
       citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent='';if(ra&&edit===null)saveTrip()});
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
