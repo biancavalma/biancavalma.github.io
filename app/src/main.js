@@ -444,6 +444,10 @@ import * as api from './api.js';
           +(imp.list.some(function(t){return !t.done})?'<button type="button" class="add hd" id="iall">Add all</button>':'<button type="button" class="add hd" id="idone">Done</button>')
           :'<p class="hint">'+esc(imp.msg||'No trips found.')+'</p>'+(imp.mode==='paste'?'<button type="button" class="ghost" id="iback">Try again</button>':'');
       }
+    }else if(sheet==='delete'){
+      h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">\u00d7</button></div>'
+        +'<div class="sure"><div style="font-size:44px">\u26a0\ufe0f</div><div class="big hd">Are you sure?</div><p>This deletes your account, your trips and your friends on Overlap. It cannot be undone.</p>'
+        +'<button type="button" class="dangerbtn" id="delyes">Yes, delete my account</button><button type="button" class="ghost" id="delno">No, keep it</button></div>';
     }else if(sheet==='share'){
       h+=head('Your plans as text')
         +'<p class="hint">Copy it and paste it into any chat, for friends who are not on Overlap.</p>'
@@ -525,12 +529,7 @@ import * as api from './api.js';
       if($('pon'))$('pon').onclick=function(){turnOnAlerts().then(function(){renderSheet()})};
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
       if($('phow'))$('phow').onclick=function(){sheet='install';renderSheet()};
-      $('delme').onclick=function(){
-        var b=this;
-        if(!b.dataset.sure){b.dataset.sure='1';b.textContent='Tap again to delete your account and all your plans';return}
-        b.disabled=true;
-        api.deleteAccount().then(function(){try{localStorage.clear()}catch(e){}location.replace('/')},function(){b.disabled=false;toast('Could not delete, try again.')});
-      };
+      $('delme').onclick=function(){sheet='delete';renderSheet()};
       $('out').onclick=function(){api.disablePush().catch(function(){}).then(api.signOut).then(function(){location.replace('/')})};
     }
     if(sheet==='invite'){
@@ -554,6 +553,11 @@ import * as api from './api.js';
       $('fsee').onclick=function(){var i=selF;sheet=null;selP=i;selC=null;selD=null;tab='cal';jump();renderAll();window.scrollTo(0,0)};
     }
     if(sheet==='install')$('ok').onclick=close;
+    if(sheet==='delete'){
+      $('delno').onclick=function(){sheet='home';renderSheet()};
+      $('delyes').onclick=function(){var b=this;b.disabled=true;b.textContent='Deleting\u2026';
+        api.deleteAccount().then(function(){try{localStorage.clear()}catch(e){}location.replace('/')},function(){b.disabled=false;b.textContent='Yes, delete my account';toast('Could not delete, try again.')})};
+    }
     if(sheet==='import'){
       function addOne(t){if(t.done)return;t.done=true;addMine({city:t.city,a:t.a,b:t.b,e:emoFor(0,t.city),note:'',priv:false})}
       if($('pfind'))$('pfind').onclick=function(){
@@ -977,7 +981,10 @@ import * as api from './api.js';
   var qs=new URLSearchParams(location.search), invite=qs.get('i')||'';
   try{if(invite)localStorage.setItem('ov-invite',invite);else invite=localStorage.getItem('ov-invite')||''}catch(e){}
   var gEmail='';try{gEmail=localStorage.getItem('ov-email')||''}catch(e){}
-  function gate(h){$('gate').hidden=false;$('app').hidden=true;$('gbody').innerHTML=h}
+  var spT0=Date.now();
+  function splashOff(){var sp=$('splash');if(!sp||sp.classList.contains('go'))return;setTimeout(function(){sp.classList.add('go');setTimeout(function(){sp.remove()},700)},Math.max(0,900-(Date.now()-spT0)))}
+  setTimeout(splashOff,6000);
+  function gate(h){splashOff();$('gate').hidden=false;$('app').hidden=true;$('gbody').innerHTML=h}
   function inviteLine(name){return name?'<div class="hd">'+esc(name)+' invited you</div><p class="hint">Overlap shows when friends will be in the same city as you. Only friends you accept see your plans.</p>':'<div class="hd">See when friends overlap</div><p class="hint">Share where you will be, and find out when friends are in the same city as you.</p>'}
 
   function showEmail(name){
@@ -1059,7 +1066,7 @@ import * as api from './api.js';
       var d0=qs.get('d');if(d0&&ISO.test(d0)){var p=parts(d0);vy=p.y;vm=p.m}
       if(location.search)history.replaceState(null,'','/');
       renderAll();
-      ready=true;welcome();
+      ready=true;splashOff();welcome();
       if(qs.get('add')==='1'&&!sheet&&people[0].home)$('add').click();
       api.syncPush().then(function(){renderAlerts();if(sheet==='home')renderSheet()},function(){});
     },function(){gate('<div class="hd">Could not load Overlap</div><p class="hint">Check your connection and try again.</p><button type="button" class="add hd" id="gretry">Try again</button>');$('gretry').onclick=function(){location.reload()}});
