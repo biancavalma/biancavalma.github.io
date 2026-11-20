@@ -476,7 +476,7 @@ import * as api from './api.js';
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
-      $('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),function(){return COMMON});
+      $('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true);
       if($('pon'))$('pon').onclick=function(){turnOnAlerts().then(function(){renderSheet()})};
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
       if($('phow'))$('phow').onclick=function(){sheet='install';renderSheet()};
@@ -520,7 +520,8 @@ import * as api from './api.js';
       if($('nshare'))$('nshare').onclick=function(){try{navigator.share({title:'My plans',text:tx}).catch(function(){})}catch(e){}};
     }
     if(sheet==='hello'){
-      citySug($('fw'),$('wsug'),function(){return COMMON},function(){$('err').textContent=''});
+      if(!$('fw').value)$('fw').value=tzCity();
+      citySug($('fw'),$('wsug'),homeList,function(){$('err').textContent=''},true);
       $('fw').addEventListener('input',function(){$('err').textContent=''});
       $('fw').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveWelcome()}});
       $('savew').onclick=saveWelcome;
@@ -635,13 +636,31 @@ import * as api from './api.js';
     return Math.round(12742*Math.asin(Math.sqrt(x*x+Math.cos(p[0]*r)*Math.cos(q[0]*r)*y*y)));
   }
   /* live suggestions under a city box: your own cities first, then the world list */
-  function citySug(inp,box,local,pick){
+  /* city from the phone's time zone (Europe/Zurich -> Zurich), no location needed */
+  function tzCity(){try{var z=Intl.DateTimeFormat().resolvedOptions().timeZone||'';var c=z.split('/').pop().replace(/_/g,' ');return /^[A-Z]/.test(c)&&z.indexOf('/')>0&&!/^Etc/.test(z)?c:''}catch(e){return ''}}
+  function homeList(){var t=tzCity();return (t?[t]:[]).concat(COMMON.filter(function(c){return c!==t}))}
+  /* one-off: ask the phone where it is and turn that into a city name */
+  function locate(btn,done){
+    var e=$('err'),old=btn.textContent;
+    if(!navigator.geolocation){e.textContent='Location is not available here. Tap a city instead.';return}
+    btn.textContent='📍 Finding you…';
+    navigator.geolocation.getCurrentPosition(function(p){
+      var la=p.coords.latitude,lo=p.coords.longitude;
+      fetch('https://photon.komoot.io/reverse?lat='+la+'&lon='+lo+'&lang=en').then(function(r){return r.json()}).then(function(j){
+        var f=(j.features||[])[0],q=f&&f.properties||{},c=q.city||q.town||q.village||(q.osm_key==='place'?q.name:'');
+        btn.textContent=old;
+        if(!c){e.textContent='Could not tell your city. Tap one instead.';return}
+        GEO[c]=GEO[c]||[la,lo];saveGeo();e.textContent='';done(c);
+      }).catch(function(){btn.textContent=old;e.textContent='Could not tell your city. Tap one instead.'});
+    },function(){btn.textContent=old;e.textContent='Location is off for Overlap. Tap a city instead.'},{timeout:10000,maximumAge:600000});
+  }
+  function citySug(inp,box,local,pick,loc){
     var tm=null, n=0;
-    function chips(list){box.innerHTML=list.slice(0,6).map(function(o){return '<button type="button" data-c="'+esc(o.c)+'">'+esc(o.c)+(o.w?' <small>'+esc(o.w)+'</small>':'')+'</button>'}).join('')}
+    function chips(list){box.innerHTML=(loc?'<button type="button" class="loc" data-loc="1">\ud83d\udccd Use my location</button>':'')+list.slice(0,6).map(function(o){return '<button type="button" data-c="'+esc(o.c)+'"'+(fold(o.c)===fold(inp.value)?' class="on"':'')+'>'+esc(o.c)+(o.w?' <small>'+esc(o.w)+'</small>':'')+'</button>'}).join('')}
     function run(){
-      var v=fold(inp.value), base=local().filter(function(c){return !v||fold(c).indexOf(v)===0}).map(function(c){return {c:c}});
+      var v=fold(inp.value), all=local(), exact=all.some(function(c){return fold(c)===v}), base=all.filter(function(c){return !v||exact||fold(c).indexOf(v)===0}).map(function(c){return {c:c}});
       chips(base);clearTimeout(tm);
-      if(v.length<2)return;
+      if(v.length<2||exact)return;
       var my=++n;
       tm=setTimeout(function(){photon(inp.value.trim(),6).then(function(r){
         if(my!==n)return;var seen={};base.forEach(function(o){seen[fold(o.c)]=1});
@@ -649,7 +668,9 @@ import * as api from './api.js';
       })},250);
     }
     inp.addEventListener('input',run);
-    box.onclick=function(e){var b=e.target.closest('button');if(!b)return;inp.value=b.getAttribute('data-c');if(pick)pick();run()};
+    box.onclick=function(e){var b=e.target.closest('button');if(!b)return;
+      if(b.getAttribute('data-loc')){locate(b,function(c){inp.value=c;run();if(pick)pick()});return}
+      inp.value=b.getAttribute('data-c');run();if(pick)pick()};
     run();
   }
   function saveTrip(){
