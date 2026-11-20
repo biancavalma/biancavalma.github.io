@@ -745,11 +745,11 @@ import * as api from './api.js';
   }
   /* your plans as plain text: home base, then every upcoming trip in date order */
   var PL={
-    en:{f:'',t:'My plans',h:'Home base: ',none:'No trips planned yet.',noneH:'No trips planned yet, so I am in {c}.',to:' to ',oth:'Otherwise in {c}.'},
-    it:{f:'dal ',t:'I miei piani',h:'Casa: ',none:'Nessun viaggio in programma.',noneH:'Nessun viaggio in programma, quindi sono a {c}.',to:' al ',oth:'Per il resto sono a {c}.'},
-    de:{f:'',t:'Meine Pläne',h:'Zuhause: ',none:'Noch keine Reisen geplant.',noneH:'Noch keine Reisen geplant, ich bin also in {c}.',to:' bis ',oth:'Sonst bin ich in {c}.'},
-    fr:{f:'du ',t:'Mes plans',h:'À la maison : ',none:'Aucun voyage prévu.',noneH:'Aucun voyage prévu, je suis donc à {c}.',to:' au ',oth:'Sinon je suis à {c}.'},
-    es:{f:'del ',t:'Mis planes',h:'Casa: ',none:'Aún no hay viajes.',noneH:'Aún no hay viajes, así que estoy en {c}.',to:' al ',oth:'El resto del tiempo estoy en {c}.'}
+    en:{j:'Join me on Overlap',f:'',t:'My plans',h:'Home base: ',none:'No trips planned yet.',noneH:'No trips planned yet, so I am in {c}.',to:' to ',oth:'Otherwise in {c}.'},
+    it:{j:'Unisciti a me su Overlap',f:'dal ',t:'I miei piani',h:'Casa: ',none:'Nessun viaggio in programma.',noneH:'Nessun viaggio in programma, quindi sono a {c}.',to:' al ',oth:'Per il resto sono a {c}.'},
+    de:{j:'Komm zu mir auf Overlap',f:'',t:'Meine Pläne',h:'Zuhause: ',none:'Noch keine Reisen geplant.',noneH:'Noch keine Reisen geplant, ich bin also in {c}.',to:' bis ',oth:'Sonst bin ich in {c}.'},
+    fr:{j:'Rejoins-moi sur Overlap',f:'du ',t:'Mes plans',h:'À la maison : ',none:'Aucun voyage prévu.',noneH:'Aucun voyage prévu, je suis donc à {c}.',to:' au ',oth:'Sinon je suis à {c}.'},
+    es:{j:'Únete a mí en Overlap',f:'del ',t:'Mis planes',h:'Casa: ',none:'Aún no hay viajes.',noneH:'Aún no hay viajes, así que estoy en {c}.',to:' al ',oth:'El resto del tiempo estoy en {c}.'}
   };
   var plang=(function(){try{var v=localStorage.getItem('ovlang');if(PL[v])return v}catch(e){}var n=(navigator.language||'en').slice(0,2);return PL[n]?n:'en'})();
   function plainPlans(lg){
@@ -759,7 +759,6 @@ import * as api from './api.js';
     function dayY(s){var x=parts(s);return x.d+' '+mon(x)+(x.y!==n0.getFullYear()?' '+x.y:'')}
     var st=me.stays.filter(function(s){return s.b>=T}).sort(function(x,y){return x.a<y.a?-1:x.a>y.a?1:0});
     var l=[w.t];
-    if(me.home)l.push(w.h+me.home);
     l.push('');
     if(!st.length)l.push(me.home?w.noneH.replace('{c}',me.home):w.none);
     st.forEach(function(s){
@@ -770,6 +769,7 @@ import * as api from './api.js';
       l.push((s.e||emoFor(0,s.city))+' '+s.city+': '+r);
     });
     if(st.length&&me.home)l.push('',w.oth.replace('{c}',me.home));
+    if(myCode)l.push('',w.j+': '+location.origin+'/?i='+encodeURIComponent(myCode));
     return l.join('\n');
   }
   $('share').onclick=function(){sheet='share';selD=null;renderSheet()};
