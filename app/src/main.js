@@ -834,7 +834,7 @@ import * as api from './api.js';
     gate(inviteLine(name)
       +'<div class="f"><label for="gem">Your email</label><input id="gem" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="you@email.com" enterkeyhint="go" value="'+esc(gEmail)+'"></div>'
       +'<p class="err" id="err"></p><button type="button" class="add hd" id="gsend">Send me a code</button>'
-      +'<p class="hint" style="margin-top:8px">No password. We email you a 6 digit code.</p>');
+      +'<p class="hint" style="margin-top:8px">No password. We email you a code.</p>');
     var go=function(){
       var em=String($('gem').value||'').trim().toLowerCase();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('err').textContent='Check your email address.';return}
@@ -849,18 +849,22 @@ import * as api from './api.js';
     $('gem').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();go()}});
   }
   function showCode(){
-    gate('<div class="hd">Check your email</div><p class="hint">We sent a 6 digit code to '+esc(gEmail)+'.</p>'
-      +'<div class="f"><input id="gcode" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="······" aria-label="Code"></div>'
+    gate('<div class="hd">Check your email</div><p class="hint">We sent a code to '+esc(gEmail)+'. The newest email has the right one.</p>'
+      +'<div class="f"><input id="gcode" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="········" aria-label="Code"></div>'
       +'<p class="err" id="err"></p><button type="button" class="add hd" id="gok">Sign in</button>'
+      +'<button type="button" class="link" id="gnew">Send me a new code</button>'
       +'<button type="button" class="link" id="gback">Use a different email</button>');
     var go=function(){
       var c=String($('gcode').value||'').replace(/\D/g,'');
       if(c.length<6){$('err').textContent='Type the code from the email.';return}
       $('gok').disabled=true;
-      api.verifyCode(gEmail,c).then(function(s){start(s)},function(){$('gok').disabled=false;$('err').textContent='That code did not work. Check it or ask for a new one.'});
+      api.verifyCode(gEmail,c).then(function(s){start(s)},function(){$('gok').disabled=false;$('err').textContent='That code did not work. Check it, or tap \u201cSend me a new code\u201d below.'});
     };
     $('gok').onclick=go;
-    $('gcode').addEventListener('input',function(){if(this.value.replace(/\D/g,'').length===6)go()});
+    $('gcode').addEventListener('input',function(){if(this.value.replace(/\D/g,'').length===8)go()});
+    $('gnew').onclick=function(){var b=this;b.disabled=true;b.textContent='Sending\u2026';
+      api.sendCode(gEmail).then(function(){b.textContent='New code sent. Check your email';$('gcode').value='';$('err').textContent='';setTimeout(function(){b.disabled=false;b.textContent='Send me a new code'},60000)},
+        function(){b.disabled=false;b.textContent='Send me a new code';$('err').textContent='Wait a minute, then try again.'})};
     $('gback').onclick=function(){showEmail(null)};
     setTimeout(function(){try{$('gcode').focus()}catch(e){}},50);
   }
