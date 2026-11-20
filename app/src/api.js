@@ -136,10 +136,6 @@ export async function updateTrip(id, s) {
   if (r.error) throw r.error;
 }
 
-export async function updateTrip(id, s) {
-  const { error } = await sb.from('trips').update({ city: s.city, start_date: s.a, end_date: s.b, emoji: s.e || null }).eq('id', id);
-  if (error) throw error;
-}
 
 export async function deleteTrip(id) {
   const { error } = await sb.from('trips').delete().eq('id', id);
