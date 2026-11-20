@@ -155,7 +155,7 @@ import * as api from './api.js';
   $('me').onclick=function(){sheet='home';selD=null;renderSheet()};
 
   function renderTabs(){
-    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});
+    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});$('app').classList.toggle('oncal',tab==='cal');
     var nov=overlaps().length;$('t-ov').innerHTML='Overlaps'+(nov?'<b class="badge">'+nov+'</b>':'');
   }
   $('t-ov').onclick=function(){tab='ov';renderAll()};
