@@ -216,9 +216,9 @@ input,textarea{font-size:var(--inp)}
 .chg{flex:none;height:34px;padding:0 14px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13px}
 
 /* palettes: each person picks one in settings (data-pal on <html>); lampone is the default */
-:root,:root[data-pal="lampone"]{--bg:#FFF6F9;--ink:#2A1420;--soft:#7E6272;--pill:#FDE3EC;--pink:#FF8FB8;--butter:#FFF09A;--mint:#FFE14D;--mintink:#5A4700;--on:#2A1420;--brand:#FF8FB8;--brand2:#FFD23F;--brand3:#FFE14D;--face:#2A1420}
+:root,:root[data-pal="albicocca"]{--bg:#FFF7EC;--ink:#13213F;--soft:#67708A;--pill:#FDE8CC;--pink:#FFB86B;--butter:#CFE1FF;--mint:#6FA3FF;--mintink:#0F2F6B;--on:#13213F;--brand:#FFB86B;--brand2:#F29A3A;--brand3:#6FA3FF;--face:#13213F}
+:root[data-pal="lampone"]{--bg:#FFF6F9;--ink:#2A1420;--soft:#7E6272;--pill:#FDE3EC;--pink:#FF8FB8;--butter:#FFF09A;--mint:#FFE14D;--mintink:#5A4700;--on:#2A1420;--brand:#FF8FB8;--brand2:#FFD23F;--brand3:#FFE14D;--face:#2A1420}
 :root[data-pal="matcha"]{--bg:#F4F7EE;--ink:#1F2A14;--soft:#66705A;--pill:#E3EBD3;--pink:#A8D672;--butter:#FFD9E0;--mint:#FF9FB2;--mintink:#7A1F35;--on:#1F2A14;--brand:#A8D672;--brand2:#7FB548;--brand3:#FF9FB2;--face:#1F2A14}
-:root[data-pal="albicocca"]{--bg:#FFF7EC;--ink:#13213F;--soft:#67708A;--pill:#FDE8CC;--pink:#FFB86B;--butter:#CFE1FF;--mint:#6FA3FF;--mintink:#0F2F6B;--on:#13213F;--brand:#FFB86B;--brand2:#F29A3A;--brand3:#6FA3FF;--face:#13213F}
 :root[data-pal="cielo"]{--bg:#F1F7FF;--ink:#0F2240;--soft:#5D6E88;--pill:#DDEBFF;--pink:#8EC5FF;--butter:#FFD8B8;--mint:#FF9F5A;--mintink:#6B2E00;--on:#0F2240;--brand:#8EC5FF;--brand2:#FF9F5A;--brand3:#FF9F5A;--face:#0F2240}
 :root[data-pal="sabbia"]{--bg:#F6F1E8;--ink:#22241E;--soft:#6F6A5E;--pill:#EAE1D1;--pink:#F2C14E;--butter:#CFE8D5;--mint:#3E8E63;--mintink:#0F3B24;--on:#22241E;--brand:#F2C14E;--brand2:#3E8E63;--brand3:#3E8E63;--face:#22241E}
 :root[data-pal="fucsia"]{--bg:#FFF0FA;--ink:#26112A;--soft:#7A5E7E;--pill:#FFD9F1;--pink:#FF7FD1;--butter:#B8F5EC;--mint:#2FD9C0;--mintink:#00473D;--on:#26112A;--brand:#FF7FD1;--brand2:#2FD9C0;--brand3:#2FD9C0;--face:#26112A}
@@ -262,3 +262,6 @@ input,textarea{font-size:var(--inp)}
 .ufield span{position:absolute;left:16px;font-weight:800;color:var(--soft);pointer-events:none}
 .ufield input{flex:1;padding-left:34px}
 .sharebtn{display:block;width:100%;margin-top:10px;height:42px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:14.5px}
+
+#pills{display:none}
+.calhint{margin:0 0 8px;padding:10px 14px;border-radius:16px;background:var(--butter);color:var(--on);font-weight:800;font-size:14px;text-align:center}

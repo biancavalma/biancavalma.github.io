@@ -232,6 +232,7 @@ import * as api from './api.js';
   });
 
   function renderGrid(){
+    var hasT=people[0].stays.some(function(x){return x.b>=T});if($('calhint'))$('calhint').hidden=hasT||!!gs;
     $('mlabel').textContent=MN[vm]+' '+vy;
     var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
@@ -669,7 +670,7 @@ import * as api from './api.js';
   /* live suggestions under a city box: your own cities first, then the world list */
   /* colour palettes: each person picks their own, kept on this phone */
   var PALS={"lampone": ["Lampone", "#FFF6F9", "#FF8FB8", "#FFE14D"], "matcha": ["Matcha", "#F4F7EE", "#A8D672", "#FF9FB2"], "albicocca": ["Albicocca", "#FFF7EC", "#FFB86B", "#6FA3FF"], "cielo": ["Cielo", "#F1F7FF", "#8EC5FF", "#FF9F5A"], "sabbia": ["Sabbia", "#F6F1E8", "#F2C14E", "#3E8E63"], "fucsia": ["Fucsia", "#FFF0FA", "#FF7FD1", "#2FD9C0"], "corallo": ["Corallo", "#FFF5F0", "#FF8A65", "#4FD1C5"], "lavanda": ["Lavanda", "#F3F0FF", "#B9AEFF", "#7DDCB5"]};
-  function curPal(){var p=document.documentElement.getAttribute('data-pal');return PALS[p]?p:'lampone'}
+  function curPal(){var p=document.documentElement.getAttribute('data-pal');return PALS[p]?p:'albicocca'}
   function setPal(p){document.documentElement.setAttribute('data-pal',p);try{localStorage.setItem('ovpal',p)}catch(e){}
     var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',PALS[p][1])}
   function palPicker(){var c=curPal();return '<label>Colours</label><div class="pals" id="pals">'+Object.keys(PALS).map(function(k){var v=PALS[k];
