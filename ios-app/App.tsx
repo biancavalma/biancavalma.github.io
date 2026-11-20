@@ -1,7 +1,7 @@
 // Overlap for iPhone: the live Overlap web app inside a native shell,
 // with Apple notifications and notification taps that open the right day.
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Linking, Platform, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { WebView as RNWebView, type WebViewMessageEvent } from 'react-native-webview';
 import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTypes';
@@ -31,11 +31,11 @@ Notifications.setNotificationHandler({
 
 // tells the page it runs inside the iPhone app, before any of its code runs
 const BRIDGE = `
-  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true };
+  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true };
   true;
 `;
 
-type Msg = { type: 'push-state' | 'push-request' | 'open-external' | 'calendar-events'; url?: string; id?: number };
+type Msg = { type: 'push-state' | 'push-request' | 'open-external' | 'calendar-events' | 'share'; url?: string; text?: string; id?: number };
 
 // Next 6 months of events from the phone's calendars, read only when the person taps "From my calendar".
 async function calendarEvents() {
@@ -114,6 +114,10 @@ export default function App() {
         Linking.openURL(m.url).catch(() => {});
         return;
       }
+      if (m.type === 'share' && m.text) {
+        Share.share({ message: String(m.text).slice(0, 4000) }).catch(() => {});
+        return;
+      }
       if (m.type === 'calendar-events') {
         try {
           reply(m.id, await calendarEvents());
@@ -161,7 +165,7 @@ export default function App() {
   }
 
   return (
-    <View style={s.root}>
+    <View style={[s.root, { paddingTop: Platform.OS === 'ios' ? Constants.statusBarHeight : 0 }]}>
       <StatusBar style="dark" />
       <WebView
         key={key}

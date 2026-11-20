@@ -454,14 +454,16 @@ import * as api from './api.js';
         +'<div class="sug" id="plang">'+[['en','English'],['it','Italiano'],['de','Deutsch'],['fr','Français'],['es','Español']].map(function(o){return '<button type="button" data-l="'+o[0]+'"'+(o[0]===plang?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div>'
         +'<textarea class="ptx" id="ptx" readonly></textarea>'
         +'<button type="button" class="add hd" id="copy" style="margin-top:8px">Copy text</button>'
-        +(navigator.share?'<button type="button" class="ghost" id="nshare">Send with…</button>':'');
+        +'<button type="button" class="ghost wa2" id="nwa">'+WA+'Send on WhatsApp</button>'
+        +(api.canShare?'<button type="button" class="ghost" id="nshare">Send with\u2026</button>':'');
     }else if(sheet==='invite'){
       h+=head('Invite a friend')
         +'<p class="hint">Send your personal link. When they join, you see each other\u2019s plans. People you invite never see each other unless they are friends too.</p>'
         +(me.user?'<p class="hint">Or tell them your username <b>@'+esc(me.user)+'</b>: they can search it in Friends.</p>':'')
         +'<div class="f"><input id="ilink" type="text" readonly aria-label="Your invite link"></div>'
         +'<button type="button" class="add hd" id="icopy">Copy link</button>'
-        +(navigator.share?'<button type="button" class="ghost" id="ishare">Send with\u2026</button>':'')
+        +'<button type="button" class="ghost wa2" id="iwa">'+WA+'Send on WhatsApp</button>'
+        +(api.canShare?'<button type="button" class="ghost" id="ishare">Send with\u2026</button>':'')
         +'<div class="sep"></div><div class="f"><label for="iem">Or add them by email</label><input id="iem" type="email" inputmode="email" autocomplete="off" autocapitalize="off" placeholder="friend@email.com" enterkeyhint="send"></div>'
         +'<p class="err" id="err"></p><button type="button" class="ghost" id="isend">Send request</button>';
     }else if(sheet==='friend'){
@@ -536,7 +538,8 @@ import * as api from './api.js';
       var link=location.origin+'/?i='+encodeURIComponent(myCode);
       $('ilink').value=link;
       $('icopy').onclick=function(){copyText(link,this,'Copy link')};
-      if($('ishare'))$('ishare').onclick=function(){try{navigator.share({title:'Overlap',text:'Join me on Overlap, so we know when we are in the same city:',url:link}).catch(function(){})}catch(e){}};
+      if($('ishare'))$('ishare').onclick=function(){api.shareText('Join me on Overlap, so we know when we are in the same city: '+link)};
+      if($('iwa'))$('iwa').onclick=function(){api.openExternal('https://wa.me/?text='+encodeURIComponent('Join me on Overlap, so we know when we are in the same city: '+link))};
       $('isend').onclick=function(){
         var em=String($('iem').value||'').trim();
         if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('err').textContent='Check the email address.';return}
@@ -580,7 +583,8 @@ import * as api from './api.js';
         var old=function(){var t=$('ptx');t.focus();t.select();t.setSelectionRange(0,tx.length);var ok=false;try{ok=document.execCommand('copy')}catch(e){}t.blur();if(ok)done();else b.textContent='Select the text above and copy'};
         try{navigator.clipboard.writeText(tx).then(done,old)}catch(e){old()}
       };
-      if($('nshare'))$('nshare').onclick=function(){try{navigator.share({title:'My plans',text:tx}).catch(function(){})}catch(e){}};
+      if($('nshare'))$('nshare').onclick=function(){api.shareText(tx)};
+      $('nwa').onclick=function(){api.openExternal('https://wa.me/?text='+encodeURIComponent(tx))};
     }
     if(sheet==='hello'){
       if(!$('fw').value)$('fw').value=tzCity();

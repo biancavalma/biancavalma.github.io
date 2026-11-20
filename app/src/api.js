@@ -287,3 +287,10 @@ export const calendarSupported = native && !!window.OverlapNative.calendar;
 export function calendarEvents() {
   return ask('calendar-events', 90000);
 }
+
+// the phone's own share menu (iPhone app build 8 and later)
+export const canShare = (native && !!window.OverlapNative.share) || (typeof navigator !== 'undefined' && !!navigator.share);
+export function shareText(text) {
+  if (native && window.OverlapNative.share) { window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'share', text })); return; }
+  try { navigator.share({ text }).catch(() => {}); } catch (e) {}
+}

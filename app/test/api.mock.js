@@ -43,3 +43,5 @@ export const calendarEvents = async () => ({ state: 'granted', events: [
   { title: 'Flight to London', location: 'Heathrow Airport', start: '2026-12-02T08:00:00Z', end: '2026-12-02T10:00:00Z', allDay: false },
   { title: 'Hotel', location: 'Hotel Arts Barcelona', start: '2026-12-09T00:00:00Z', end: '2026-12-13T00:00:00Z', allDay: true },
   { title: 'Dentist', location: 'Zurich', start: '2026-12-05T08:00:00Z', end: '2026-12-05T09:00:00Z', allDay: false } ] });
+
+export const canShare = true, shareText = (t) => console.log('share', t);
