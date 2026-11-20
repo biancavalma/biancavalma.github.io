@@ -14,9 +14,9 @@ const ORIGIN = new URL(APP_URL).origin;
 // the library's combined iOS/Android/Windows prop types cancel out under React 19's types; the props below are all iOS ones it supports
 type WebViewHandle = { injectJavaScript: (js: string) => void; reload: () => void };
 const WebView = RNWebView as unknown as React.ComponentType<Record<string, unknown> & { ref?: React.Ref<WebViewHandle> }>;
-const BG = '#FFF5F0';
-const INK = '#2B1A1F';
-const PINK = '#FF8A65';
+const BG = '#FFF6F9';
+const INK = '#2A1420';
+const PINK = '#FF8FB8';
 
 // show alerts even while the app is open
 Notifications.setNotificationHandler({

@@ -87,16 +87,16 @@ import * as api from './api.js';
   }
   function face(i,size,ring){
     if(i===0)return '<svg role="img" aria-label="You" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
-      +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="#FF8A65"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
-      +'<circle cx="14" cy="18" r="2.6" fill="#2B1A1F"/><circle cx="26" cy="18" r="2.6" fill="#2B1A1F"/>'
-      +'<path d="M14 24.5c2 3 10 3 12 0" fill="none" stroke="#2B1A1F" stroke-width="2.6" stroke-linecap="round"/>'
-      +'<circle cx="9.5" cy="23" r="2.6" fill="#E8603C" opacity=".6"/><circle cx="30.5" cy="23" r="2.6" fill="#E8603C" opacity=".6"/></svg>';
+      +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" style="fill:var(--brand)"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
+      +'<circle cx="14" cy="18" r="2.6" style="fill:var(--face)"/><circle cx="26" cy="18" r="2.6" style="fill:var(--face)"/>'
+      +'<path d="M14 24.5c2 3 10 3 12 0" fill="none" style="stroke:var(--face)" stroke-width="2.6" stroke-linecap="round"/>'
+      +'<circle cx="9.5" cy="23" r="2.6" style="fill:var(--brand2)" opacity=".6"/><circle cx="30.5" cy="23" r="2.6" style="fill:var(--brand2)" opacity=".6"/></svg>';
     var t=lab(i);
     return '<svg role="img" aria-label="'+esc(people[i].n)+'" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
       +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" fill="'+COL[i%COL.length]+'"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
-      +'<text x="20" y="'+(t.length>1?26.5:27.5)+'" text-anchor="middle" font-family="Fredoka,Nunito,sans-serif" font-weight="600" font-size="'+(t.length>1?18:22)+'" fill="#2B1A1F">'+esc(t)+'</text></svg>';
+      +'<text x="20" y="'+(t.length>1?26.5:27.5)+'" text-anchor="middle" font-family="Fredoka,Nunito,sans-serif" font-weight="600" font-size="'+(t.length>1?18:22)+'" style="fill:var(--face)">'+esc(t)+'</text></svg>';
   }
-  var HEART='<svg width="12" height="12" viewBox="0 0 24 24" fill="#2B1A1F" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
+  var HEART='<svg width="12" height="12" viewBox="0 0 24 24" style="fill:var(--face)" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
   var tab='ov', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
@@ -435,7 +435,7 @@ import * as api from './api.js';
       var ps=api.pushState();
       h+=head('Your settings')
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
-        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'
+        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="saveh">Save</button></div>'
         +'<div class="sep"></div>'
@@ -476,6 +476,7 @@ import * as api from './api.js';
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
+      $('pals').onclick=function(e){var b=e.target.closest('button');if(!b)return;setPal(b.getAttribute('data-p'));[].forEach.call($('pals').children,function(x){x.classList.toggle('on',x===b)})};
       $('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true);
       if($('pon'))$('pon').onclick=function(){turnOnAlerts().then(function(){renderSheet()})};
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
@@ -636,6 +637,13 @@ import * as api from './api.js';
     return Math.round(12742*Math.asin(Math.sqrt(x*x+Math.cos(p[0]*r)*Math.cos(q[0]*r)*y*y)));
   }
   /* live suggestions under a city box: your own cities first, then the world list */
+  /* colour palettes: each person picks their own, kept on this phone */
+  var PALS={"lampone": ["Lampone", "#FFF6F9", "#FF8FB8", "#FFE14D"], "matcha": ["Matcha", "#F4F7EE", "#A8D672", "#FF9FB2"], "albicocca": ["Albicocca", "#FFF7EC", "#FFB86B", "#6FA3FF"], "cielo": ["Cielo", "#F1F7FF", "#8EC5FF", "#FF9F5A"], "sabbia": ["Sabbia", "#F6F1E8", "#F2C14E", "#3E8E63"], "fucsia": ["Fucsia", "#FFF0FA", "#FF7FD1", "#2FD9C0"], "corallo": ["Corallo", "#FFF5F0", "#FF8A65", "#4FD1C5"], "lavanda": ["Lavanda", "#F3F0FF", "#B9AEFF", "#7DDCB5"]};
+  function curPal(){var p=document.documentElement.getAttribute('data-pal');return PALS[p]?p:'lampone'}
+  function setPal(p){document.documentElement.setAttribute('data-pal',p);try{localStorage.setItem('ovpal',p)}catch(e){}
+    var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',PALS[p][1])}
+  function palPicker(){var c=curPal();return '<label>Colours</label><div class="pals" id="pals">'+Object.keys(PALS).map(function(k){var v=PALS[k];
+    return '<button type="button" data-p="'+k+'"'+(k===c?' class="on"':'')+'><i><b style="background:'+v[2]+'"></b><b style="background:'+v[3]+'"></b></i>'+v[0]+'</button>'}).join('')+'</div>'}
   /* city from the phone's time zone (Europe/Zurich -> Zurich), no location needed */
   function tzCity(){try{var z=Intl.DateTimeFormat().resolvedOptions().timeZone||'';var c=z.split('/').pop().replace(/_/g,' ');return /^[A-Z]/.test(c)&&z.indexOf('/')>0&&!/^Etc/.test(z)?c:''}catch(e){return ''}}
   function homeList(){var t=tzCity();return (t?[t]:[]).concat(COMMON.filter(function(c){return c!==t}))}

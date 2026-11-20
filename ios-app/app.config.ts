@@ -16,7 +16,7 @@ const config: ExpoConfig = {
   orientation: 'portrait',
   icon: './assets/icon.png',
   userInterfaceStyle: 'light',
-  backgroundColor: '#FFF5F0',
+  backgroundColor: '#FFF6F9',
   scheme: 'overlap',
   ios: {
     bundleIdentifier: bundleId,
@@ -29,10 +29,10 @@ const config: ExpoConfig = {
   },
   android: {
     package: bundleId,
-    adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: '#FFF5F0' },
+    adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: '#FFF6F9' },
   },
   plugins: [
-    ['expo-splash-screen', { image: './assets/splash-icon.png', imageWidth: 160, resizeMode: 'contain', backgroundColor: '#FFF5F0' }],
+    ['expo-splash-screen', { image: './assets/splash-icon.png', imageWidth: 160, resizeMode: 'contain', backgroundColor: '#FFF6F9' }],
     ['expo-notifications', { color: '#B9AEFF' }],
   ],
   extra: {
