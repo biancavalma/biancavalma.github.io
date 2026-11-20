@@ -887,7 +887,7 @@ import * as api from './api.js';
       +'<div class="hd">Log in or sign up</div>'
       +'<div class="f"><label for="gem">Your email</label><input id="gem" type="email" inputmode="email" autocomplete="email" autocapitalize="off" placeholder="you@email.com" enterkeyhint="go" value="'+esc(gEmail)+'"></div>'
       +'<p class="err" id="err"></p><button type="button" class="add hd" id="gsend">Send me a code</button>'
-      +'<p class="hint" style="margin-top:8px">No password. We email you a code.<br>Sorry for the extra step: we just need to check it\u2019s really your email, to keep your plans private.</p>');
+      +'<p class="hint" style="margin-top:8px">No password. Sorry for the extra step, it keeps your plans private.</p>');
     var go=function(){
       var em=String($('gem').value||'').trim().toLowerCase();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('err').textContent='Check your email address.';return}
