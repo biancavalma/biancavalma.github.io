@@ -289,7 +289,7 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 
 /* one screen, no up-and-down scrolling: the app fills the phone exactly and the calendar stretches to fit */
 html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overflow:hidden;overscroll-behavior:none}
-#app:not([hidden]){height:100%;padding:10px 14px 10px;gap:10px;overflow:hidden}
+#app:not([hidden]){height:100%;box-sizing:border-box;padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));gap:10px;overflow:hidden}
 #app>*{flex:none}
 #app>#v-ov,#app>#v-cal,#app>#v-fr{flex:1 1 auto;min-height:0;gap:10px!important}
 #v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){display:flex!important}
