@@ -383,3 +383,6 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 .gcl a{display:flex;align-items:center;gap:6px;background:var(--pill);border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink);font-weight:800;font-size:14.5px}
 .gcl a i{font-style:normal;font-weight:700;color:var(--soft);flex:1;min-width:0}
 .gcl a b{font-size:13px;color:var(--soft)}
+/* every WhatsApp button is WhatsApp green */
+.wa,.wa2,.gbar .gwa{background:#25D366!important;color:#fff!important}
+.wa svg,.wa2 svg,.gwa svg{fill:#fff;color:#fff}
