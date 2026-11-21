@@ -150,9 +150,10 @@ import * as api from './api.js';
   function jump(){var f=UP.filter(match)[0];if(f){var p=parts(f.a>T?f.a:T);vy=p.y;vm=p.m}}
 
   function renderTop(){
-    $('me').innerHTML=face(0,36,false)+'<span><b>This is you</b><i>'+(people[0].home?esc(people[0].home)+' home base':'Set home base')+'</i></span>';
+    $('me').innerHTML='<span class="tbi">'+face(0,40,false)+'</span><b>You</b>';
     $('note').textContent='Only friends you accept see your plans.';
   }
+  $('addf').onclick=function(){sheet=null;selD=null;tab='fr';renderAll();setTimeout(function(){var i=$('q');if(i){i.focus();i.scrollIntoView({block:'nearest'})}},50)};
   $('me').onclick=function(){sheet='home';selD=null;renderSheet()};
 
   /* on an iPhone browser, suggest the app (until it is dismissed for a week) */
@@ -449,9 +450,9 @@ import * as api from './api.js';
       h+=head(edit!==null?'Edit your trip':'When are you away?')
         +(edit===null?'<div class="imp"><button type="button" id="ipaste">\ud83d\udccb Paste plans</button>'+(api.calendarSupported?'<button type="button" id="ical">\ud83d\udcc5 From my calendar</button>':'')+'</div>':'')
         +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
-        +(edit===null?'<label style="margin-top:14px">Repeat</label><div class="sug rep" id="frep">'+[['0','Just once'],['7','Every week'],['14','Every 2 weeks']].map(function(o){return '<button type="button" data-r="'+o[0]+'"'+(o[0]==='0'?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div><p class="hint" id="rephint" hidden>Repeats for the next 3 months.</p>':'')
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
-        +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note, e.g. for Marta\u2019s wedding" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
+        +(edit===null?'<label style="margin-top:14px">Repeat</label><div class="sug rep" id="frep">'+[['0','Just once'],['7','Every week'],['14','Every 2 weeks']].map(function(o){return '<button type="button" data-r="'+o[0]+'"'+(o[0]==='0'?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div><p class="hint" id="rephint" hidden>Repeats for the next 3 months.</p>':'')
+        +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note (optional)" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
         +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span>Only me</button></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
@@ -553,7 +554,7 @@ import * as api from './api.js';
       if($('ical'))$('ical').onclick=function(){imp={mode:'cal',list:null};sheet='import';renderSheet();fromCalendar()};
       $('fpriv').onclick=function(){var on=!this.classList.contains('on');this.classList.toggle('on',on);this.setAttribute('aria-pressed',on)};
       $('chg').onclick=function(){pkHide=false;document.querySelector('.pk').hidden=false;$('chg').hidden=true};
-      citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent='';if(ra&&edit===null)saveTrip()});
+      citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent=''});
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
