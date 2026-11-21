@@ -386,3 +386,27 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 /* every WhatsApp button is WhatsApp green */
 .wa,.wa2,.gbar .gwa{background:#25D366!important;color:#fff!important}
 .wa svg,.wa2 svg,.gwa svg{fill:#fff;color:#fff}
+
+/* seasons: tint of the month at the top and falling emoji behind the cards */
+:root{--sea:transparent}
+html{background:var(--bg)}body{min-height:100vh;background:linear-gradient(180deg,var(--sea) 0,var(--bg) 75vh) var(--bg)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:var(--bg)}}
+:root[data-theme="dark"] body{background:var(--bg)}
+#snow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#snow span{position:absolute;top:-40px;opacity:.75;will-change:transform;animation-name:fall,sway;animation-timing-function:linear,ease-in-out;animation-iteration-count:infinite,infinite;animation-direction:normal,alternate}
+@keyframes fall{from{transform:translateY(0)}to{transform:translateY(calc(100vh + 80px))}}
+@keyframes sway{from{margin-left:-10px}to{margin-left:10px}}
+@media (prefers-reduced-motion:reduce){#snow span{animation:none;top:auto}}
+#app,.wrap,main{position:relative;z-index:1}
+.calcard,.list{background:rgba(255,255,255,.82);-webkit-backdrop-filter:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .calcard,:root:not([data-theme="light"]) .list{background:var(--card)}}
+:root[data-theme="dark"] .calcard,:root[data-theme="dark"] .list{background:var(--card)}
+/* coming up: trips as small colourful cards, two per row */
+.lprev{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:0;margin:4px 0 8px}
+.lprev .row{box-sizing:border-box;min-width:0;flex-wrap:wrap;gap:4px 8px;min-height:0;padding:9px 10px;border-radius:18px;background:linear-gradient(135deg,var(--butter),var(--pill))}
+.lprev .row>svg,.lprev .row>span:first-child{width:28px!important;height:28px!important}
+.lprev .row .tx{flex:1;min-width:0}
+.lprev .row .tx b{display:block;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lprev .row .tx i{display:block;font-size:12.5px;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lprev .row .tag{font-size:11.5px;margin-left:36px}
+.lprev .empty{grid-column:1/-1}

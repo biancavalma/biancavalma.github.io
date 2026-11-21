@@ -257,9 +257,23 @@ import * as api from './api.js';
     f.insertAdjacentHTML('beforeend',h);
   }
   window.addEventListener('resize',function(){drawFrame()});
+
+  /* seasonal look: soft colour of the month and a few emoji falling slowly behind the calendar */
+  var SEA=[['#E3EEFF',['❄️','⛄']],['#F1E8FF',['❄️','💗']],['#E6F6DF',['🌱','🌼']],['#FFE6F0',['🌸','🌷']],['#FFF1D6',['🌼','🐝']],['#FFEFD9',['🍓','🌼']],['#FFF0C2',['☀️','🍉']],['#DDF4FA',['🌊','🐚']],['#F3E6F6',['🍇','🍂']],['#FFE9D3',['🍂','🍁']],['#F7E9DD',['🍁','🍂']],['#E6F0FF',['❄️','🎄']]];
+  var seaM=-1;
+  function season(m){
+    if(m===seaM)return;seaM=m;
+    document.documentElement.style.setProperty('--sea',SEA[m][0]);
+    var el=$('snow');if(!el){el=document.createElement('div');el.id='snow';el.setAttribute('aria-hidden','true');document.body.insertBefore(el,document.body.firstChild)}
+    var e=SEA[m][1],h='',i;
+    for(i=0;i<16;i++){var x=(i*37+11)%100,dur=14+(i*7)%12,del=-((i*53)%26),sz=11+(i%3)*5;
+      h+='<span style="left:'+x+'%;font-size:'+sz+'px;animation-duration:'+dur+'s,'+(4+i%3)+'s;animation-delay:'+del+'s,'+del+'s">'+e[i%e.length]+'</span>'}
+    el.innerHTML=h;
+  }
   function renderGrid(){
     var MEM=['\u26c4','\u2744\ufe0f','\ud83c\udf31','\ud83c\udf38','\ud83c\udf37','\ud83c\udf53','\u2600\ufe0f','\ud83c\udfd6\ufe0f','\ud83c\udf47','\ud83c\udf42','\ud83c\udf41','\ud83c\udf84'];
     $('mlabel').textContent=MEM[vm]+' '+MN[vm]+' '+vy;
+    season(vm);
     var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
     var lead=(new Date(vy,vm,1).getDay()+6)%7, n=new Date(vy,vm+1,0).getDate(), h='', i, p;
@@ -354,7 +368,7 @@ import * as api from './api.js';
     else if(selP!==null)title='Where '+(selP===0?'you':esc(people[selP].n))+' will be';
     else if(selC)title='Who will be in '+esc(selC);
     else{
-      title='Who’s tripping in '+MN[vm]+'?';
+      title='Coming up in '+MN[vm];
       var m0=iso(vy,vm,1), m1=iso(vy,vm,new Date(vy,vm+1,0).getDate());
       st=st.filter(function(s){return s.a<=m1&&s.b>=m0});
     }
