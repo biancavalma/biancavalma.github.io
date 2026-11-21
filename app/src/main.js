@@ -113,7 +113,8 @@ import * as api from './api.js';
   function where(p,d){return tripAt(p,d)||people[p].home||null}
   function shows(p,d){
     if(selP!==null&&selP!==p)return false;
-    return selC?where(p,d)===selC:!!tripAt(p,d);
+    if(selC)return where(p,d)===selC;
+    return !!tripAt(p,d)||(selP!==null&&p>0&&!!where(p,d)&&where(p,d)===where(0,d));
   }
   /* a day counts as an overlap when you and a friend are in the same city and at least one of you travelled */
   function hit(d){
@@ -213,22 +214,21 @@ import * as api from './api.js';
   $('t-fr').onclick=function(){tab='fr';renderAll()};
 
   var cq='';
+  /* filters: everyone, only me, one city, one friend */
   function renderPills(){
-    var h='', c='', cs=cities(), v=cq.toLowerCase();
-    if(selC&&cs.indexOf(selC)<0)selC=null;
-    if(selP!==null)h+='<button type="button" class="pillb who on" data-x="1" aria-label="Stop showing only '+esc(people[selP].n)+'">'+face(selP,24,false)+esc(people[selP].n)+' ×</button>';
-    h+='<button type="button" class="pillb'+(selC||onlyMe?'':' on')+'" data-c="">All</button><button type="button" class="pillb'+(onlyMe?' on':'')+'" data-me="1">My calendar</button>';
-    cs.forEach(function(k){if(!v||k.toLowerCase().indexOf(v)>=0||k===selC)c+='<button type="button" class="pillb city'+(selC===k?' on':'')+'" data-c="'+esc(k)+'">'+esc(k)+'</button>'});
-    if(!c)c='<span class="pillb city" style="background:transparent;color:var(--soft)">No city yet</span>';
-    $('pa').innerHTML=h;$('pc').innerHTML=c;
+    var cs=cities();if(selC&&cs.indexOf(selC)<0)selC=null;
+    var all=!onlyMe&&!selC&&selP===null;
+    $('pills').innerHTML='<button type="button" class="pillb'+(all?' on':'')+'" data-f="all">All</button>'
+      +'<button type="button" class="pillb'+(onlyMe?' on':'')+'" data-f="me">My calendar</button>'
+      +(selC?'<button type="button" class="pillb on" data-f="city">📍 '+esc(selC)+' ×</button>':'<button type="button" class="pillb" data-f="city">See city ▾</button>')
+      +(selP!==null?'<button type="button" class="pillb who on" data-f="friend">'+face(selP,22,false)+esc(people[selP].n)+' ×</button>':'<button type="button" class="pillb" data-f="friend">See friend ▾</button>');
   }
-  $('cq').addEventListener('input',function(){cq=this.value.trim();renderPills()});
-  $('cq').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur()});
   $('pills').addEventListener('click',function(e){
-    var b=e.target.closest('button.pillb');if(!b)return;
-    if(b.getAttribute('data-x')){selP=null}
-    else if(b.getAttribute('data-me')){onlyMe=!onlyMe;if(onlyMe){selC=null;selP=null}}
-    else{onlyMe=false;var c=b.getAttribute('data-c')||null;selC=selC===c?null:c;if(selC)jump()}
+    var b=e.target.closest('button.pillb');if(!b)return;var f=b.getAttribute('data-f');
+    if(f==='all'){onlyMe=false;selC=null;selP=null}
+    else if(f==='me'){onlyMe=!onlyMe;if(onlyMe){selC=null;selP=null}}
+    else if(f==='city'){if(selC){selC=null}else{sheet='pickc';selD=null;renderSheet();return}}
+    else if(f==='friend'){if(selP!==null){selP=null}else{sheet='pickf';selD=null;renderSheet();return}}
     selD=null;renderAll();
   });
 
@@ -453,6 +453,11 @@ import * as api from './api.js';
           +(imp.list.some(function(t){return !t.done})?'<button type="button" class="add hd" id="iall">Add all</button>':'<button type="button" class="add hd" id="idone">Done</button>')
           :'<p class="hint">'+esc(imp.msg||'No trips found.')+'</p>'+(imp.mode==='paste'?'<button type="button" class="ghost" id="iback">Try again</button>':'');
       }
+    }else if(sheet==='pickc'||sheet==='pickf'){
+      h+=head(sheet==='pickc'?'See a city':'See a friend')+'<div class="picks">';
+      if(sheet==='pickc')cities().forEach(function(c){h+='<button type="button" class="pickb" data-c="'+esc(c)+'">'+emoFor(0,c)+' '+esc(c)+'</button>'});
+      else for(var pf=1;pf<people.length;pf++)h+='<button type="button" class="pickb" data-p="'+pf+'">'+face(pf,26,false)+esc(people[pf].n)+'</button>';
+      h+='</div>'+((sheet==='pickf'&&people.length<2)?'<p class="hint">No friends yet. Invite one from the Friends tab.</p>':'');
     }else if(sheet==='delete'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">\u00d7</button></div>'
         +'<div class="sure"><div style="font-size:44px">\u26a0\ufe0f</div><div class="big hd">Are you sure?</div><p>This deletes your account, your trips and your friends on Overlap. It cannot be undone.</p>'
@@ -566,6 +571,11 @@ import * as api from './api.js';
       $('fsee').onclick=function(){var i=selF;sheet=null;selP=i;selC=null;selD=null;tab='cal';jump();renderAll();window.scrollTo(0,0)};
     }
     if(sheet==='install')$('ok').onclick=close;
+    if(sheet==='pickc'||sheet==='pickf'){
+      document.querySelector('.picks').onclick=function(e){var b=e.target.closest('.pickb');if(!b)return;onlyMe=false;
+        if(b.getAttribute('data-c')){selC=b.getAttribute('data-c');selP=null;sheet=null;jump()}else{selP=+b.getAttribute('data-p');selC=null;sheet=null}
+        selD=null;renderAll()};
+    }
     if(sheet==='delete'){
       $('delno').onclick=function(){sheet='home';renderSheet()};
       $('delyes').onclick=function(){var b=this;b.disabled=true;b.textContent='Deleting\u2026';

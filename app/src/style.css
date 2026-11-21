@@ -311,3 +311,8 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 .grid.sl{animation:mSl .22s ease-out}.grid.sr{animation:mSr .22s ease-out}
 @keyframes mSl{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
 @keyframes mSr{from{transform:translateX(-24px);opacity:.4}to{transform:none;opacity:1}}
+/* city and friend pickers */
+.picks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.pickb{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;background:var(--pill);font-weight:800;font-size:15px;color:var(--ink)}
+/* inside the iPhone app the app itself already leaves room for the status bar */
+.native .wrap{padding-top:calc(4px + env(safe-area-inset-top,0px))}
