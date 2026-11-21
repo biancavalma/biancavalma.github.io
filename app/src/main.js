@@ -345,7 +345,9 @@ import * as api from './api.js';
     var far=y!==n0.getFullYear()||m!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
   }
-  var tlT=0;window.addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){if(!$('v-cal').hidden)topLabel()})},{passive:true});
+  /* more months load by themselves as you get near the end */
+  var tlT=0;window.addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){if($('v-cal').hidden)return;topLabel();
+    if(NM<120&&document.documentElement.scrollHeight-window.scrollY-window.innerHeight<1500){NM+=6;renderGrid()}})},{passive:true});
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){

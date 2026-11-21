@@ -509,3 +509,19 @@ html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 :root[data-theme="dark"] .calcard .stick{background:var(--card)}
 /* clip instead of hidden: still no sideways scroll, and the month bar can stay on top while scrolling */
 html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){overflow-x:clip}
+
+/* tighter rows: about a month and a half per screen */
+.calcard .grid{grid-auto-rows:40px}
+.calcard .cell{height:40px;padding-top:2px;gap:1px}
+.calcard .cell .faces{transform:scale(.9);transform-origin:top center}
+.calcard .cell .cn{display:none}
+.mhd{padding:12px 6px 4px}
+/* trips under each month: one slim line each */
+.mup .lprev{display:flex;flex-direction:column;gap:4px}
+.mup .lprev .row{flex-wrap:nowrap;align-items:center;gap:8px;padding:6px 10px;border-radius:14px}
+.mup .lprev .row>svg,.mup .lprev .row>span:first-child{width:22px!important;height:22px!important;font-size:10px!important}
+.mup .lprev .row .tx{display:flex;align-items:baseline;gap:6px;min-width:0}
+.mup .lprev .row .tx b{font-size:14px;flex:none;max-width:60%}
+.mup .lprev .row .tx i{font-size:12.5px}
+.mup .lprev .row .tag{margin-left:auto;flex:none;font-size:11px;padding:2px 8px}
+.muph{padding:0 4px 4px;font-size:12px}
