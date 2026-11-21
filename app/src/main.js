@@ -1,3 +1,4 @@
+try{var LK=new URLSearchParams(location.search).get('look');if(LK)document.documentElement.setAttribute('data-look',LK)}catch(e){}
 import './style.css';
 import * as api from './api.js';
 
@@ -289,7 +290,7 @@ import * as api from './api.js';
       var st=d>=T&&shows(0,d)?stayAt(0,d):null;
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD||d===gs?' sel':'');
+      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit'+(col>0&&i>1&&iso(vy,vm,i-1)>=T&&hit(iso(vy,vm,i-1))?' hp':'')+(col<6&&i<n&&hit(iso(vy,vm,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
         if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
