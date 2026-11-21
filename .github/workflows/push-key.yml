@@ -1,0 +1,49 @@
+# Puts the Apple notifications key into Expo, without the key ever being readable in this public repo.
+# step=keypair: makes a one-time lock (public key printed in the log, private key kept in the Actions cache)
+# step=upload: unlocks ios-app/push-key.enc with it, sends the key to Expo, then throws the lock away
+name: Push key to Expo
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        type: choice
+        options: [keypair, upload]
+permissions:
+  contents: read
+  actions: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make lock
+        if: inputs.step == 'keypair'
+        run: |
+          mkdir -p lock && openssl genrsa -out lock/priv.pem 4096 2>/dev/null
+          echo "PUBLIC KEY:"; openssl rsa -in lock/priv.pem -pubout 2>/dev/null
+      - uses: actions/cache/save@v4
+        if: inputs.step == 'keypair'
+        with: { path: lock, key: push-lock-${{ github.run_id }} }
+      - name: Find lock
+        if: inputs.step == 'upload'
+        id: f
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: echo "key=$(gh api repos/${{ github.repository }}/actions/caches --jq '[.actions_caches[]|select(.key|startswith("push-lock-"))][0].key')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/restore@v4
+        if: inputs.step == 'upload'
+        with: { path: lock, key: '${{ steps.f.outputs.key }}', fail-on-cache-miss: true }
+      - uses: actions/setup-node@v4
+        if: inputs.step == 'upload'
+        with: { node-version: 22 }
+      - name: Upload to Expo
+        if: inputs.step == 'upload'
+        env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
+        run: |
+          base64 -d ios-app/push-key.enc > /tmp/k.bin
+          openssl pkeyutl -decrypt -inkey lock/priv.pem -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in /tmp/k.bin -out /tmp/key.p8
+          mkdir -p /tmp/e && cd /tmp/e && npm init -y >/dev/null && npm i --no-audit --no-fund --ignore-scripts eas-cli@latest >/dev/null 2>&1
+          node "$GITHUB_WORKSPACE/ios-app/scripts/push-key.cjs"
+      - name: Throw lock away
+        if: always() && inputs.step == 'upload'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: gh api -X DELETE "repos/${{ github.repository }}/actions/caches?key=${{ steps.f.outputs.key }}" || true
