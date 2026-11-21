@@ -336,7 +336,8 @@ import * as api from './api.js';
     var box=l.querySelector('.lprev');if(!box)return;
     box.innerHTML=LB;
     var kids=[].slice.call(box.children);
-    while(kids.length&&v.scrollHeight>v.clientHeight+1){box.removeChild(kids.pop())}
+    var de=document.documentElement;
+    while(kids.length&&de.scrollHeight>window.innerHeight+1){box.removeChild(kids.pop())}
     box.hidden=!kids.length;
   }
   window.addEventListener('resize',function(){requestAnimationFrame(fitList)});
