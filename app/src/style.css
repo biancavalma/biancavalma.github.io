@@ -677,5 +677,5 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .oldshell #app.oncal .calcard .stick{top:0}
 
 /* top space in the app: the real safe area when the phone gives it, otherwise the guess from the screen size */
-.native .wrap{padding-top:calc(12px + max(env(safe-area-inset-top,0px),var(--topsafe,0px)))}
-.native .nxpop{top:calc(64px + max(env(safe-area-inset-top,0px),var(--topsafe,0px)))}
+
+.native #app.oncal{top:var(--fixtop,0px);bottom:calc(0px - var(--fixtop,0px))}
