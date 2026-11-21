@@ -511,10 +511,11 @@ import * as api from './api.js';
       h+=head('Your plans as text')
         +'<p class="hint">Copy it and paste it into any chat, for friends who are not on Overlap.</p>'
         +'<div class="sug" id="plang">'+[['en','English'],['it','Italiano'],['de','Deutsch'],['fr','Français'],['es','Español']].map(function(o){return '<button type="button" data-l="'+o[0]+'"'+(o[0]===plang?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div>'
-        +'<textarea class="ptx" id="ptx" readonly></textarea>'
+        +'<div class="ptxv" id="ptxv"></div><textarea class="ptx" id="ptx" readonly aria-hidden="true" tabindex="-1"></textarea>'
         +'<button type="button" class="add hd" id="copy" style="margin-top:8px">Copy text</button>'
         +'<button type="button" class="ghost wa2" id="nwa">'+WA+'Send on WhatsApp</button>'
-        +(api.canShare?'<button type="button" class="ghost" id="nshare">Send with\u2026</button>':'');
+        +(api.canShare?'<button type="button" class="ghost" id="nshare">Send with\u2026</button>':'')
+        +myTripsCal();
     }else if(sheet==='invite'){
       h+=head('Invite a friend')
         +'<p class="hint">Send your personal link. When they join, you see each other\u2019s plans. People you invite never see each other unless they are friends too.</p>'
@@ -643,7 +644,7 @@ import * as api from './api.js';
       if($('idone'))$('idone').onclick=function(){sheet=null;renderAll()};
     }
     if(sheet==='share'){
-      var tx=plainPlans(plang);$('ptx').value=tx;
+      var tx=plainPlans(plang);$('ptx').value=tx;$('ptxv').textContent=tx;
       $('plang').onclick=function(e){var b=e.target.closest('button');if(!b)return;plang=b.getAttribute('data-l');try{localStorage.setItem('ovlang',plang)}catch(x){}renderSheet()};
       $('copy').onclick=function(){
         var b=this,done=function(){b.textContent='Copied ✓';setTimeout(function(){if(b.isConnected)b.textContent='Copy text'},1800)};
@@ -676,6 +677,23 @@ import * as api from './api.js';
   var ra=null, rb=null, ry=n0.getFullYear(), rm=n0.getMonth(), edit=null;
   /* tapping your own day opens the same calendar, already filled in, so a trip can be moved, renamed or removed */
   /* add a trip to the phone's own calendar: Google Calendar link, or an .ics file for Apple and Outlook */
+  /* my upcoming trips into Google Calendar (one by one) or Apple Calendar (all at once) */
+  function icsOf(list){
+    var ev=list.map(function(st,i){var a=st.a.replace(/-/g,''),b=next(st.b).replace(/-/g,'');
+      return 'BEGIN:VEVENT\r\nUID:'+a+i+st.city.replace(/\W/g,'')+'@overlap\r\nDTSTAMP:'+a+'T000000Z\r\nDTSTART;VALUE=DATE:'+a+'\r\nDTEND;VALUE=DATE:'+b+'\r\nSUMMARY:'+(st.e||emoFor(0,st.city))+' '+st.city+(st.note?' ('+st.note.replace(/[\r\n,;]/g,' ')+')':'')+'\r\nEND:VEVENT\r\n'}).join('');
+    return 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Overlap//EN\r\n'+ev+'END:VCALENDAR\r\n';
+  }
+  function myTripsCal(){
+    var st=people[0].stays.filter(function(x){return x.b>=T}).sort(function(x,y){return x.a<y.a?-1:1});
+    if(!st.length)return '';
+    var b64=btoa(unescape(encodeURIComponent(icsOf(st)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    var h='<div class="sep"></div><div class="hd" style="font-size:17px;margin:2px 0 6px">Add to my calendar</div>'
+      +'<a class="add hd" style="display:flex;align-items:center;justify-content:center;text-decoration:none" data-ext="1" target="_blank" rel="noopener" href="'+location.origin+'/ics.html#'+b64+'">\ud83d\udcc5 Apple Calendar, all trips</a>'
+      +'<p class="hint" style="margin:8px 0 4px">Google Calendar, one trip at a time:</p><div class="gcl">';
+    st.forEach(function(x){var a=x.a.replace(/-/g,''),b=next(x.b).replace(/-/g,'');
+      h+='<a data-ext="1" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent((x.e||emoFor(0,x.city))+' '+x.city)+'&dates='+a+'/'+b+'&details='+encodeURIComponent(x.note||'Added from Overlap')+'">'+(x.e||emoFor(0,x.city))+' '+esc(x.city)+' <i>'+range(x.a,x.b)+'</i><b>Google ›</b></a>'});
+    return h+'</div>';
+  }
   function calLinks(st){
     if(!st)return '';
     var a=st.a.replace(/-/g,''), b=next(st.b).replace(/-/g,''), t=(st.e||emoFor(0,st.city))+' '+st.city;
