@@ -322,3 +322,4 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 .getapp b{font-size:15px}.getapp i{font-style:normal;font-size:12.5px;opacity:.8}
 .getapp .gbtn{flex:none;height:36px;padding:0 16px;border-radius:999px;background:var(--pink);color:var(--on);font-weight:800;display:flex;align-items:center;text-decoration:none}
 .getapp .x{flex:none;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.16);color:inherit;font-size:18px}
+.gbar .gwa{display:flex;align-items:center;gap:6px;text-decoration:none;background:#25D366;color:#fff}

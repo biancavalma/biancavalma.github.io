@@ -194,6 +194,7 @@ import * as api from './api.js';
   }
   function cleanPhone(v){v=String(v||'').trim();var plus=v.charAt(0)==='+';v=v.replace(/\D/g,'');if(!v)return '';if(!plus&&v.indexOf('00')===0)v=v.slice(2);return '+'+v.slice(0,15)}
   function prev(s){var p=parts(s),x=new Date(p.y,p.m,p.d-1,12);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
+  function waHref(r){return 'https://wa.me/'+(people[r.p].phone||'').replace(/\D/g,'')+'?text='+encodeURIComponent(waText(r))}
   function waText(r){
     var who=people[r.p].n;
     if(r.km)return 'Hi '+who+'! I saw on Overlap you\u2019ll be in '+r.fc+' '+range(r.a,r.b)+'. I\u2019ll be in '+r.city+', only about '+r.km+' km away. Shall we meet?';
@@ -274,11 +275,13 @@ import * as api from './api.js';
     gbar.hidden=!gs;if(!gs)return;
     var mc=where(0,gs), ms=stayAt(0,gs), fr=[], names=[];
     for(var i=1;i<people.length;i++){var c=where(i,gs);if(c){fr.push(i);if(tripAt(i,gs)||c===mc)names.push(people[i].n+' '+(c===mc?'\u2764\ufe0f':'in '+c))}}
+    var ovr=overlaps().filter(function(r){return r.a<=gs&&gs<=r.b})[0]||null;
     var line1=day(gs)+' \u00b7 '+(mc?(ms?(ms.e||emoFor(0,mc))+' ':'')+mc:'')+(ms&&ms.note?' \u00b7 '+ms.note:'');
     gbar.innerHTML='<button type="button" class="gi" id="gwho"><b>'+esc(line1)+'</b><i>'+(names.length?esc(names.slice(0,2).join(', '))+(names.length>2?' +'+(names.length-2):'')+' \u203a':'Tap your last day to add a trip')+'</i></button>'
-      +'<button type="button" class="g1" id="g1">Just this day</button><button type="button" class="x" id="gx" aria-label="Clear">\u00d7</button>';
+      +(ovr?'<a class="g1 gwa" id="gwa" href="'+waHref(ovr)+'" target="_blank" rel="noopener">'+WA+esc(people[ovr.p].n)+'</a>':'<button type="button" class="g1" id="g1">Just this day</button>')+'<button type="button" class="x" id="gx" aria-label="Clear">\u00d7</button>';
     $('gwho').onclick=function(){if(!fr.length)return;selD=gs;gs=null;showBar();sheet='day';renderGrid();renderSheet()};
-    $('g1').onclick=function(){openRange(gs,gs)};
+    if($('g1'))$('g1').onclick=function(){openRange(gs,gs)};
+    if($('gwa'))$('gwa').onclick=function(e){if(api.native){e.preventDefault();api.openExternal(this.href)}};
     $('gx').onclick=function(){gs=null;showBar();renderGrid()};
   }
   function openRange(a,d){
