@@ -341,7 +341,8 @@ import * as api from './api.js';
     box.hidden=!kids.length;
   }
   window.addEventListener('resize',function(){requestAnimationFrame(fitList)});
-  if(window.ResizeObserver){var fitT=0;new ResizeObserver(function(){cancelAnimationFrame(fitT);fitT=requestAnimationFrame(fitList)}).observe(document.querySelector('.calcard'));new ResizeObserver(function(){cancelAnimationFrame(fitT);fitT=requestAnimationFrame(fitList)}).observe($('v-cal'))}
+  /* refit only when the calendar itself changes size (never because of the rows, to avoid a loop) */
+  if(window.ResizeObserver){var fitT=0,lastH=0;new ResizeObserver(function(){var h=document.querySelector('.calcard').offsetHeight;if(h===lastH)return;lastH=h;cancelAnimationFrame(fitT);fitT=requestAnimationFrame(fitList)}).observe(document.querySelector('.calcard'))}
   function renderList(){
     var st=UP.filter(match), title, h='', homes='', cnt=0;
     if(!people[0].home&&!people[0].stays.length){
