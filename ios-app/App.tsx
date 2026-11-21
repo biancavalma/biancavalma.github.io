@@ -9,6 +9,7 @@ import * as Notifications from 'expo-notifications';
 import * as Calendar from 'expo-calendar';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const APP_URL: string = (Constants.expoConfig?.extra?.appUrl as string) || 'https://example.com';
 const ORIGIN = new URL(APP_URL).origin;
@@ -31,7 +32,7 @@ Notifications.setNotificationHandler({
 
 // tells the page it runs inside the iPhone app, before any of its code runs
 const BRIDGE = `
-  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true };
+  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true, safe: true };
   true;
 `;
 
@@ -50,7 +51,7 @@ async function calendarEvents() {
   const start = new Date();
   const end = new Date(start.getTime() + 183 * 864e5);
   // one calendar at a time, so a calendar the phone cannot read (birthdays, a broken subscription) does not stop the rest
-  let ev: Calendar.Event[] = [];
+  let ev: any[] = [];
   for (const c of cals) {
     try {
       ev = ev.concat(await Calendar.getEventsAsync([c.id], start, end));
@@ -178,7 +179,9 @@ export default function App() {
   }
 
   return (
-    <View style={[s.root, { paddingTop: Platform.OS === 'ios' ? Constants.statusBarHeight : 0 }]}>
+    // the page always starts below the status bar, on every iPhone
+    <SafeAreaProvider>
+    <SafeAreaView style={s.root} edges={['top']}>
       <StatusBar style="dark" />
       <WebView
         key={key}
@@ -210,7 +213,8 @@ export default function App() {
         setSupportMultipleWindows={false}
         decelerationRate="normal"
       />
-    </View>
+    </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

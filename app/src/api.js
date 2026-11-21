@@ -185,15 +185,7 @@ export function watch(onChange) {
 // inside the iPhone app the page talks to the phone through a small bridge; in a browser it uses web alerts
 export const native = typeof window !== 'undefined' && !!window.OverlapNative && !!window.ReactNativeWebView;
 if (native) document.documentElement.classList.add('native');
-// older iPhone app builds (before build 8) let the phone push the page below the status bar by itself
-if (typeof window !== 'undefined' && window.ReactNativeWebView && !(window.OverlapNative && window.OverlapNative.share)) document.documentElement.classList.add('oldshell');
-// newer app builds: the phone keeps a strip for the status bar that the page cannot see, and a pinned page would slide under it.
-// The strip is the difference between the screen and the page height, so move the pinned calendar page down by exactly that.
-function fixTop() {
-  const ins = Math.round(screen.height - window.innerHeight);
-  document.documentElement.style.setProperty('--fixtop', (ins > 10 && ins < 90 ? ins : 0) + 'px');
-}
-if (native && window.OverlapNative.share) { fixTop(); window.addEventListener('resize', fixTop); }
+
 export const isIOS = native || /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 export const standalone = native || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 export const pushSupported = native || ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!VAPID);

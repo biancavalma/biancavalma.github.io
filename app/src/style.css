@@ -550,15 +550,8 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 #snow{display:none}
 
 /* calendar tab: the top stays still, only the months scroll */
-#app.oncal{height:100vh;height:100dvh;overflow:hidden;padding-bottom:0}
-#app.oncal #v-cal{flex:1;min-height:0}
-#app.oncal .calcard{flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:0}
-#app.oncal .calframe{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative;padding-bottom:96px}
-#app.oncal .calcard .stick{top:0}
-#app.oncal #add{display:none}
-[data-look~="a"] #app.oncal #add{display:block}
-#app.oncal .calframe{overflow-x:hidden}
-#app.oncal .calcard .stick{margin:-4px 0 0}
+
+
 
 /* ===== preview look C · Calmo: warm light grey, white cards with soft shadows ===== */
 [data-look~="c"]{--bg:#F5F4F0;--card:#fff;--line:rgba(30,25,20,.08)}
@@ -641,8 +634,6 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .calcard .nav #tod,.nav #tod{top:62px}
 
 /* calendar tab: pinned to the screen edges, so the page itself can never scroll and cut the top */
-#app.oncal{position:fixed;top:0;bottom:0;left:0;right:0;height:auto!important;margin:0 auto;width:100%}
-#app.oncal{overflow:hidden;overflow:clip}
 .tab{white-space:nowrap}
 @media (max-width:360px){.tab{font-size:13px}.pillb{padding:0 8px;font-size:12px}}
 
@@ -671,11 +662,9 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .yd i.t{background:var(--ink);color:#fff;border-radius:50%}
 
 /* older app builds: the phone adds the status bar space itself, which a pinned page would ignore, so keep it in the normal flow */
-.oldshell #app.oncal{position:static;height:auto!important;overflow:visible;padding-bottom:110px}
-.oldshell #app.oncal .calcard,.oldshell #app.oncal #v-cal{flex:none}
-.oldshell #app.oncal .calframe{overflow:visible;height:auto;flex:none}
-.oldshell #app.oncal .calcard .stick{top:0}
 
 /* top space in the app: the real safe area when the phone gives it, otherwise the guess from the screen size */
 
-.native #app.oncal{top:var(--fixtop,0px);bottom:calc(0px - var(--fixtop,0px))}
+
+/* the month bar sticks to the top of the screen while the page scrolls */
+.calcard .stick{position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
