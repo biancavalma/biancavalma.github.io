@@ -187,6 +187,12 @@ export const native = typeof window !== 'undefined' && !!window.OverlapNative &&
 if (native) document.documentElement.classList.add('native');
 // older iPhone app builds (before build 8) let the phone push the page below the status bar by itself
 if (typeof window !== 'undefined' && window.ReactNativeWebView && !(window.OverlapNative && window.OverlapNative.share)) document.documentElement.classList.add('oldshell');
+// newer app builds can draw under the status bar without telling the page how tall it is: guess it from the screen size
+if (native && window.OverlapNative.share && Math.abs(window.innerHeight - screen.height) < 2) {
+  const h = Math.max(screen.height, screen.width);
+  const top = h >= 874 ? 62 : h >= 852 ? 59 : h >= 812 ? 48 : 20;
+  document.documentElement.style.setProperty('--topsafe', top + 'px');
+}
 export const isIOS = native || /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 export const standalone = native || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 export const pushSupported = native || ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!VAPID);
