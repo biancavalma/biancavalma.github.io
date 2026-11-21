@@ -645,3 +645,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 #app.oncal{overflow:hidden;overflow:clip}
 .tab{white-space:nowrap}
 @media (max-width:360px){.tab{font-size:13px}.pillb{padding:0 8px;font-size:12px}}
+
+/* the fixed month name looks exactly like the ones in the list */
+.calcard .mbar #mlabel{font-size:17px!important;font-weight:800!important;color:var(--ink)!important;letter-spacing:0!important;padding:0}
+.calcard .mbar{padding:4px 6px 2px!important}

@@ -332,7 +332,6 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
       var isH=d>=T&&hit(d), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
-      if(isHp){who=[];bar=''}
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
