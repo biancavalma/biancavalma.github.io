@@ -190,7 +190,7 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
     $('getappx').onclick=function(){$('getapp').hidden=true;try{localStorage.setItem('ov-getapp-x',String(Date.now()))}catch(e){}};
   })();
   function renderTabs(){
-    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});$('app').classList.toggle('oncal',tab==='cal');
+    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});var wasCal=$('app').classList.contains('oncal');$('app').classList.toggle('oncal',tab==='cal');if(tab==='cal'&&!wasCal)window.scrollTo(0,0);
     var nov=overlaps().length;$('t-ov').innerHTML='Overlaps'+(nov?'<b class="badge">'+nov+'</b>':'');
   }
   $('t-ov').onclick=function(){tab='ov';renderAll()};
