@@ -99,7 +99,7 @@ import * as api from './api.js';
   var HEART='<svg width="12" height="12" viewBox="0 0 24 24" style="fill:var(--face)" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
-  var onlyMe=false, tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
+  var setEdit=false, onlyMe=false, tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
   var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false;
 
   function index(){
@@ -154,7 +154,7 @@ import * as api from './api.js';
     $('note').textContent='Only friends you accept see your plans.';
   }
   $('addf').onclick=function(){sheet=null;selD=null;tab='fr';renderAll();setTimeout(function(){var i=$('q');if(i){i.focus();i.scrollIntoView({block:'nearest'})}},50)};
-  $('me').onclick=function(){sheet='home';selD=null;renderSheet()};
+  $('me').onclick=function(){setEdit=false;sheet='home';selD=null;renderSheet()};
 
   /* on an iPhone browser, suggest the app (until it is dismissed for a week) */
   (function(){
@@ -416,7 +416,7 @@ import * as api from './api.js';
   $('q').addEventListener('input',function(){q=this.value.trim();renderFriends()});
   $('q').addEventListener('keydown',function(e){if(e.key==='Enter')this.blur()});
 
-  function close(){pkHide=false;gs=null;showBar();sheet=null;selD=null;trip=null;edit=null;selF=null;renderGrid();renderSheet()}
+  function close(){setEdit=false;pkHide=false;gs=null;showBar();sheet=null;selD=null;trip=null;edit=null;selF=null;renderGrid();renderSheet()}
   $('veil').onclick=close;
   function head(t){return '<div class="shd"><div class="hd">'+t+'</div><button type="button" class="x" id="x" aria-label="Close">×</button></div>'}
   function renderSheet(){
@@ -451,9 +451,8 @@ import * as api from './api.js';
         +(edit===null?'<div class="imp"><button type="button" id="ipaste">\ud83d\udccb Paste plans</button>'+(api.calendarSupported?'<button type="button" id="ical">\ud83d\udcc5 From my calendar</button>':'')+'</div>':'')
         +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
-        +(edit===null?'<label style="margin-top:14px">Repeat</label><div class="sug rep" id="frep">'+[['0','Just once'],['7','Every week'],['14','Every 2 weeks']].map(function(o){return '<button type="button" data-r="'+o[0]+'"'+(o[0]==='0'?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div><p class="hint" id="rephint" hidden>Repeats for the next 3 months.</p>':'')
         +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note (optional)" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
-        +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span>Only me</button></div>'
+        +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span><span class="pl"><b>Private</b><i>Visible only to me</i></span></button></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
     }else if(sheet==='hello'){
@@ -510,12 +509,12 @@ import * as api from './api.js';
     }else if(sheet==='home'){
       var ps=api.pushState();
       h+=head('Your settings')
-        +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
+        +'<div class="f'+(setEdit?'':' locked')+'" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
         +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
         +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
-        +'<p class="err" id="err"></p><button type="button" class="add hd" id="saveh">Save</button></div>'
+        +'<p class="err" id="err"></p>'+(setEdit?'<button type="button" class="add hd" id="saveh">Save</button>':'<button type="button" class="add hd" id="edith">Edit</button>')+'</div>'
         +'<div class="sep"></div>'
         +'<div class="frow"><span class="tx">Overlap alerts<i style="display:block;font-style:normal;font-weight:600;font-size:12.5px;color:var(--soft)">'+(ps==='granted'?'On for this phone':ps==='denied'?'Blocked in your phone settings':ps==='install'?'Add Overlap to your Home Screen first':ps==='unsupported'?'Not available in this browser':'Off')+'</i></span>'
         +(ps==='granted'?'<button type="button" id="poff">Turn off</button>':ps==='default'?'<button type="button" id="pon">Turn on</button>':ps==='install'?'<button type="button" id="phow">How</button>':'')+'</div>'
@@ -558,8 +557,10 @@ import * as api from './api.js';
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
+      if(!setEdit)[].forEach.call(document.querySelectorAll('#setf input'),function(i){i.readOnly=true;i.tabIndex=-1;i.placeholder='Not set'});
+      if($('edith'))$('edith').onclick=function(){setEdit=true;renderSheet();var f=$('fn');if(f)f.focus()};
       $('pals').onclick=function(e){var b=e.target.closest('button');if(!b)return;setPal(b.getAttribute('data-p'));[].forEach.call($('pals').children,function(x){x.classList.toggle('on',x===b)})};
-      $('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true);
+      if($('saveh')){$('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true)}
       if($('pon'))$('pon').onclick=function(){turnOnAlerts().then(function(){renderSheet()})};
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
       if($('phow'))$('phow').onclick=function(){sheet='install';renderSheet()};
@@ -806,7 +807,7 @@ import * as api from './api.js';
   function curPal(){var p=document.documentElement.getAttribute('data-pal');return PALS[p]?p:'lampone'}
   function setPal(p){document.documentElement.setAttribute('data-pal',p);try{localStorage.setItem('ovpal',p)}catch(e){}
     var m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',PALS[p][1])}
-  function palPicker(){var c=curPal();return '<label>Colours</label><div class="pals" id="pals">'+Object.keys(PALS).map(function(k){var v=PALS[k];
+  function palPicker(){var c=curPal();return '<label class="palsl">Colours</label><div class="pals" id="pals">'+Object.keys(PALS).map(function(k){var v=PALS[k];
     return '<button type="button" data-p="'+k+'"'+(k===c?' class="on"':'')+'><i><b style="background:'+v[2]+'"></b><b style="background:'+v[3]+'"></b></i>'+v[0]+'</button>'}).join('')+'</div>'}
   /* city from the phone's time zone (Europe/Zurich -> Zurich), no location needed */
   function tzCity(){try{var z=Intl.DateTimeFormat().resolvedOptions().timeZone||'';var c=z.split('/').pop().replace(/_/g,' ');return /^[A-Z]/.test(c)&&z.indexOf('/')>0&&!/^Etc/.test(z)?c:''}catch(e){return ''}}
