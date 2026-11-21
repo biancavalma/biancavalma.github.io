@@ -306,3 +306,8 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 @media (min-width:700px){.wrap{padding-top:calc(24px + env(safe-area-inset-top,0px))}}
 .wa2{display:flex;align-items:center;justify-content:center;gap:8px}
 #v-ov,#v-cal,#v-fr,#app{overflow-x:hidden}
+/* month swipe */
+.calcard .grid{touch-action:pan-y}
+.grid.sl{animation:mSl .22s ease-out}.grid.sr{animation:mSr .22s ease-out}
+@keyframes mSl{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes mSr{from{transform:translateX(-24px);opacity:.4}to{transform:none;opacity:1}}

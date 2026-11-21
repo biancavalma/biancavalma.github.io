@@ -99,7 +99,7 @@ import * as api from './api.js';
   var HEART='<svg width="12" height="12" viewBox="0 0 24 24" style="fill:var(--face)" aria-hidden="true"><path d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 8 2.8C20 15.8 12 21 12 21z"/></svg>';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
-  var tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
+  var onlyMe=false, tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
   var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false;
 
   function index(){
@@ -117,7 +117,7 @@ import * as api from './api.js';
   }
   /* a day counts as an overlap when you and a friend are in the same city and at least one of you travelled */
   function hit(d){
-    var L=where(0,d);if(!L||(selC&&L!==selC))return false;
+    var L=where(0,d);if(onlyMe||!L||(selC&&L!==selC))return false;
     for(var f=1;f<people.length;f++){
       if(selP&&selP!==f)continue;
       if(where(f,d)===L&&(tripAt(0,d)||tripAt(f,d)))return true;
@@ -217,7 +217,7 @@ import * as api from './api.js';
     var h='', c='', cs=cities(), v=cq.toLowerCase();
     if(selC&&cs.indexOf(selC)<0)selC=null;
     if(selP!==null)h+='<button type="button" class="pillb who on" data-x="1" aria-label="Stop showing only '+esc(people[selP].n)+'">'+face(selP,24,false)+esc(people[selP].n)+' ×</button>';
-    h+='<button type="button" class="pillb'+(selC?'':' on')+'" data-c="">All</button>';
+    h+='<button type="button" class="pillb'+(selC||onlyMe?'':' on')+'" data-c="">All</button><button type="button" class="pillb'+(onlyMe?' on':'')+'" data-me="1">My calendar</button>';
     cs.forEach(function(k){if(!v||k.toLowerCase().indexOf(v)>=0||k===selC)c+='<button type="button" class="pillb city'+(selC===k?' on':'')+'" data-c="'+esc(k)+'">'+esc(k)+'</button>'});
     if(!c)c='<span class="pillb city" style="background:transparent;color:var(--soft)">No city yet</span>';
     $('pa').innerHTML=h;$('pc').innerHTML=c;
@@ -227,7 +227,8 @@ import * as api from './api.js';
   $('pills').addEventListener('click',function(e){
     var b=e.target.closest('button.pillb');if(!b)return;
     if(b.getAttribute('data-x')){selP=null}
-    else{var c=b.getAttribute('data-c')||null;selC=selC===c?null:c;if(selC)jump()}
+    else if(b.getAttribute('data-me')){onlyMe=!onlyMe;if(onlyMe){selC=null;selP=null}}
+    else{onlyMe=false;var c=b.getAttribute('data-c')||null;selC=selC===c?null:c;if(selC)jump()}
     selD=null;renderAll();
   });
 
@@ -241,7 +242,7 @@ import * as api from './api.js';
       var d=iso(vy,vm,i), who=[], col=(lead+i-1)%7, bar='';
       /* with no filter on, a friend only appears on days you are in the same city and one of you travelled */
       var L0=where(0,d);
-      if(d>=T)for(p=1;p<people.length;p++){
+      if(d>=T&&!onlyMe)for(p=1;p<people.length;p++){
         if(selP===null&&!selC){if(L0&&where(p,d)===L0&&(tripAt(0,d)||tripAt(p,d)))who.push(p)}
         else if(shows(p,d))who.push(p);
       }
@@ -275,6 +276,7 @@ import * as api from './api.js';
     sheet='add';renderGrid();renderSheet();
   }
   $('grid').addEventListener('click',function(e){
+    if(Date.now()-swiped<400)return;
     var c=e.target.closest('.cell');if(!c)return;
     var d=c.getAttribute('data-d');
     if(d<T){selD=d;sheet='day';renderGrid();renderSheet();return}
@@ -283,6 +285,13 @@ import * as api from './api.js';
   });
   function move(k){vm+=k;if(vm<0){vm=11;vy--}if(vm>11){vm=0;vy++}selD=null;renderGrid();renderList()}
   $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();selD=null;renderGrid();renderList()};
+  /* swipe left or right on the calendar to change month */
+  (function(){var x0=null,y0=0,t0=0,g=$('grid');
+    g.addEventListener('touchstart',function(e){var t=e.touches[0];x0=t.clientX;y0=t.clientY;t0=Date.now()},{passive:true});
+    g.addEventListener('touchend',function(e){if(x0===null)return;var t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-t0<700){swiped=Date.now();g.classList.remove('sl','sr');void g.offsetWidth;g.classList.add(dx<0?'sl':'sr');move(dx<0?1:-1)}},{passive:true});
+  })();
+  var swiped=0;
   $('prev').onclick=function(){move(-1)};$('nextm').onclick=function(){move(1)};
 
   function row(p,a,b,attrs,tagged){
