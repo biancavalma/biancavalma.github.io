@@ -172,6 +172,7 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
   });
   document.querySelector('#app .brand').onclick=function(){sheet='about';selD=null;renderSheet()};
   document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b&&b.getAttribute('data-lang')!==LANG)setLang(b.getAttribute('data-lang'))});
+  $('yearb').onclick=function(){yv=vy;sheet='year';selD=null;renderSheet()};
   function renderTop(){
     $('me').innerHTML='<span class="tbi">'+face(0,40,false)+'</span><b>You</b>';
     $('note').textContent='Only friends you accept see your plans.';
@@ -361,11 +362,29 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
     hero();
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
-      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;var cf=$('calframe');cf.scrollTop=sec.offsetTop-stickH();setTimeout(function(){scrolling=false},100)})}
+      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;var cf=$('calframe'),gd=sec.querySelector('.grid')||sec;cf.scrollTop=gd.offsetTop-stickH()+2;setTimeout(function(){scrolling=false},100)})}
     topLabel();
   }
   function stickH(){var s=document.querySelector('.calcard .stick');return s?s.offsetHeight+4:60}
   /* the month name on top follows the month you are looking at */
+  /* full year: twelve small months, arrows for other years, tap a month to jump there */
+  var yv=null;
+  function yearView(){
+    var y=yv, h='<div class="shd"><div class="yhd"><button type="button" class="yar" id="ypr" aria-label="Previous year">‹</button><div class="hd">'+y+'</div><button type="button" class="yar" id="ynx" aria-label="Next year">›</button></div><button type="button" class="x" id="x" aria-label="Close">×</button></div><div class="yg">';
+    for(var m=0;m<12;m++){
+      var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), cur=(y===n0.getFullYear()&&m===n0.getMonth());
+      h+='<button type="button" class="ym'+(cur?' cur':'')+'" data-ym="'+y+'-'+m+'"><b>'+MN[m]+'</b><span class="yd">';
+      for(var i=0;i<lead;i++)h+='<i></i>';
+      for(i=1;i<=n;i++){var d=iso(y,m,i);h+='<i class="'+(d===T?'t':d>=T&&hit(d)?'h':d>=T&&stayAt(0,d)?'s':d<T?'p':'')+'">'+i+'</i>'}
+      h+='</span></button>';
+    }
+    return h+'</div>';
+  }
+  function goMonth(y,m){
+    var s0=startYM(), want=(y-s0[0])*12+(m-s0[1]);
+    if(want+3>NM)NM=Math.min(240,want+6);
+    vy=y;vm=m;lastKey='';sheet=null;selD=null;renderAll();
+  }
   function topLabel(){
     var secs=$("grid").querySelectorAll(".mon"), stk=document.querySelector('.calcard .stick'), lim=(stk?stk.getBoundingClientRect().bottom:60)+8, cur=secs[0];
     for(var i=0;i<secs.length;i++){if(secs[i].getBoundingClientRect().top<=lim)cur=secs[i];else break}
@@ -604,6 +623,8 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
         +'<button type="button" class="ghost wa2" id="nwa">'+WA+'WhatsApp</button>'
         +(api.canShare?'<button type="button" class="ghost" id="nshare">Send with\u2026</button>':'')+'</div>'
         +myTripsCal();
+    }else if(sheet==='year'){
+      h+=yearView();
     }else if(sheet==='about'){
       h+=head('About Overlap')
         +'<div class="about"><div class="wel">'+document.querySelector('.brand svg').outerHTML+'</div>'
@@ -695,6 +716,10 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
       if($('phow'))$('phow').onclick=function(){sheet='install';renderSheet()};
       $('delme').onclick=function(){sheet='delete';renderSheet()};
       $('out').onclick=function(){api.disablePush().catch(function(){}).then(api.signOut).then(function(){location.replace('/')})};
+    }
+    if(sheet==='year'){
+      $('ypr').onclick=function(){yv--;renderSheet()};$('ynx').onclick=function(){yv++;renderSheet()};
+      document.querySelectorAll('[data-ym]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-ym').split('-');var y=+a[0],m=+a[1];goMonth(y,m);if(y===n0.getFullYear()&&m===n0.getMonth())$('calframe').scrollTop=0}});
     }
     if(sheet==='invite'){
       var link=location.origin+'/?i='+encodeURIComponent(myCode);

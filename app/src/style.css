@@ -649,3 +649,23 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 /* the fixed month name looks exactly like the ones in the list */
 .calcard .mbar #mlabel{font-size:17px!important;font-weight:800!important;color:var(--ink)!important;letter-spacing:0!important;padding:0}
 .calcard .mbar{padding:4px 6px 2px!important}
+
+/* heart badge never cut */
+.native .wrap{padding-top:calc(12px + env(safe-area-inset-top,0px))}
+.nxt .nxh{top:-3px;right:-3px}
+/* full calendar button and year sheet */
+.calcard .mbar{display:flex!important;align-items:center;justify-content:space-between!important}
+.yearb{height:28px;padding:0 11px;border-radius:999px;background:var(--pill);color:var(--on);font-size:12.5px;font-weight:800}
+.yhd{display:flex;align-items:center;gap:8px}
+.yhd .hd{font-size:22px;min-width:64px;text-align:center}
+.yar{width:34px;height:34px;border-radius:50%;background:var(--pill);font-size:22px;font-weight:800;line-height:1;color:var(--on)}
+.yg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;padding:4px 0 8px}
+.ym{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:6px;border-radius:14px;background:transparent;text-align:left;min-width:0}
+.ym b{font-size:13.5px;font-weight:800;color:var(--ink)}
+.ym.cur b{color:#E0457F}
+.yd{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;width:100%}
+.yd i{font-style:normal;font-size:8.5px;font-weight:700;text-align:center;line-height:13px;border-radius:4px;color:var(--ink)}
+.yd i.p{color:#D3CCD0}
+.yd i.h{background:#FFE58A}
+.yd i.s{background:#FFD6E6}
+.yd i.t{background:var(--ink);color:#fff;border-radius:50%}

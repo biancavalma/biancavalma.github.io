@@ -71,6 +71,7 @@ const IT = {
   '📅 Apple Calendar, all trips': '📅 Apple Calendar, tutti i viaggi', '📅 From my calendar': '📅 Dal mio calendario', '📋 Paste plans': '📋 Incolla piani', '📍 Use my location': '📍 Usa la mia posizione',
   '📍 Finding you…': '📍 Ti cerco…', '💛 Next overlap': '💛 Prossimo incrocio', 'Add to my calendar': 'Aggiungi al mio calendario', 'they get an invite to add it to their calendar': 'ricevono un invito per aggiungerlo al loro calendario',
   'One alert when a friend will be in your city': 'Un avviso quando un amico sarà nella tua città', 'Add Overlap to your Home Screen to turn on alerts': 'Aggiungi Overlap alla schermata Home per accendere le notifiche',
+  'Full calendar': 'Tutto l’anno', 'Previous year': 'Anno prima', 'Next year': 'Anno dopo',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',
