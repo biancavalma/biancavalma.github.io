@@ -557,3 +557,5 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 #app.oncal .calcard .stick{top:0}
 #app.oncal #add{display:none}
 [data-look="a"] #app.oncal #add{display:block}
+#app.oncal .calframe{overflow-x:hidden}
+#app.oncal .calcard .stick{margin:-4px 0 0}
