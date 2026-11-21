@@ -1,5 +1,5 @@
 /* look: glass (a) by default; ?look=b shows the plain white one */
-try{document.documentElement.setAttribute('data-look',new URLSearchParams(location.search).get('look')||'a')}catch(e){document.documentElement.setAttribute('data-look','a')}
+try{var lk0=new URLSearchParams(location.search).get('look')||'a';document.documentElement.setAttribute('data-look',lk0==='c'?'a c':lk0)}catch(e){document.documentElement.setAttribute('data-look','a')}
 import './style.css';
 import * as api from './api.js';
 
