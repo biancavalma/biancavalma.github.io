@@ -244,8 +244,23 @@ import * as api from './api.js';
     selD=null;renderAll();
   });
 
+  /* a frame of the month's emoji around the calendar, emoji next to each other */
+  var frameEm='';
+  function drawFrame(em){
+    if(em)frameEm=em;var f=$('calframe');if(!f||!frameEm)return;
+    [].forEach.call(f.querySelectorAll('.efr'),function(e){e.remove()});
+    var W=f.offsetWidth,H=f.offsetHeight;if(!W||!H)return;
+    var step=15,h='',nx=Math.max(2,Math.round(W/step)),ny=Math.max(2,Math.round(H/step)),sx=W/nx,sy=H/ny,i;
+    function at(x,y){h+='<span class="efr" style="left:'+x.toFixed(1)+'px;top:'+y.toFixed(1)+'px">'+frameEm+'</span>'}
+    for(i=0;i<=nx;i++){at(i*sx,0);at(i*sx,H)}
+    for(i=1;i<ny;i++){at(0,i*sy);at(W,i*sy)}
+    f.insertAdjacentHTML('beforeend',h);
+  }
+  window.addEventListener('resize',function(){drawFrame()});
   function renderGrid(){
-    $('mlabel').textContent=['⛄','❄️','🌱','🌸','🌷','🍓','☀️','🏖️','🍇','🍂','🍁','🎄'][vm]+' '+MN[vm]+' '+vy;
+    var MEM=['\u26c4','\u2744\ufe0f','\ud83c\udf31','\ud83c\udf38','\ud83c\udf37','\ud83c\udf53','\u2600\ufe0f','\ud83c\udfd6\ufe0f','\ud83c\udf47','\ud83c\udf42','\ud83c\udf41','\ud83c\udf84'];
+    $('mlabel').textContent=MN[vm]+' '+vy;
+    frameEm=MEM[vm];
     var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
     var lead=(new Date(vy,vm,1).getDay()+6)%7, n=new Date(vy,vm+1,0).getDate(), h='', i, p;
@@ -271,6 +286,7 @@ import * as api from './api.js';
       h+='</span>'+bar+'</button>';
     }
     $('grid').innerHTML=h;
+    drawFrame();requestAnimationFrame(function(){drawFrame()});
   }
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);

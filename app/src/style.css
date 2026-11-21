@@ -362,3 +362,11 @@ html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overf
 /* Private switch label */
 .priv .pl{display:flex;flex-direction:column;align-items:flex-start;line-height:1.1}
 .priv .pl i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--soft)}
+/* emoji frame around the calendar (the share button stays outside) */
+.calframe{position:relative;padding:16px 14px 12px;margin:8px 8px 4px}
+.efr{position:absolute;width:16px;height:16px;margin:-8px 0 0 -8px;font-size:13px;line-height:16px;text-align:center;pointer-events:none;z-index:3}
+.calcard{padding:8px 6px 10px!important}
+.calcard .sharebtn{margin:12px 8px 0;width:calc(100% - 16px)}
+.calframe{padding:13px 11px 8px;margin:6px 6px 2px}
+.calcard .sharebtn{margin-top:10px}
+.calcard .grid{grid-auto-rows:clamp(32px,5.8dvh,48px)}
