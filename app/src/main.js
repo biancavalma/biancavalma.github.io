@@ -3,6 +3,14 @@ try{var lk0=new URLSearchParams(location.search).get('look')||'a';document.docum
 import './style.css';
 import * as api from './api.js';
 import { LANG, LANGS, setLang, startI18n } from './i18n.js';
+/* updates arrive at once: phones keep the old page for a few minutes, so compare with the newest build number and reload when it changed */
+function checkUpdate(){
+  try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
+    if(!d||!d.v||d.v===__BUILD__)return;var u=new URL(location.href);if(u.searchParams.get('v')===d.v)return;
+    u.searchParams.set('v',d.v);location.replace(u.toString());
+  }).catch(function(){})}catch(e){}
+}
+if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychange',function(){if(!document.hidden)checkUpdate()})}
 
   var COL=['#9fe3c9','#ffc59e','#cbb8ff','#a6d4ff','#ffb0d0','#d3e98a','#ffd98a','#b5ead7'];
   var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];

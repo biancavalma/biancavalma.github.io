@@ -1,5 +1,5 @@
 // Overlap service worker: shows alerts and keeps the app shell available offline.
-const CACHE = 'overlap-v1';
+const CACHE = 'overlap-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
@@ -19,7 +19,7 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(req.url);
   if (url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
   e.respondWith(
-    fetch(req)
+    fetch(req.mode === 'navigate' || url.pathname === '/version.json' ? new Request(req.url, { cache: 'no-store', credentials: 'same-origin' }) : req)
       .then((res) => {
         if (res.ok && (req.mode === 'navigate' || url.pathname.startsWith('/assets/'))) {
           const copy = res.clone();
