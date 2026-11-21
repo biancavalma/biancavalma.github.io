@@ -251,9 +251,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     $('ovlist').innerHTML=h;
     if($('ovinv'))$('ovinv').onclick=function(){sheet='invite';renderSheet()};
   }
-  $('nxt').onclick=function(e){e.stopPropagation();nxPop()};
-  $('nxpop').onclick=function(){$('nxpop').hidden=true;$('t-ov').click()};
-  document.addEventListener('click',function(e){if(!e.target.closest('#nxpop,#nxt'))$('nxpop').hidden=true});
+  
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
@@ -311,7 +309,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* next overlap: the friend's face waits in the top bar, tap it for the details */
   var nxR=null;
   function hero(){
-    var el=$('nxt');if(!el)return;
+    var el=$('nxt');if(!el)return;/* removed from the top bar */
     var r=people[0].home&&!onlyMe?overlaps()[0]:null;nxR=r;
     if(!r){el.hidden=true;$('nxpop').hidden=true;return}
     el.innerHTML=face(r.p,40,false)+'<span class="nxh" aria-hidden="true">💛</span>';
