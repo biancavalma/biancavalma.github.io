@@ -155,6 +155,14 @@ import * as api from './api.js';
   }
   $('me').onclick=function(){sheet='home';selD=null;renderSheet()};
 
+  /* on an iPhone browser, suggest the app (until it is dismissed for a week) */
+  (function(){
+    if(api.native||!api.isIOS||!api.TESTFLIGHT)return;
+    var t=0;try{t=+localStorage.getItem('ov-getapp-x')||0}catch(e){}
+    if(Date.now()-t<7*864e5)return;
+    $('getappgo').href=api.TESTFLIGHT;$('getapp').hidden=false;
+    $('getappx').onclick=function(){$('getapp').hidden=true;try{localStorage.setItem('ov-getapp-x',String(Date.now()))}catch(e){}};
+  })();
   function renderTabs(){
     ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});$('app').classList.toggle('oncal',tab==='cal');
     var nov=overlaps().length;$('t-ov').innerHTML='Overlaps'+(nov?'<b class="badge">'+nov+'</b>':'');
