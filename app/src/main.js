@@ -88,6 +88,8 @@ import * as api from './api.js';
     return c+(low.charAt(1)||'');
   }
   function face(i,size,ring){
+    var av=people[i]&&people[i].av;
+    if(av)return '<img class="avimg'+(ring?' ring':'')+'" src="'+esc(av)+'" alt="'+esc(i===0?'You':people[i].n)+'" width="'+size+'" height="'+size+'" style="width:'+size+'px;height:'+size+'px">';
     if(i===0)return '<svg role="img" aria-label="You" width="'+size+'" height="'+size+'" viewBox="0 0 40 40" style="flex:none;display:block">'
       +'<circle cx="20" cy="20" r="'+(ring?18.5:20)+'" style="fill:var(--brand)"'+(ring?' stroke="var(--ring)" stroke-width="3"':'')+'/>'
       +'<circle cx="14" cy="18" r="2.6" style="fill:var(--face)"/><circle cx="26" cy="18" r="2.6" style="fill:var(--face)"/>'
@@ -151,6 +153,18 @@ import * as api from './api.js';
   }
   function jump(){var f=UP.filter(match)[0];if(f){var p=parts(f.a>T?f.a:T);vy=p.y;vm=p.m}}
 
+  /* photo: shrink to a 320px square on the phone, then upload */
+  function shrink(file){return new Promise(function(ok,no){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var S=320,c=document.createElement('canvas'),k=Math.min(im.width,im.height);c.width=c.height=S;c.getContext('2d').drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,S,S);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error('photo'))},'image/jpeg',.85)};im.onerror=function(){no(new Error('photo'))};im.src=u})}
+  document.addEventListener('change',function(e){
+    if(e.target.id!=='avin'||!e.target.files||!e.target.files[0])return;
+    if(people[0].avCol===false){toast('Run the database update first (sql.html).');return}
+    toast('Uploading photo…');
+    shrink(e.target.files[0]).then(function(b){return api.uploadAvatar(people[0].id,b)}).then(function(url){people[0].av=url;renderAll();toast('Photo saved')},function(){toast('Could not save the photo, try again.')});
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('#avrm'))return;
+    api.removeAvatar(people[0].id).then(function(){people[0].av='';renderAll();toast('Photo removed')},function(){toast('Could not remove it, try again.')});
+  });
   function renderTop(){
     $('me').innerHTML='<span class="tbi">'+face(0,40,false)+'</span><b>You</b>';
     $('note').textContent='Only friends you accept see your plans.';
@@ -595,6 +609,7 @@ import * as api from './api.js';
     }else if(sheet==='home'){
       var ps=api.pushState();
       h+=head('Your settings')
+        +'<div class="avrow"><span class="avbig">'+face(0,72,false)+'</span><div class="avbtns"><label class="ghost avpick">'+(people[0].av?'Change photo':'Add a photo')+'<input id="avin" type="file" accept="image/*" hidden></label>'+(people[0].av?'<button type="button" class="linkb" id="avrm">Remove photo</button>':'')+'</div></div>'
         +'<div class="f'+(setEdit?'':' locked')+'" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
         +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
@@ -1101,11 +1116,11 @@ import * as api from './api.js';
   }
   function apply(d){
     var me=d.me;
-    people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].phoneCol=me.phone!==undefined;people[0].stays=me.stays;
+    people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].phoneCol=me.phone!==undefined;people[0].av=me.avatar_url||'';people[0].avCol=me.avatar_url!==undefined;people[0].stays=me.stays;
     people[0].user=me.username||'';people[0].userCol=me.username!==undefined;autoUser(me);
     myCode=me.invite_code||'';requests=d.requests;
     allF=d.friends.map(function(f){
-      return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',stays:f.stays};
+      return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',av:f.avatar_url||'',stays:f.stays};
     });
     lastD=d;
     people=[people[0]].concat(allF.filter(function(f){return !MUTE[f.id]}));

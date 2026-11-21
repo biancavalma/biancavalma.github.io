@@ -525,3 +525,12 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .mup .lprev .row .tx i{font-size:12.5px}
 .mup .lprev .row .tag{margin-left:auto;flex:none;font-size:11px;padding:2px 8px}
 .muph{padding:0 4px 4px;font-size:12px}
+
+/* profile photos */
+.avimg{flex:none;display:block;border-radius:50%;object-fit:cover;background:var(--pill)}
+.avimg.ring{box-shadow:0 0 0 1.5px var(--ring)}
+.avrow{display:flex;align-items:center;gap:14px;margin:2px 0 14px}
+.avbig .avimg,.avbig svg{width:72px!important;height:72px!important}
+.avbtns{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.avpick{display:inline-flex;align-items:center;height:38px;padding:0 16px;border-radius:999px;background:var(--pill);font-weight:800;font-size:14px;cursor:pointer;width:auto;margin:0}
+.linkb{background:none;font-weight:700;font-size:13px;color:var(--soft);padding:2px 4px}

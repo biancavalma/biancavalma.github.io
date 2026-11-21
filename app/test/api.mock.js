@@ -7,11 +7,11 @@ export const pushSupported = true, native = false, TESTFLIGHT = P.has('tf') ? 'h
 export const openExternal = () => {}, deleteAccount = async () => { signedIn = false; };
 let signedIn = !P.has('out');
 const db = {
-  me: { id: 'me', name: P.has('new') ? '' : 'Bianca Valmarana', home: P.has('new') ? '' : 'Zurich', invite_code: 'abc123', stays: P.has('new') ? [] : [
+  me: { avatar_url: '', id: 'me', name: P.has('new') ? '' : 'Bianca Valmarana', home: P.has('new') ? '' : 'Zurich', invite_code: 'abc123', stays: P.has('new') ? [] : [
     { id: 't1', city: 'Florence', a: d(3), b: d(7), e: '🌻' }, { id: 't2', city: 'London', a: d(18), b: d(20) } ] },
   friends: P.has('new') ? [] : [
     { id: 'f1', name: 'Mariechen', home: 'Florence', stays: [{ id: 'x1', city: 'Zurich', a: d(11), b: d(13) }] },
-    { id: 'f2', name: 'Paola', home: 'Zurich', stays: [{ id: 'x2', city: 'Florence', a: d(5), b: d(9) }, { id: 'x3', city: 'Bali', a: d(25), b: d(40) }] },
+    { id: 'f2', name: 'Paola', home: 'Zurich', avatar_url: 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8EC5FF"/><stop offset="1" stop-color="#FFD1E3"/></linearGradient></defs><rect width="40" height="40" fill="url(#g)"/><circle cx="28" cy="12" r="5" fill="#FFE14D"/><path d="M0 32l12-12 10 9 6-5 12 10v6H0z" fill="#5BA36B"/></svg>'), stays: [{ id: 'x2', city: 'Florence', a: d(5), b: d(9) }, { id: 'x3', city: 'Bali', a: d(25), b: d(40) }] },
     { id: 'f3', name: 'Masha', home: 'London', stays: [] } ],
   requests: P.has('noreq') ? [] : [{ id: 'r1', from_name: 'Giulia' }],
 };
@@ -47,3 +47,6 @@ export const calendarEvents = async () => ({ state: 'granted', events: [
 export const canShare = true, shareText = (t) => console.log('share', t);
 
 export const hasPhoneApp = async () => false;
+
+export const uploadAvatar = async (u, b) => URL.createObjectURL(b);
+export const removeAvatar = async () => {};

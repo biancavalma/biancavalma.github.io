@@ -93,7 +93,7 @@ export async function unfriend(id) {
 // Me, my friends, all trips we can see (from two months ago on), and requests waiting for me
 export async function loadAll(uid) {
   const [p, t, r] = await Promise.all([
-    sb.from('profiles').select('id, name, home, invite_code, phone, username').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
+    sb.from('profiles').select('id, name, home, invite_code, phone, username, avatar_url').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone, username') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
     tripsQuery(),
     sb.rpc('my_requests'),
   ]);
@@ -300,4 +300,20 @@ export function shareText(text) {
 export async function hasPhoneApp() {
   const { data, error } = await sb.from('push_subscriptions').select('endpoint').eq('p256dh', '-').limit(1);
   return !error && !!(data && data.length);
+}
+
+/* profile photo: a small square jpeg in the avatars folder, one file per person */
+export async function uploadAvatar(uid, blob) {
+  const path = uid + '/avatar.jpg';
+  const up = await sb.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '3600' });
+  if (up.error) throw up.error;
+  const url = sb.storage.from('avatars').getPublicUrl(path).data.publicUrl + '?v=' + Date.now();
+  const { error } = await sb.from('profiles').update({ avatar_url: url }).eq('id', uid);
+  if (error) throw error;
+  return url;
+}
+export async function removeAvatar(uid) {
+  await sb.storage.from('avatars').remove([uid + '/avatar.jpg']);
+  const { error } = await sb.from('profiles').update({ avatar_url: null }).eq('id', uid);
+  if (error) throw error;
 }
