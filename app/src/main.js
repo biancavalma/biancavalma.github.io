@@ -220,6 +220,7 @@ import * as api from './api.js';
     $('ovlist').innerHTML=h;
     if($('ovinv'))$('ovinv').onclick=function(){sheet='invite';renderSheet()};
   }
+  if($('hero'))$('hero').onclick=function(){$('t-ov').click()};
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
@@ -271,6 +272,16 @@ import * as api from './api.js';
       h+='<span style="left:'+x+'%;font-size:'+sz+'px;animation-duration:'+dur+'s,'+(4+i%3)+'s;animation-delay:'+del+'s,'+del+'s">'+e[i%e.length]+'</span>'}
     el.innerHTML=h;
   }
+
+  /* one line on top: the next time you and a friend are in the same place */
+  function hero(){
+    var el=$('hero');if(!el)return;
+    var r=people[0].home&&!onlyMe?overlaps()[0]:null;
+    if(!r){el.hidden=true;return}
+    var who=esc(people[r.p].n), em=emoFor(r.p,r.fc);
+    el.innerHTML='<span class="hk">Next overlap</span><b>'+(r.km?who+' is in '+em+' '+esc(r.fc)+', '+r.km+' km from you':'You and '+who+' are both in '+em+' '+esc(r.city))+'</b><i>'+range(r.a,r.b)+' ›</i>';
+    el.hidden=false;
+  }
   function renderGrid(){
     var MEM=['\u26c4','\u2744\ufe0f','\ud83c\udf31','\ud83c\udf38','\ud83c\udf37','\ud83c\udf53','\u2600\ufe0f','\ud83c\udfd6\ufe0f','\ud83c\udf47','\ud83c\udf42','\ud83c\udf41','\ud83c\udf84'];
     $('mlabel').textContent=MN[vm]+' '+vy;
@@ -290,7 +301,9 @@ import * as api from './api.js';
       var st=d>=T&&shows(0,d)?stayAt(0,d):null;
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit'+(col>0&&i>1&&iso(vy,vm,i-1)>=T&&hit(iso(vy,vm,i-1))?' hp':'')+(col<6&&i<n&&hit(iso(vy,vm,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
+      var isH=d>=T&&hit(d), isHp=isH&&col>0&&i>1&&iso(vy,vm,i-1)>=T&&hit(iso(vy,vm,i-1));
+      if(isHp){who=[];bar=''}
+      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(vy,vm,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
         if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
@@ -300,6 +313,7 @@ import * as api from './api.js';
       h+='</span>'+bar+'</button>';
     }
     $('grid').innerHTML=h;
+    hero();
     requestAnimationFrame(fitList);
   }
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
@@ -384,7 +398,7 @@ import * as api from './api.js';
       var so=people[s.p].stays[s.i];
       if(selP!==null){a=ec(s.p,s.city,so);b=range(s.a,s.b)}
       else if(selC){a=esc(people[s.p].n);b=range(s.a,s.b)}
-      else{a=esc(people[s.p].n);b=ec(s.p,s.city,so)+', '+range(s.a,s.b)}
+      else{a=ec(s.p,s.city,so);b=range(s.a,s.b)}
       h+=row(s.p,a,b,'data-p="'+s.p+'" data-i="'+s.i+'"',shared(s));
     });
     LT=title;LB=h;cnt+=st.length;
