@@ -272,7 +272,7 @@ import * as api from './api.js';
   }
   function renderGrid(){
     var MEM=['\u26c4','\u2744\ufe0f','\ud83c\udf31','\ud83c\udf38','\ud83c\udf37','\ud83c\udf53','\u2600\ufe0f','\ud83c\udfd6\ufe0f','\ud83c\udf47','\ud83c\udf42','\ud83c\udf41','\ud83c\udf84'];
-    $('mlabel').textContent=MEM[vm]+' '+MN[vm]+' '+vy;
+    $('mlabel').textContent=MN[vm]+' '+vy;
     season(vm);
     var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);

@@ -389,7 +389,7 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 
 /* seasons: tint of the month at the top and falling emoji behind the cards */
 :root{--sea:transparent}
-html{background:var(--bg)}body{min-height:100vh;background:linear-gradient(180deg,var(--sea) 0,var(--bg) 75vh) var(--bg)}
+html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:var(--bg)}}
 :root[data-theme="dark"] body{background:var(--bg)}
 #snow{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
@@ -410,3 +410,23 @@ html{background:var(--bg)}body{min-height:100vh;background:linear-gradient(180de
 .lprev .row .tx i{display:block;font-size:12.5px;font-style:normal;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lprev .row .tag{font-size:11.5px;margin-left:36px}
 .lprev .empty{grid-column:1/-1}
+
+/* minimal: white page, no shadows, light grey lines, small grey arrows */
+:root:not([data-theme="dark"]){--bg:#fff;--card:#fff;--shadow:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shadow:none}}
+.card,.calcard,.list{box-shadow:none}
+.calcard{padding:4px 2px 0}
+.list{padding:2px 4px}
+.tabs{background:#F6F2F4;box-shadow:none}
+.pillb{background:transparent;border:1px solid #ECE4E8;font-weight:700;color:var(--soft)}
+.pillb.on{border-color:transparent;color:var(--on)}
+.calcard .mbar .hd{font-size:20px;font-weight:800}
+.nav{gap:0;align-items:center}
+.calcard .nav button,.nav button{width:32px;height:32px;background:transparent;color:#A8A0A5;border-radius:50%}
+.nav button svg{width:16px;height:16px}
+.calcard .nav #tod,.nav #tod{width:auto;height:26px;padding:0 9px;background:transparent;border:1px solid #ECE4E8;color:var(--soft);font-size:12px;font-weight:700;margin-right:4px}
+.grid::before{background:#FFF4F8}
+.dows{color:#B5ADB2}
+.lprev .row{background:#FFF4F8}
+.req{box-shadow:none}
+#snow span{opacity:.55}
