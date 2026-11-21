@@ -480,6 +480,7 @@ import * as api from './api.js';
       var ps=api.pushState();
       h+=head('Your settings')
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
+        +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
         +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
@@ -843,6 +844,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name, so friends know who you are.';return}
     if(!c){$('err').textContent='Type your city or tap one above.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
+    if(!ph||ph.replace(/\D/g,'').length<7){$('err').textContent='Add your WhatsApp number, so friends can message you.';return}
     if(!userOk(saveWelcome))return;
     checkCity($('fw'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
@@ -851,7 +853,7 @@ import * as api from './api.js';
   /* the first time someone opens the page without a home city, ask for it before anything else */
   var asked=false, ready=false;
   function welcome(){
-    if(asked||!ready||(people[0].home&&people[0].full&&(people[0].user||!people[0].userCol))||sheet)return;
+    if(asked||!ready||(people[0].home&&people[0].full&&(people[0].user||!people[0].userCol)&&(people[0].phone||!people[0].phoneCol))||sheet)return;
     asked=true;sheet='hello';selD=null;renderSheet();
   }
   /* your plans as plain text: home base, then every upcoming trip in date order */
@@ -889,6 +891,7 @@ import * as api from './api.js';
     if(!n){$('err').textContent='Add your name.';return}
     if(!c){$('err').textContent='Add the city where you live.';return}
     var ph=cleanPhone($('fp')&&$('fp').value);
+    if(!ph||ph.replace(/\D/g,'').length<7){$('err').textContent='Add your WhatsApp number, so friends can message you.';return}
     if(!userOk(saveHome))return;
     checkCity($('fh'),c,function(r){
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
@@ -958,7 +961,7 @@ import * as api from './api.js';
   }
   function apply(d){
     var me=d.me;
-    people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].stays=me.stays;
+    people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].phoneCol=me.phone!==undefined;people[0].stays=me.stays;
     people[0].user=me.username||'';people[0].userCol=me.username!==undefined;autoUser(me);
     myCode=me.invite_code||'';requests=d.requests;
     allF=d.friends.map(function(f){
