@@ -39,12 +39,25 @@ type Msg = { type: 'push-state' | 'push-request' | 'open-external' | 'calendar-e
 
 // Next 6 months of events from the phone's calendars, read only when the person taps "From my calendar".
 async function calendarEvents() {
-  const p = await Calendar.requestCalendarPermissionsAsync();
+  let p;
+  try {
+    p = await Calendar.requestCalendarPermissionsAsync();
+  } catch {
+    p = await Calendar.getCalendarPermissionsAsync();
+  }
   if (p.status !== 'granted') return { state: 'denied' };
   const cals = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
   const start = new Date();
   const end = new Date(start.getTime() + 183 * 864e5);
-  const ev = await Calendar.getEventsAsync(cals.map((c) => c.id), start, end);
+  // one calendar at a time, so a calendar the phone cannot read (birthdays, a broken subscription) does not stop the rest
+  let ev: Calendar.Event[] = [];
+  for (const c of cals) {
+    try {
+      ev = ev.concat(await Calendar.getEventsAsync([c.id], start, end));
+    } catch {}
+    if (ev.length > 600) break;
+  }
+  ev.sort((a, b) => +new Date(a.startDate) - +new Date(b.startDate));
   const events = ev.slice(0, 400).map((e) => ({
     title: (e.title || '').slice(0, 120),
     location: (e.location || '').slice(0, 160),

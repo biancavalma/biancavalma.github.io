@@ -92,10 +92,12 @@ export async function unfriend(id) {
 
 // Me, my friends, all trips we can see (from two months ago on), and requests waiting for me
 export async function loadAll(uid) {
-  const [p, t, r] = await Promise.all([
+  const [p, t, r, ti, tg] = await Promise.all([
     sb.from('profiles').select('id, name, home, invite_code, phone, username, avatar_url').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone, username') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
     tripsQuery(),
     sb.rpc('my_requests'),
+    sb.rpc('my_trip_invites'),
+    sb.rpc('my_trip_guests'),
   ]);
   if (p.error) throw p.error;
   if (t.error) throw t.error;
@@ -110,6 +112,9 @@ export async function loadAll(uid) {
     me: { ...me, stays: stays(uid) },
     friends: friends.map((f) => ({ ...f, stays: stays(f.id) })),
     requests: r.error ? [] : r.data || [],
+    tripInvites: ti.error ? [] : ti.data || [],
+    guests: tg.error ? [] : tg.data || [],
+    invitesReady: !tg.error,
   };
 }
 
@@ -315,5 +320,16 @@ export async function uploadAvatar(uid, blob) {
 export async function removeAvatar(uid) {
   await sb.storage.from('avatars').remove([uid + '/avatar.jpg']);
   const { error } = await sb.from('profiles').update({ avatar_url: null }).eq('id', uid);
+  if (error) throw error;
+}
+
+/* invite friends to one of my trips; they Join or say Not now */
+export async function inviteToTrip(tripId, ids) {
+  const { data, error } = await sb.rpc('invite_to_trip', { t: tripId, people: ids });
+  if (error) throw error;
+  return data;
+}
+export async function answerTripInvite(id, yes) {
+  const { error } = await sb.rpc('answer_trip_invite', { i: id, yes });
   if (error) throw error;
 }

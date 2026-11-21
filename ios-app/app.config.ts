@@ -24,6 +24,8 @@ const config: ExpoConfig = {
     buildNumber: '1',
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSCalendarsUsageDescription: 'Overlap reads your calendar only when you tap "From my calendar", to suggest trips you can add with one tap.',
+      NSCalendarsFullAccessUsageDescription: 'Overlap reads your calendar only when you tap "From my calendar", to suggest trips you can add with one tap.',
       NSLocationWhenInUseUsageDescription: 'Overlap uses your location once, only when you tap "Use my location", to fill in the city you live in.',
     },
   },

@@ -577,3 +577,51 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 [data-look~="c"] .nav #tod{border:1px solid rgba(30,25,20,.1);color:#5F5A55}
 [data-look~="c"] .nxpop{border:1px solid rgba(30,25,20,.07);box-shadow:0 2px 6px rgba(30,25,20,.05),0 14px 34px rgba(30,25,20,.12)}
 [data-look~="c"] .lprev .row{background:#fff;border:1px solid rgba(30,25,20,.07);box-shadow:0 1px 2px rgba(30,25,20,.04)}
+
+/* calendar top: only Today and share stay, month names sit in the list */
+.calcard .mbar #mlabel{display:none}
+.calcard .mbar{justify-content:flex-end;min-height:0;margin:0}
+.calcard .stick{padding-top:6px}
+.mon:first-child .mhd{display:block;padding-top:4px}
+/* days that are gone: very light */
+.cell.past .n{color:#D9D2D6!important}
+.cell.past .faces{opacity:.35}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cell.past .n{color:#5A4F55!important}}
+/* round + exactly in the middle */
+[data-look~="a"] #add,[data-look~="a"] #add2{display:flex!important;align-items:center;justify-content:center}
+[data-look~="a"] #add::after,[data-look~="a"] #add2::after{content:"";width:22px;height:22px;line-height:0;background:linear-gradient(#fff,#fff) center/22px 3.2px no-repeat,linear-gradient(#fff,#fff) center/3.2px 22px no-repeat;border-radius:2px}
+[data-look~="a"] #app:not(.oncal) #add{display:none!important}
+#v-ov[hidden] #add2,[data-look~="a"] #v-ov[hidden] #add2{display:none!important}
+/* share sheet buttons: smaller and all the same */
+.shb{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.shb button,.shbl{height:46px!important;min-height:0;font-size:15.5px!important;font-weight:800;border-radius:999px;width:100%;margin:0!important;padding:0 16px}
+.shbl{margin-top:4px!important}
+/* bring friends on a trip */
+.wf{margin:14px 0 4px}
+.wfh{font-size:14px;font-weight:800;margin-bottom:8px}
+.wfh i{display:block;font-style:normal;font-weight:600;font-size:12.5px;color:var(--soft)}
+.wfl{display:flex;flex-wrap:wrap;gap:8px}
+.wfb{display:flex;flex-direction:column;align-items:center;gap:3px;width:68px;padding:8px 4px;border-radius:16px;background:transparent;border:1.5px solid var(--line,#eee);font-size:12.5px}
+.wfb b{font-weight:800;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wfb i{font-style:normal;font-size:11px;color:var(--soft)}
+.wfb.on{border-color:var(--ink);background:#FFF3B0}
+.wfb.done{opacity:.7}
+.req.tinv{align-items:center}
+.req.tinv .tx i{display:block;font-style:normal;font-weight:600;color:var(--soft);font-size:12px}
+.brand{cursor:pointer}
+.about p{font-size:15.5px;line-height:1.45;margin:0 0 10px}
+.about .wel{display:flex;justify-content:center;margin:0 0 10px}
+
+/* share lives in the top bar; Today floats over the calendar only when you are far from it */
+.shtop{width:34px;height:40px;display:flex;align-items:center;justify-content:center;background:transparent;color:#A8A0A5}
+.shtop svg{width:19px;height:19px}
+.calcard{position:relative}
+.calcard .mbar{display:contents}
+.calcard .mbar .nav{display:contents}
+.calcard .nav #tod,.nav #tod{position:absolute;left:50%;transform:translateX(-50%);top:40px;z-index:8;height:30px;padding:0 14px;border:0!important;border-radius:999px;background:var(--ink)!important;color:#fff!important;font-size:13px;font-weight:800;box-shadow:0 6px 16px rgba(42,20,32,.25);margin:0}
+.calcard .nav #tod[hidden]{display:none}
+.calcard .stick{padding-top:8px}
+.tbtns{gap:6px!important}.shtop{width:28px}.brand{flex:none}.top{gap:6px}
+.tb{min-width:0}.tbtns{gap:10px!important}
+.locked #langs,.locked #langs *{pointer-events:auto!important;opacity:1!important}
+.locked #langs{display:flex!important}

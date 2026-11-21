@@ -2,12 +2,16 @@
 try{var lk0=new URLSearchParams(location.search).get('look')||'a';document.documentElement.setAttribute('data-look',lk0==='c'?'a c':lk0)}catch(e){document.documentElement.setAttribute('data-look','a')}
 import './style.css';
 import * as api from './api.js';
+import { LANG, LANGS, setLang, startI18n } from './i18n.js';
 
   var COL=['#9fe3c9','#ffc59e','#cbb8ff','#a6d4ff','#ffb0d0','#d3e98a','#ffd98a','#b5ead7'];
   var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
   var M3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var DW=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  if(LANG==='it'){MN=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];M3=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];DW=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica']}
   function $(id){return document.getElementById(id)}
+  startI18n();
+  if(LANG==='it'){var dws=document.querySelectorAll('.dows span');['L','M','M','G','V','S','D'].forEach(function(x,i){if(dws[i])dws[i].textContent=x})}
   function pad(x){return x<10?'0'+x:''+x}
   function iso(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d)}
   function parts(s){var a=s.split('-');return {y:+a[0],m:+a[1]-1,d:+a[2]}}
@@ -16,8 +20,9 @@ import * as api from './api.js';
   function range(a,b){
     var x=parts(a),y=parts(b);
     if(a===b)return day(a);
-    if(x.m===y.m&&x.y===y.y)return x.d+' to '+y.d+' '+M3[x.m];
-    return day(a)+' to '+day(b);
+    var TO=LANG==='it'?'–':' to ';
+    if(x.m===y.m&&x.y===y.y)return x.d+TO+y.d+' '+M3[x.m];
+    return day(a)+(LANG==='it'?' – ':' to ')+day(b);
   }
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function byStart(x,y){return x.a<y.a?-1:x.a>y.a?1:x.p-y.p}
@@ -104,7 +109,7 @@ import * as api from './api.js';
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
   var setEdit=false, onlyMe=false, tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
-  var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false;
+  var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false, tripInv=[], guests=[], invOk=false, wfSel=[];
 
   function index(){
     UP=[];
@@ -165,6 +170,8 @@ import * as api from './api.js';
     if(!e.target.closest('#avrm'))return;
     api.removeAvatar(people[0].id).then(function(){people[0].av='';renderAll();toast('Photo removed')},function(){toast('Could not remove it, try again.')});
   });
+  document.querySelector('#app .brand').onclick=function(){sheet='about';selD=null;renderSheet()};
+  document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b&&b.getAttribute('data-lang')!==LANG)setLang(b.getAttribute('data-lang'))});
   function renderTop(){
     $('me').innerHTML='<span class="tbi">'+face(0,40,false)+'</span><b>You</b>';
     $('note').textContent='Only friends you accept see your plans.';
@@ -391,7 +398,7 @@ import * as api from './api.js';
   function openRange(a,d){
     gs=null;showBar();pkHide=true;
     edit=null;trip=null;pe=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
-    sheet='add';renderGrid();renderSheet();
+    wfSel=[];sheet='add';renderGrid();renderSheet();
   }
   $('grid').addEventListener('click',function(e){
     var pr=e.target.closest('.lprev .row[data-p]');if(pr){pickRow(pr);return}
@@ -563,8 +570,9 @@ import * as api from './api.js';
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
         +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note (optional)" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
         +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span><span class="pl"><b>Private</b><i>Visible only to me</i></span></button></div>'
+        +withFriends()
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
-        +(edit!==null?calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
+        +(edit!==null?'<button type="button" class="ghost" id="share1">'+SHARE_I+'Share this trip</button>'+calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
@@ -593,10 +601,18 @@ import * as api from './api.js';
         +'<p class="hint">Copy it and paste it into any chat, for friends who are not on Overlap.</p>'
         +'<div class="sug" id="plang">'+[['en','English'],['it','Italiano'],['de','Deutsch'],['fr','Français'],['es','Español']].map(function(o){return '<button type="button" data-l="'+o[0]+'"'+(o[0]===plang?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div>'
         +'<div class="ptxv" id="ptxv"></div><textarea class="ptx" id="ptx" readonly aria-hidden="true" tabindex="-1"></textarea>'
-        +'<button type="button" class="add hd" id="copy" style="margin-top:8px">Copy text</button>'
-        +'<button type="button" class="ghost wa2" id="nwa">'+WA+'Send on WhatsApp</button>'
-        +(api.canShare?'<button type="button" class="ghost" id="nshare">Send with\u2026</button>':'')
+        +'<div class="shb"><button type="button" class="add" id="copy">Copy text</button>'
+        +'<button type="button" class="ghost wa2" id="nwa">'+WA+'WhatsApp</button>'
+        +(api.canShare?'<button type="button" class="ghost" id="nshare">Send with\u2026</button>':'')+'</div>'
         +myTripsCal();
+    }else if(sheet==='about'){
+      h+=head('About Overlap')
+        +'<div class="about"><div class="wel">'+document.querySelector('.brand svg').outerHTML+'</div>'
+        +'<p><b>Overlap shows when you and your friends are in the same place.</b></p>'
+        +'<p>Add where you\u2019ll be: your home city, and the trips you plan. Your friends do the same.</p>'
+        +'<p>When two of you are in the same city on the same days, or close by, Overlap tells you. Then you can send a message and meet.</p>'
+        +'<p>Only friends you accept see your plans. Trips marked Private are only for you.</p>'
+        +'<p class="hint">Made with love by Bianca.</p></div>';
     }else if(sheet==='invite'){
       h+=head('Invite a friend')
         +'<p class="hint">Send your personal link. When they join, you see each other\u2019s plans. People you invite never see each other unless they are friends too.</p>'
@@ -624,7 +640,7 @@ import * as api from './api.js';
         +'<div class="f'+(setEdit?'':' locked')+'" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
         +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
-        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
+        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()+'<label>Language</label><div class="sug notr" id="langs">'+LANGS.map(function(l){return '<button type="button" data-lang="'+l[0]+'"'+(l[0]===LANG?' class="on"':'')+'>'+l[1]+'</button>'}).join('')+'</div>'
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
         +'<p class="err" id="err"></p>'+(setEdit?'<button type="button" class="add hd" id="saveh">Save</button>':'<button type="button" class="add hd" id="edith">Edit</button>')+'</div>'
         +'<div class="sep"></div>'
@@ -651,6 +667,8 @@ import * as api from './api.js';
     if(sheet==='add'){
       if(edit!==null&&me.stays[edit])$('fc').value=me.stays[edit].city;
       $('save').onclick=saveTrip;renderPick();
+      document.querySelectorAll('[data-wf]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-wf'),k=wfSel.indexOf(id);if(k>=0)wfSel.splice(k,1);else wfSel.push(id);b.classList.toggle('on',k<0)}});
+      if($('share1'))$('share1').onclick=function(){var t=oneTripText(me.stays[edit]);if(api.canShare)api.shareText(t);else api.openExternal('https://wa.me/?text='+encodeURIComponent(t))};
       $('pkp').onclick=function(){rm--;if(rm<0){rm=11;ry--}renderPick()};
       $('pkn').onclick=function(){rm++;if(rm>11){rm=0;ry++}renderPick()};
       $('pkg').onclick=function(e){
@@ -770,7 +788,7 @@ import * as api from './api.js';
     if(!st.length)return '';
     var b64=btoa(unescape(encodeURIComponent(icsOf(st)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
     var h='<div class="sep"></div><div class="hd" style="font-size:17px;margin:2px 0 6px">Add to my calendar</div>'
-      +'<a class="add hd" style="display:flex;align-items:center;justify-content:center;text-decoration:none" data-ext="1" target="_blank" rel="noopener" href="'+location.origin+'/ics.html#'+b64+'">\ud83d\udcc5 Apple Calendar, all trips</a>'
+      +'<a class="add shbl" style="display:flex;align-items:center;justify-content:center;text-decoration:none" data-ext="1" target="_blank" rel="noopener" href="'+location.origin+'/ics.html#'+b64+'">\ud83d\udcc5 Apple Calendar, all trips</a>'
       +'<p class="hint" style="margin:8px 0 4px">Google Calendar, one trip at a time:</p><div class="gcl">';
     st.forEach(function(x){var a=x.a.replace(/-/g,''),b=next(x.b).replace(/-/g,'');
       h+='<a data-ext="1" target="_blank" rel="noopener" href="https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent((x.e||emoFor(0,x.city))+' '+x.city)+'&dates='+a+'/'+b+'&details='+encodeURIComponent(x.note||'Added from Overlap')+'">'+(x.e||emoFor(0,x.city))+' '+esc(x.city)+' <i>'+range(x.a,x.b)+'</i><b>Google ›</b></a>'});
@@ -788,16 +806,16 @@ import * as api from './api.js';
     var s=people[0].stays[i];if(!s)return;
     edit=i;trip=null;ra=s.a;rb=s.b;pe=s.e||null;
     var p=parts(s.a<T?T:s.a);ry=p.y;rm=p.m;
-    sheet='add';renderSheet();
+    wfSel=[];sheet='add';renderSheet();
   }
   function openAdd(d){
-    edit=null;trip=null;pe=null;ra=d&&d>=T?d:null;rb=null;
+    edit=null;trip=null;pe=null;wfSel=[];ra=d&&d>=T?d:null;rb=null;
     var p=parts(ra||T);ry=p.y;rm=p.m;
     sheet='add';renderSheet();
   }
   function renderPick(){
     var lead=(new Date(ry,rm,1).getDay()+6)%7, n=new Date(ry,rm+1,0).getDate(), h='', i;
-    'MTWTFSS'.split('').forEach(function(x){h+='<em>'+x+'</em>'});
+    (LANG==='it'?'LMMGVSD':'MTWTFSS').split('').forEach(function(x){h+='<em>'+x+'</em>'});
     for(i=0;i<lead;i++)h+='<span></span>';
     for(i=1;i<=n;i++){
       var d=iso(ry,rm,i), end=rb||ra, cls=[];
@@ -872,7 +890,29 @@ import * as api from './api.js';
   /* live suggestions under a city box: your own cities first, then the world list */
   /* ---------- quicker ways to add trips ---------- */
   function addDays(d,n){var p=parts(d);var x=new Date(p.y,p.m,p.d+n);return iso(x.getFullYear(),x.getMonth(),x.getDate())}
-  function addMine(ns){people[0].stays.push(ns);keep(api.addTrip(ns).then(function(id){ns.id=id}))}
+
+  var SHARE_I='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px;vertical-align:-3px"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>';
+  /* friends you can bring on a trip: tap their faces, they get an invite to Join */
+  function withFriends(){
+    if(!invOk||people.length<2)return '';
+    var st=edit!==null?people[0].stays[edit]:null, g={};
+    if(st&&st.id)guests.forEach(function(x){if(x.trip_id===st.id)g[x.to_user]=x.status});
+    var h='<div class="wf"><div class="wfh">Bring friends <i>they get an invite to add it to their calendar</i></div><div class="wfl">';
+    for(var i=1;i<people.length;i++){var id=people[i].id,stt=g[id];
+      h+='<button type="button" class="wfb'+(stt?' done':wfSel.indexOf(id)>=0?' on':'')+'" data-wf="'+id+'"'+(stt?' disabled':'')+'>'+face(i,34,false)+'<b>'+esc(people[i].n)+'</b>'+(stt?'<i>'+(stt==='accepted'?'joined':stt==='declined'?'not now':'invited')+'</i>':'')+'</button>'}
+    return h+'</div></div>';
+  }
+  function sendInvites(tripId,ids,city){
+    if(!ids.length||!tripId)return;
+    api.inviteToTrip(tripId,ids).then(function(){
+      ids.forEach(function(u){guests.push({trip_id:tripId,to_user:u,status:'pending'})});
+      toast(ids.length===1?'Invite sent':'Invites sent')},function(){toast('Could not send the invite. Run the database update (sql.html).')});
+  }
+  function oneTripText(st){
+    var link=location.origin+'/?i='+encodeURIComponent(myCode);
+    return 'I’ll be in '+(st.e||emoFor(0,st.city))+' '+st.city+', '+range(st.a,st.b)+'.'+(st.note?' '+st.note:'')+'\nJoin me on Overlap, so we know when we are in the same city: '+link;
+  }
+  function addMine(ns){people[0].stays.push(ns);var pr=api.addTrip(ns).then(function(id){ns.id=id;return id});keep(pr);return pr}
   function covered(c,a,b){return people[0].stays.some(function(s){return s.city===c&&s.a<=b&&s.b>=a})}
   var imp=null;
   var MON={gen:0,jan:0,ene:0,feb:1,fev:1,fév:1,mar:2,mär:2,mrz:2,apr:3,avr:3,abr:3,mag:4,may:4,mai:4,giu:5,jun:5,jui:5,lug:6,jul:6,ago:7,aug:7,aou:7,aoû:7,set:8,sep:8,ott:9,oct:9,okt:9,nov:10,dic:11,dec:11,déc:11,dez:11};
@@ -985,10 +1025,11 @@ import * as api from './api.js';
     checkCity($('fc'),c,function(r){
     c=r;
     var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e,note:String($('fnote').value||'').trim().slice(0,200),priv:$('fpriv').classList.contains('on')}, old=edit!==null?people[0].stays[edit]:null;
-    if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns))}
+    var inv=ns.priv?[]:wfSel.slice();wfSel=[];
+    if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns));sendInvites(old.id,inv,c)}
     else{
       var ron=$('frep')&&$('frep').querySelector('.on'), every=ron?+ron.getAttribute('data-r'):0;
-      addMine(ns);
+      addMine(ns).then(function(id){sendInvites(id,inv,c)});
       if(every){var lim=addDays(a,92);for(var k=every;addDays(a,k)<=lim;k+=every){var cp={city:c,a:addDays(a,k),b:addDays(b,k),e:e,note:ns.note,priv:ns.priv};addMine(cp)}}
     }
     pe=null;
@@ -1063,7 +1104,7 @@ import * as api from './api.js';
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
   }
-  $('add').onclick=function(){sheet='add';edit=null;pe=null;selD=null;ra=rb=null;ry=vy;rm=vm;if(iso(ry,rm,28)<T){ry=n0.getFullYear();rm=n0.getMonth()}renderSheet()};
+  $('add').onclick=function(){sheet='add';edit=null;wfSel=[];pe=null;selD=null;ra=rb=null;ry=vy;rm=vm;if(iso(ry,rm,28)<T){ry=n0.getFullYear();rm=n0.getMonth()}renderSheet()};
 
   /* ---------- real data ---------- */
 
@@ -1085,9 +1126,13 @@ import * as api from './api.js';
   function renderReqs(){
     $('reqs').innerHTML=requests.map(function(r){
       return '<div class="req"><span class="tx">'+esc(r.from_name)+' wants to share plans with you</span><button type="button" class="no" data-no="'+r.id+'">Not now</button><button type="button" class="yes" data-yes="'+r.id+'">Accept</button></div>';
+    }).join('')+tripInv.map(function(r){var fi=-1;for(var k=1;k<people.length;k++)if(people[k].id===r.from_user)fi=k;
+      return '<div class="req tinv">'+(fi>0?face(fi,30,false):'')+'<span class="tx">'+esc(String(r.from_name||'A friend').split(' ')[0])+' invites you to '+(r.emoji||emoFor(0,r.city))+' '+esc(r.city)+'<i>'+range(r.start_date,r.end_date)+'</i></span><button type="button" class="no" data-tno="'+r.id+'">Not now</button><button type="button" class="yes" data-tyes="'+r.id+'">Join</button></div>';
     }).join('');
   }
   $('reqs').addEventListener('click',function(e){
+    var ty=e.target.closest('[data-tyes]'), tn=e.target.closest('[data-tno]');
+    if(ty||tn){var tid=(ty||tn).getAttribute(ty?'data-tyes':'data-tno');(ty||tn).disabled=true;tripInv=tripInv.filter(function(r){return r.id!==tid});renderReqs();api.answerTripInvite(tid,!!ty).then(function(){if(ty){toast('Added to your calendar');reload()}},function(){toast('Could not answer, try again.')});return}
     var y=e.target.closest('[data-yes]'), n=e.target.closest('[data-no]');
     if(y){y.disabled=true;api.acceptRequest(y.getAttribute('data-yes')).then(function(){toast('Friend added');reload()},function(){y.disabled=false;toast('Could not accept, try again.')})}
     if(n){var id=n.getAttribute('data-no');requests=requests.filter(function(r){return r.id!==id});renderReqs();api.ignoreRequest(id)}
@@ -1129,7 +1174,7 @@ import * as api from './api.js';
     var me=d.me;
     people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].phoneCol=me.phone!==undefined;people[0].av=me.avatar_url||'';people[0].avCol=me.avatar_url!==undefined;people[0].stays=me.stays;
     people[0].user=me.username||'';people[0].userCol=me.username!==undefined;autoUser(me);
-    myCode=me.invite_code||'';requests=d.requests;
+    myCode=me.invite_code||'';requests=d.requests;tripInv=d.tripInvites||[];guests=d.guests||[];invOk=!!d.invitesReady;
     allF=d.friends.map(function(f){
       return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',av:f.avatar_url||'',stays:f.stays};
     });

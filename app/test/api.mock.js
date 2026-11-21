@@ -13,6 +13,8 @@ const db = {
     { id: 'f1', name: 'Mariechen', home: 'Florence', stays: [{ id: 'x1', city: 'Zurich', a: d(11), b: d(13) }] },
     { id: 'f2', name: 'Paola', home: 'Zurich', avatar_url: 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8EC5FF"/><stop offset="1" stop-color="#FFD1E3"/></linearGradient></defs><rect width="40" height="40" fill="url(#g)"/><circle cx="28" cy="12" r="5" fill="#FFE14D"/><path d="M0 32l12-12 10 9 6-5 12 10v6H0z" fill="#5BA36B"/></svg>'), stays: [{ id: 'x2', city: 'Florence', a: d(5), b: d(9) }, { id: 'x3', city: 'Bali', a: d(25), b: d(40) }] },
     { id: 'f3', name: 'Masha', home: 'London', stays: [] } ],
+  tripInvites: P.has('noreq') ? [] : [{ id: 'ti1', from_user: 'f1', from_name: 'Mariechen', city: 'Lisbon', start_date: d(30), end_date: d(33), emoji: '', note: '' }],
+  guests: [], invitesReady: true,
   requests: P.has('noreq') ? [] : [{ id: 'r1', from_name: 'Giulia' }],
 };
 export const session = async () => (signedIn ? { user: { id: 'me' } } : null);
@@ -50,3 +52,5 @@ export const hasPhoneApp = async () => false;
 
 export const uploadAvatar = async (u, b) => URL.createObjectURL(b);
 export const removeAvatar = async () => {};
+export const inviteToTrip = async (t, ids) => ids.length;
+export const answerTripInvite = async () => { db.tripInvites = []; };
