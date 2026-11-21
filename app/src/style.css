@@ -625,3 +625,17 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .tb{min-width:0}.tbtns{gap:10px!important}
 .locked #langs,.locked #langs *{pointer-events:auto!important;opacity:1!important}
 .locked #langs{display:flex!important}
+
+/* smaller round + */
+[data-look~="a"] #add,[data-look~="a"] #add2{width:46px!important;height:46px!important;right:20px;bottom:calc(19px + env(safe-area-inset-bottom,0px))}
+[data-look~="a"] #add::after,[data-look~="a"] #add2::after{width:18px;height:18px;background-size:18px 2.8px,2.8px 18px}
+/* small month name stays on top with the weekday letters */
+.calcard .mbar{display:flex!important;justify-content:flex-start;padding:0 6px}
+.calcard .mbar #mlabel{display:block!important;font-size:13px!important;font-weight:800;color:var(--soft);letter-spacing:.02em}
+.calcard .stick{padding-top:6px}
+.mon:first-child .mhd{display:none}
+/* share at the end of the filters row */
+.prow{display:flex;align-items:center;gap:4px;min-width:0}
+.prow .pills{flex:1;min-width:0}
+.prow .shtop{flex:none;width:32px;height:32px;border-radius:50%;margin-right:-4px}
+.calcard .nav #tod,.nav #tod{top:62px}
