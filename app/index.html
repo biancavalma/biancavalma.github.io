@@ -30,6 +30,7 @@
       Overlap
     </div>
     <div class="tbtns">
+      <button type="button" class="tb nxt" id="nxt" hidden></button>
       <button type="button" class="tb" id="addf" aria-label="Find and add a friend"><span class="tbi"><svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="20" style="fill:var(--butter)"/><circle cx="14.5" cy="17" r="2.2" style="fill:var(--face)"/><circle cx="25.5" cy="17" r="2.2" style="fill:var(--face)"/><path d="M13 23.5c2 3 5 4.2 7 4.2s5-1.2 7-4.2" fill="none" style="stroke:var(--face)" stroke-width="2.4" stroke-linecap="round"/></svg><span class="lens"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.6-4.6"/></svg></span></span><b>Add friend</b></button>
       <button type="button" class="tb" id="me" aria-label="Your settings"></button>
     </div>
@@ -37,6 +38,7 @@
 
   <div id="getapp" class="getapp" hidden><span class="tx"><b>Get the Overlap app</b><i>Faster, and it tells you when you overlap</i></span><a id="getappgo" class="gbtn" target="_blank" rel="noopener">Get it</a><button type="button" class="x" id="getappx" aria-label="Not now">×</button></div>
   <div id="reqs"></div>
+  <div class="nxpop" id="nxpop" hidden></div>
 
   <div class="tabs">
     <button type="button" class="tab" id="t-ov">Overlaps</button>
@@ -52,7 +54,6 @@
 
   <div id="v-cal" hidden style="display:flex;flex-direction:column;gap:12px">
     <div class="pills" id="pills"></div>
-    <button type="button" class="hero" id="hero" hidden></button>
     <div class="card calcard">
       <div class="calframe" id="calframe">
       <div class="stick">

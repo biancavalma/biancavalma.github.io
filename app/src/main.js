@@ -235,7 +235,9 @@ import * as api from './api.js';
     $('ovlist').innerHTML=h;
     if($('ovinv'))$('ovinv').onclick=function(){sheet='invite';renderSheet()};
   }
-  if($('hero'))$('hero').onclick=function(){$('t-ov').click()};
+  $('nxt').onclick=function(e){e.stopPropagation();nxPop()};
+  $('nxpop').onclick=function(){$('nxpop').hidden=true;$('t-ov').click()};
+  document.addEventListener('click',function(e){if(!e.target.closest('#nxpop,#nxt'))$('nxpop').hidden=true});
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
@@ -281,6 +283,7 @@ import * as api from './api.js';
   function season(m){
     if(m===seaM)return;seaM=m;
     document.documentElement.style.setProperty('--sea',SEA[m][0]);
+    return;
     var el=$('snow');if(!el){el=document.createElement('div');el.id='snow';el.setAttribute('aria-hidden','true');document.body.insertBefore(el,document.body.firstChild)}
     var e=SEA[m][1],h='',i;
     for(i=0;i<8;i++){var x=(i*29+7)%100,dur=14+(i*7)%12,del=-((i*53)%26),sz=11+(i%3)*5;
@@ -289,13 +292,21 @@ import * as api from './api.js';
   }
 
   /* one line on top: the next time you and a friend are in the same place */
+  /* next overlap: the friend's face waits in the top bar, tap it for the details */
+  var nxR=null;
   function hero(){
-    var el=$('hero');if(!el)return;
-    var r=people[0].home&&!onlyMe?overlaps()[0]:null;
-    if(!r){el.hidden=true;return}
-    var who=esc(people[r.p].n), em=emoFor(r.p,r.fc);
-    el.innerHTML='<span class="hk">Next overlap</span><b>'+(r.km?who+' is in '+em+' '+esc(r.fc)+', '+r.km+' km from you':'You and '+who+' are both in '+em+' '+esc(r.city))+'</b><i>'+range(r.a,r.b)+' ›</i>';
+    var el=$('nxt');if(!el)return;
+    var r=people[0].home&&!onlyMe?overlaps()[0]:null;nxR=r;
+    if(!r){el.hidden=true;$('nxpop').hidden=true;return}
+    el.innerHTML=face(r.p,40,false)+'<span class="nxh" aria-hidden="true">💛</span>';
+    el.setAttribute('aria-label','Next overlap with '+people[r.p].n);
     el.hidden=false;
+  }
+  function nxPop(){
+    var r=nxR,pp=$('nxpop');if(!r)return;
+    var who=esc(people[r.p].n), em=emoFor(r.p,r.fc), dd=Math.round((new Date(r.a+'T12:00')-new Date(T+'T12:00'))/864e5);
+    pp.innerHTML='<b>💛 Next overlap</b><span>'+(r.km?who+' in '+em+' '+esc(r.fc)+', '+r.km+' km from you':'You and '+who+' in '+em+' '+esc(r.city))+'</span><i>'+range(r.a,r.b)+(dd>0?' · in '+dd+(dd===1?' day':' days'):' · now')+'</i>';
+    pp.hidden=!pp.hidden;
   }
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
   var NM=12, lastKey='', scrolling=false;
@@ -344,13 +355,13 @@ import * as api from './api.js';
     hero();
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
-      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;window.scrollTo(0,sec.getBoundingClientRect().top+window.scrollY-stickH());setTimeout(function(){scrolling=false},100)})}
+      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;var cf=$('calframe');cf.scrollTop=sec.offsetTop-stickH();setTimeout(function(){scrolling=false},100)})}
     topLabel();
   }
   function stickH(){var s=document.querySelector('.calcard .stick');return s?s.offsetHeight+4:60}
   /* the month name on top follows the month you are looking at */
   function topLabel(){
-    var secs=$("grid").querySelectorAll(".mon"), lim=stickH()+8, cur=secs[0];
+    var secs=$("grid").querySelectorAll(".mon"), stk=document.querySelector('.calcard .stick'), lim=(stk?stk.getBoundingClientRect().bottom:60)+8, cur=secs[0];
     for(var i=0;i<secs.length;i++){if(secs[i].getBoundingClientRect().top<=lim)cur=secs[i];else break}
     if(!cur)return;
     var y=+cur.getAttribute('data-y'), m=+cur.getAttribute('data-m');
@@ -360,8 +371,8 @@ import * as api from './api.js';
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
   }
   /* more months load by themselves as you get near the end */
-  var tlT=0;window.addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){if($('v-cal').hidden)return;topLabel();
-    if(NM<120&&document.documentElement.scrollHeight-window.scrollY-window.innerHeight<1500){NM+=6;renderGrid()}})},{passive:true});
+  var tlT=0;$('calframe').addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){var cf=$('calframe');topLabel();
+    if(NM<120&&cf.scrollHeight-cf.scrollTop-cf.clientHeight<1500){NM+=6;renderGrid()}})},{passive:true});
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
@@ -391,7 +402,7 @@ import * as api from './api.js';
     if(!gs||d<gs){gs=d;selD=null;showBar();renderGrid();return}
     openRange(gs,d);
   });
-  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;window.scrollTo({top:0,behavior:'smooth'})};
+  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;$('calframe').scrollTo({top:0,behavior:'smooth'})};
   var swiped=0;
 
   function row(p,a,b,attrs,tagged){

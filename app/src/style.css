@@ -534,3 +534,26 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .avbtns{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
 .avpick{display:inline-flex;align-items:center;height:38px;padding:0 16px;border-radius:999px;background:var(--pill);font-weight:800;font-size:14px;cursor:pointer;width:auto;margin:0}
 .linkb{background:none;font-weight:700;font-size:13px;color:var(--soft);padding:2px 4px}
+
+/* next overlap in the top bar */
+.top{position:relative}
+.nxt{position:relative;animation:nxbob 2.2s ease-in-out infinite}
+.nxt .avimg,.nxt svg{box-shadow:0 0 0 3px #FFE14D;border-radius:50%}
+.nxt .nxh{position:absolute;right:-5px;top:-6px;font-size:15px;line-height:1}
+@keyframes nxbob{50%{transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.nxt{animation:none}}
+.nxpop{position:absolute;right:max(14px,env(safe-area-inset-right,0px));top:calc(64px + env(safe-area-inset-top,0px));z-index:60;width:240px;display:flex;flex-direction:column;gap:3px;padding:12px 14px;border-radius:18px;background:var(--card);box-shadow:0 12px 30px rgba(42,20,32,.18);font-size:14px;font-weight:700;line-height:1.35;color:var(--on);cursor:pointer}
+.nxpop[hidden]{display:none}
+.nxpop i{font-style:normal;color:var(--soft);font-size:13px}
+.native .nxpop{top:calc(56px + env(safe-area-inset-top,0px))}
+#app{position:relative}
+#snow{display:none}
+
+/* calendar tab: the top stays still, only the months scroll */
+#app.oncal{height:100vh;height:100dvh;overflow:hidden;padding-bottom:0}
+#app.oncal #v-cal{flex:1;min-height:0}
+#app.oncal .calcard{flex:1;min-height:0;display:flex;flex-direction:column;padding-bottom:0}
+#app.oncal .calframe{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;position:relative;padding-bottom:96px}
+#app.oncal .calcard .stick{top:0}
+#app.oncal #add{display:none}
+[data-look="a"] #app.oncal #add{display:block}
