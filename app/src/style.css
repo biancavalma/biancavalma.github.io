@@ -287,43 +287,22 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 .sure p{color:var(--soft);font-size:15.5px;margin:0 0 18px}
 .dangerbtn{width:100%;height:54px;border-radius:999px;background:#D93A5B;color:#fff;font-weight:800;font-size:16.5px;margin-bottom:10px}
 
-/* one screen, no up-and-down scrolling: the app fills the phone exactly and the calendar stretches to fit */
-html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overflow:hidden;overscroll-behavior:none}
-#app:not([hidden]){height:100%;box-sizing:border-box;padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));gap:10px;overflow:hidden}
-#app>*{flex:none}
-#app>#v-ov,#app>#v-cal,#app>#v-fr{flex:1 1 auto;min-height:0;gap:10px!important}
-#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){display:flex!important}
-#v-cal>*{flex:none}
-#v-cal>.calcard{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;padding:10px 10px 8px}
-.calcard .mbar{padding-bottom:4px}
-.calcard .grid{flex:1 1 auto;min-height:0;grid-auto-rows:minmax(0,1fr)}
-.calcard .cell{height:auto;min-height:0}
-.calcard .sharebtn{height:36px;margin-top:6px;font-size:13.5px}
-#v-cal .list{padding:4px 14px}
-#v-cal .list .hint{margin:0 2px 4px}
-#v-cal .list .ghost{height:40px;margin-top:2px!important}
-#v-cal .add{height:48px}
-/* lists that can grow long scroll inside their own box, the top of the app stays put */
-#ovlist,#friends{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;margin:-6px -14px;padding:6px 14px}
-#app>.note{margin:0;font-size:11.5px}
-#friends>*{flex:none}
-/* tighter on the calendar so each day keeps room for its faces */
-.calcard .grid{grid-auto-rows:minmax(42px,1fr)}
-#v-cal{overflow-y:auto;overscroll-behavior:contain}
+/* Layout for every phone, tablet and computer: the page scrolls normally, which is how iPhone Safari and the app
+   handle their own bars. It stays clear of the notch, the status bar, the home bar and Safari's bottom bar. */
+.wrap{max-width:480px;padding:calc(12px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+#v-ov,#v-cal,#v-fr{min-width:0;overflow-x:hidden}
+.calcard{padding:12px 10px 10px}
+.calcard .mbar .hd{font-size:19px}
 .calcard .nav button{width:36px;height:36px}
 .calcard .nav #tod{height:36px}
-.calcard .mbar .hd{font-size:19px}
 .calcard .dows{padding-bottom:2px;font-size:12px}
+.calcard .grid{grid-auto-rows:46px}
+.calcard .cell{height:46px}
+.calcard .sharebtn{height:38px;margin-top:8px;font-size:13.5px}
 #v-cal .alerts{padding:8px 8px 8px 14px}
 #v-cal .alerts .tx{font-size:13.5px}
 #v-cal .alerts .tx i{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #v-cal .alerts button{height:34px}
-#v-cal .list>.row{min-height:40px}
-#v-cal .list>.row .hd{font-size:15.5px!important}
-#app.oncal>.note{display:none}
+@media (min-width:700px){.wrap{padding-top:calc(24px + env(safe-area-inset-top,0px))}}
 .wa2{display:flex;align-items:center;justify-content:center;gap:8px}
-/* calendar keeps normal-sized days instead of stretching to fill the screen */
-#v-cal>.calcard{flex:0 1 auto}
-.calcard .grid{flex:0 1 auto;grid-auto-rows:minmax(40px,54px)}
-/* never let a page area scroll sideways (the city row scrolls by itself) */
 #v-ov,#v-cal,#v-fr,#app{overflow-x:hidden}
