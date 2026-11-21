@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Overlap trips</title><style>body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:#FFF6F9;color:#2A1420;padding:28px 18px;text-align:center}
+a{display:block;margin:22px auto 0;max-width:360px;padding:18px;border-radius:999px;background:#FF8FB8;color:#2A1420;font-weight:800;font-size:18px;text-decoration:none}p{font-size:16px}</style></head>
+<body><h2>Your Overlap trips</h2><p>Tap the button, then "Add All" to put them in your calendar.</p><a id="go">Add to Calendar</a>
+<script>
+try{var b=location.hash.slice(1).replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';
+var t=decodeURIComponent(escape(atob(b)));var u=URL.createObjectURL(new Blob([t],{type:'text/calendar'}));
+var a=document.getElementById('go');a.href=u;a.download='overlap-trips.ics';}catch(e){document.body.innerHTML='<p>Could not read the trips.</p>'}
+</script></body></html>

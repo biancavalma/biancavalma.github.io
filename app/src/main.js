@@ -1,4 +1,5 @@
-try{var LK=new URLSearchParams(location.search).get('look');if(LK)document.documentElement.setAttribute('data-look',LK)}catch(e){}
+/* look: glass (a) by default; ?look=b shows the plain white one */
+try{document.documentElement.setAttribute('data-look',new URLSearchParams(location.search).get('look')||'a')}catch(e){document.documentElement.setAttribute('data-look','a')}
 import './style.css';
 import * as api from './api.js';
 
