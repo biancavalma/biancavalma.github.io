@@ -370,3 +370,9 @@ html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overf
 .calframe{padding:13px 11px 8px;margin:6px 6px 2px}
 .calcard .sharebtn{margin-top:10px}
 .calcard .grid{grid-auto-rows:clamp(32px,5.8dvh,48px)}
+.calframe{padding:0!important;margin:0!important}
+.calcard{padding:12px 10px 10px!important}
+.calcard .sharebtn{margin:8px 0 0;width:100%}
+/* trips preview under the calendar header row */
+.lprev{display:flex;flex-direction:column;border-top:1px solid var(--pill);margin-top:4px}
+.lprev .row{padding-top:7px;padding-bottom:7px}

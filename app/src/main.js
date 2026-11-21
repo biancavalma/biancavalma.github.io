@@ -259,8 +259,7 @@ import * as api from './api.js';
   window.addEventListener('resize',function(){drawFrame()});
   function renderGrid(){
     var MEM=['\u26c4','\u2744\ufe0f','\ud83c\udf31','\ud83c\udf38','\ud83c\udf37','\ud83c\udf53','\u2600\ufe0f','\ud83c\udfd6\ufe0f','\ud83c\udf47','\ud83c\udf42','\ud83c\udf41','\ud83c\udf84'];
-    $('mlabel').textContent=MN[vm]+' '+vy;
-    frameEm=MEM[vm];
+    $('mlabel').textContent=MEM[vm]+' '+MN[vm]+' '+vy;
     var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
     var lead=(new Date(vy,vm,1).getDay()+6)%7, n=new Date(vy,vm+1,0).getDate(), h='', i, p;
@@ -286,7 +285,7 @@ import * as api from './api.js';
       h+='</span>'+bar+'</button>';
     }
     $('grid').innerHTML=h;
-    drawFrame();requestAnimationFrame(function(){drawFrame()});
+    requestAnimationFrame(fitList);
   }
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
@@ -331,6 +330,17 @@ import * as api from './api.js';
     return '<button type="button" class="row" '+attrs+'>'+face(p,36,false)+'<span class="tx"><b>'+a+'</b><i>'+b+'</i></span>'+(tagged?'<span class="tag">'+HEART+'with you</span>':'')+'</button>';
   }
   var LT='',LB='';
+  /* show as many trips as fit in the space under the calendar, without making the page scroll */
+  function fitList(){
+    var v=$('v-cal'),l=$('list');if(!v||v.hidden||!l)return;
+    var box=l.querySelector('.lprev');if(!box)return;
+    box.innerHTML=LB;
+    var kids=[].slice.call(box.children);
+    while(kids.length&&v.scrollHeight>v.clientHeight+1){box.removeChild(kids.pop())}
+    box.hidden=!kids.length;
+  }
+  window.addEventListener('resize',function(){requestAnimationFrame(fitList)});
+  if(window.ResizeObserver){var fitT=0;new ResizeObserver(function(){cancelAnimationFrame(fitT);fitT=requestAnimationFrame(fitList)}).observe(document.querySelector('.calcard'));new ResizeObserver(function(){cancelAnimationFrame(fitT);fitT=requestAnimationFrame(fitList)}).observe($('v-cal'))}
   function renderList(){
     var st=UP.filter(match), title, h='', homes='', cnt=0;
     if(!people[0].home&&!people[0].stays.length){
@@ -361,7 +371,9 @@ import * as api from './api.js';
       h+=row(s.p,a,b,'data-p="'+s.p+'" data-i="'+s.i+'"',shared(s));
     });
     LT=title;LB=h;cnt+=st.length;
-    $('list').innerHTML='<button type="button" class="row" data-open="1"><span class="hd" style="flex:1;margin:0;font-size:16.5px;line-height:1.2">'+title+'</span><span class="cnt">'+cnt+' ›</span></button>';
+    $('list').innerHTML='<button type="button" class="row" data-open="1"><span class="hd" style="flex:1;margin:0;font-size:16.5px;line-height:1.2">'+title+'</span><span class="cnt">'+cnt+' ›</span></button>'
+      +'<div class="lprev">'+h+'</div>';
+    requestAnimationFrame(fitList);
   }
   function pickRow(r){
     var p=+r.getAttribute('data-p');
@@ -379,6 +391,7 @@ import * as api from './api.js';
   });
   $('list').addEventListener('click',function(e){
     if(e.target.closest('[data-home]')){sheet='home';renderSheet();return}
+    var pr=e.target.closest('.lprev .row[data-p]');if(pr){pickRow(pr);return}
     if(e.target.closest('[data-open]')){sheet='list';selD=null;renderSheet()}
   });
 
