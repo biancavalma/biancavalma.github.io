@@ -259,7 +259,10 @@ import * as api from './api.js';
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(d>=T&&hit(d)?' hit':'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
-      who.slice(0,who.length>2?1:2).forEach(function(x){h+=x===0&&st?'<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>':face(x,16,true)});
+      who.slice(0,who.length>2?1:2).forEach(function(x){
+        if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
+        if(selP!==null&&x===selP){var fc=where(x,d),fs=stayAt(x,d);h+='<span class="em" role="img" aria-label="'+esc(people[x].n+' in '+fc)+'">'+((fs&&fs.e)||emoFor(x,fc))+'</span>';return}
+        h+=face(x,16,true)});
       if(who.length>2)h+='<span class="more">+'+(who.length-1)+'</span>';
       h+='</span>'+bar+'</button>';
     }
