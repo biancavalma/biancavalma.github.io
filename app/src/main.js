@@ -339,7 +339,7 @@ import * as api from './api.js';
   function renderGrid(){
     var s0=startYM(), h='', k;
     for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
-      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div>'+monthTrips(y,m)+'</section>'}
+      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div></section>'}
     $('grid').innerHTML=h;
     hero();
     var key=vy+'-'+vm;
