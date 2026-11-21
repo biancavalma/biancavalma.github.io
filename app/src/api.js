@@ -185,6 +185,8 @@ export function watch(onChange) {
 // inside the iPhone app the page talks to the phone through a small bridge; in a browser it uses web alerts
 export const native = typeof window !== 'undefined' && !!window.OverlapNative && !!window.ReactNativeWebView;
 if (native) document.documentElement.classList.add('native');
+// older iPhone app builds (before build 8) let the phone push the page below the status bar by itself
+if (native && !window.OverlapNative.share) document.documentElement.classList.add('oldshell');
 export const isIOS = native || /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 export const standalone = native || window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 export const pushSupported = native || ('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && !!VAPID);
