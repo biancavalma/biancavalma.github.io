@@ -268,7 +268,7 @@ import * as api from './api.js';
     document.documentElement.style.setProperty('--sea',SEA[m][0]);
     var el=$('snow');if(!el){el=document.createElement('div');el.id='snow';el.setAttribute('aria-hidden','true');document.body.insertBefore(el,document.body.firstChild)}
     var e=SEA[m][1],h='',i;
-    for(i=0;i<16;i++){var x=(i*37+11)%100,dur=14+(i*7)%12,del=-((i*53)%26),sz=11+(i%3)*5;
+    for(i=0;i<8;i++){var x=(i*29+7)%100,dur=14+(i*7)%12,del=-((i*53)%26),sz=11+(i%3)*5;
       h+='<span style="left:'+x+'%;font-size:'+sz+'px;animation-duration:'+dur+'s,'+(4+i%3)+'s;animation-delay:'+del+'s,'+del+'s">'+e[i%e.length]+'</span>'}
     el.innerHTML=h;
   }

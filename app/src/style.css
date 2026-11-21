@@ -483,3 +483,12 @@ html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 [data-look="a"] .cell.hit{border-radius:0}
 [data-look="a"] .cell.hit:not(.hp){border-top-left-radius:12px;border-bottom-left-radius:12px}
 [data-look="a"] .cell.hit:not(.hn){border-top-right-radius:12px;border-bottom-right-radius:12px}
+
+/* A calmer: yellow only for overlaps, white glass cards, softer background */
+[data-look="a"] body{background:radial-gradient(120% 55% at 0% 0%,#FFEAF2 0%,transparent 60%),radial-gradient(120% 55% at 100% 35%,#F1ECFF 0%,transparent 60%),radial-gradient(120% 55% at 30% 100%,#FFF2E6 0%,transparent 60%),#FFFAFC;background-attachment:fixed}
+[data-look="a"] .lprev .row{background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);box-shadow:0 2px 10px rgba(120,60,100,.06)}
+[data-look="a"] .lprev .row .tag{background:#FFF3B0}
+[data-look="a"] .req{background:rgba(255,255,255,.6)}
+[data-look="a"] .req .yes{background:var(--ink);color:#fff}
+[data-look="a"] .hero{background:linear-gradient(135deg,#FFF09A,#FFE8A3)}
+[data-look="a"] .grid::before{background:rgba(255,200,222,.28)}
