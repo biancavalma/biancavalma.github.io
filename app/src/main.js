@@ -245,7 +245,7 @@ import * as api from './api.js';
   });
 
   function renderGrid(){
-    $('mlabel').textContent=MN[vm]+' '+vy;
+    $('mlabel').textContent=['⛄','❄️','🌱','🌸','🌷','🍓','☀️','🏖️','🍇','🍂','🍁','🎄'][vm]+' '+MN[vm]+' '+vy;
     var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
     var lead=(new Date(vy,vm,1).getDay()+6)%7, n=new Date(vy,vm+1,0).getDate(), h='', i, p;
