@@ -160,7 +160,9 @@ import * as api from './api.js';
     if(api.native||!api.isIOS||!api.TESTFLIGHT)return;
     var t=0;try{t=+localStorage.getItem('ov-getapp-x')||0}catch(e){}
     if(Date.now()-t<7*864e5)return;
-    $('getappgo').href=api.TESTFLIGHT;$('getapp').hidden=false;
+    $('getappgo').href=api.TESTFLIGHT;
+    /* people who already use the iPhone app don't see it */
+    var tries=0;(function check(){if(!uid){if(++tries<20)setTimeout(check,500);return}api.hasPhoneApp().then(function(has){$('getapp').hidden=has})})();
     $('getappx').onclick=function(){$('getapp').hidden=true;try{localStorage.setItem('ov-getapp-x',String(Date.now()))}catch(e){}};
   })();
   function renderTabs(){

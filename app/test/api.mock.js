@@ -45,3 +45,5 @@ export const calendarEvents = async () => ({ state: 'granted', events: [
   { title: 'Dentist', location: 'Zurich', start: '2026-12-05T08:00:00Z', end: '2026-12-05T09:00:00Z', allDay: false } ] });
 
 export const canShare = true, shareText = (t) => console.log('share', t);
+
+export const hasPhoneApp = async () => false;

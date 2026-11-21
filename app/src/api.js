@@ -295,3 +295,9 @@ export function shareText(text) {
   if (native && window.OverlapNative.share) { window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'share', text })); return; }
   try { navigator.share({ text }).catch(() => {}); } catch (e) {}
 }
+
+// true when this account has the iPhone app (its alerts are registered from the app)
+export async function hasPhoneApp() {
+  const { data, error } = await sb.from('push_subscriptions').select('endpoint').eq('p256dh', '-').limit(1);
+  return !error && !!(data && data.length);
+}

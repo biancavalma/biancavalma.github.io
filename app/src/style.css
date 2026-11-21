@@ -323,3 +323,26 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 .getapp .gbtn{flex:none;height:36px;padding:0 16px;border-radius:999px;background:var(--pink);color:var(--on);font-weight:800;display:flex;align-items:center;text-decoration:none}
 .getapp .x{flex:none;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.16);color:inherit;font-size:18px}
 .gbar .gwa{display:flex;align-items:center;gap:6px;text-decoration:none;background:#25D366;color:#fff}
+/* One screen, no page scrolling, on every phone: the app is exactly as tall as the visible screen
+   (100dvh follows Safari's bars), the calendar shrinks a little on small phones, and only long lists
+   scroll inside their own box. */
+html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overflow:hidden;overscroll-behavior:none}
+#app.wrap:not([hidden]){height:100vh;height:100dvh;box-sizing:border-box;overflow:hidden;gap:10px;padding-top:calc(8px + env(safe-area-inset-top,0px));padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.native #app.wrap:not([hidden]){padding-top:6px}
+#app>*{flex:none}
+#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){flex:1 1 auto;min-height:0;display:flex!important;flex-direction:column;gap:10px!important;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+#v-cal>*{flex:none}
+#v-cal>.calcard{flex:0 1 auto}
+.calcard .grid{grid-auto-rows:clamp(34px,6.2dvh,50px)}
+.calcard .cell{height:auto;min-height:0}
+#app>.note{display:none}
+/* short phones (iPhone SE, mini): a bit tighter so everything still fits */
+@media (max-height:820px){
+  #app.wrap:not([hidden]){gap:8px}
+  #v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){gap:8px!important}
+  .brand{font-size:24px}
+  .calcard{padding:8px 8px 8px}
+  .calcard .grid{grid-auto-rows:clamp(30px,5.6dvh,46px)}
+  .calcard .sharebtn{height:34px;margin-top:6px}
+  #v-cal .add{height:46px}
+}
