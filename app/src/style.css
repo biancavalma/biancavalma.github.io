@@ -325,3 +325,5 @@ html:has(#app:not([hidden])),html:has(#app:not([hidden])) body{height:100%;overf
 /* calendar keeps normal-sized days instead of stretching to fill the screen */
 #v-cal>.calcard{flex:0 1 auto}
 .calcard .grid{flex:0 1 auto;grid-auto-rows:minmax(40px,54px)}
+/* never let a page area scroll sideways (the city row scrolls by itself) */
+#v-ov,#v-cal,#v-fr,#app{overflow-x:hidden}
