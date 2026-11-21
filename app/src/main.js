@@ -283,16 +283,13 @@ import * as api from './api.js';
     el.innerHTML='<span class="hk">Next overlap</span><b>'+(r.km?who+' is in '+em+' '+esc(r.fc)+', '+r.km+' km from you':'You and '+who+' are both in '+em+' '+esc(r.city))+'</b><i>'+range(r.a,r.b)+' ›</i>';
     el.hidden=false;
   }
-  function renderGrid(){
-    var MEM=['\u26c4','\u2744\ufe0f','\ud83c\udf31','\ud83c\udf38','\ud83c\udf37','\ud83c\udf53','\u2600\ufe0f','\ud83c\udfd6\ufe0f','\ud83c\udf47','\ud83c\udf42','\ud83c\udf41','\ud83c\udf84'];
-    $('mlabel').textContent=MN[vm]+' '+vy;
-    season(vm);
-    var far=vy!==n0.getFullYear()||vm!==n0.getMonth();
-    $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
-    var lead=(new Date(vy,vm,1).getDay()+6)%7, n=new Date(vy,vm+1,0).getDate(), h='', i, p;
+  /* the calendar is one long list of months: scroll down to go forward, no left and right */
+  var NM=12, lastKey='', scrolling=false;
+  function monthCells(y,m){
+    var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p;
     for(i=0;i<lead;i++)h+='<span></span>';
     for(i=1;i<=n;i++){
-      var d=iso(vy,vm,i), who=[], col=(lead+i-1)%7, bar='';
+      var d=iso(y,m,i), who=[], col=(lead+i-1)%7, bar='';
       /* with no filter on, a friend only appears on days you are in the same city and one of you travelled */
       var L0=where(0,d);
       if(d>=T&&!onlyMe)for(p=1;p<people.length;p++){
@@ -302,9 +299,9 @@ import * as api from './api.js';
       var st=d>=T&&shows(0,d)?stayAt(0,d):null;
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var isH=d>=T&&hit(d), isHp=isH&&col>0&&i>1&&iso(vy,vm,i-1)>=T&&hit(iso(vy,vm,i-1));
+      var isH=d>=T&&hit(d), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
       if(isHp){who=[];bar=''}
-      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(vy,vm,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
+      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
         if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
@@ -313,10 +310,42 @@ import * as api from './api.js';
       if(who.length>2)h+='<span class="more">+'+(who.length-1)+'</span>';
       h+='</span>'+bar+'</button>';
     }
+    return h;
+  }
+  /* the trips of one month, as small cards under it */
+  function monthTrips(y,m){
+    var m0=iso(y,m,1), m1=iso(y,m,new Date(y,m+1,0).getDate()), h='';
+    UP.filter(match).filter(function(s){return s.a<=m1&&s.b>=m0}).forEach(function(s){
+      var so=people[s.p].stays[s.i];
+      h+=row(s.p,ec(s.p,s.city,so),range(s.a,s.b),'data-p="'+s.p+'" data-i="'+s.i+'"',shared(s));
+    });
+    return h?'<div class="mup"><div class="muph">Coming up in '+MN[m]+'</div><div class="lprev">'+h+'</div></div>':'';
+  }
+  function startYM(){var y=n0.getFullYear(),m=n0.getMonth();if(vy<y||(vy===y&&vm<m)){y=vy;m=vm}return [y,m]}
+  function renderGrid(){
+    var s0=startYM(), h='', k;
+    for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
+      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div>'+monthTrips(y,m)+'</section>'}
     $('grid').innerHTML=h;
     hero();
-    requestAnimationFrame(fitList);
+    var key=vy+'-'+vm;
+    if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
+      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;window.scrollTo(0,sec.getBoundingClientRect().top+window.scrollY-stickH());setTimeout(function(){scrolling=false},100)})}
+    topLabel();
   }
+  function stickH(){var s=document.querySelector('.calcard .stick');return s?s.offsetHeight+4:60}
+  /* the month name on top follows the month you are looking at */
+  function topLabel(){
+    var secs=$("grid").querySelectorAll(".mon"), lim=stickH()+8, cur=secs[0];
+    for(var i=0;i<secs.length;i++){if(secs[i].getBoundingClientRect().top<=lim)cur=secs[i];else break}
+    if(!cur)return;
+    var y=+cur.getAttribute('data-y'), m=+cur.getAttribute('data-m');
+    if(!scrolling){vy=y;vm=m;lastKey=vy+'-'+vm}
+    $('mlabel').textContent=MN[m]+' '+y;season(m);
+    var far=y!==n0.getFullYear()||m!==n0.getMonth();
+    $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
+  }
+  var tlT=0;window.addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){if(!$('v-cal').hidden)topLabel()})},{passive:true});
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
@@ -338,6 +367,7 @@ import * as api from './api.js';
     sheet='add';renderGrid();renderSheet();
   }
   $('grid').addEventListener('click',function(e){
+    var pr=e.target.closest('.lprev .row[data-p]');if(pr){pickRow(pr);return}
     if(Date.now()-swiped<400)return;
     var c=e.target.closest('.cell');if(!c)return;
     var d=c.getAttribute('data-d');
@@ -345,23 +375,15 @@ import * as api from './api.js';
     if(!gs||d<gs){gs=d;selD=null;showBar();renderGrid();return}
     openRange(gs,d);
   });
-  function move(k){vm+=k;if(vm<0){vm=11;vy--}if(vm>11){vm=0;vy++}selD=null;renderGrid();renderList()}
-  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();selD=null;renderGrid();renderList()};
-  /* swipe left or right on the calendar to change month */
-  (function(){var x0=null,y0=0,t0=0,g=$('grid');
-    g.addEventListener('touchstart',function(e){var t=e.touches[0];x0=t.clientX;y0=t.clientY;t0=Date.now()},{passive:true});
-    g.addEventListener('touchend',function(e){if(x0===null)return;var t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
-      if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5&&Date.now()-t0<700){swiped=Date.now();g.classList.remove('sl','sr');void g.offsetWidth;g.classList.add(dx<0?'sl':'sr');move(dx<0?1:-1)}},{passive:true});
-  })();
+  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;window.scrollTo({top:0,behavior:'smooth'})};
   var swiped=0;
-  $('prev').onclick=function(){move(-1)};$('nextm').onclick=function(){move(1)};
 
   function row(p,a,b,attrs,tagged){
     return '<button type="button" class="row" '+attrs+'>'+face(p,36,false)+'<span class="tx"><b>'+a+'</b><i>'+b+'</i></span>'+(tagged?'<span class="tag">'+HEART+'with you</span>':'')+'</button>';
   }
   var LT='',LB='';
   /* show as many trips as fit in the space under the calendar, without making the page scroll */
-  function fitList(){
+  function fitList(){return;
     var v=$('v-cal'),l=$('list');if(!v||v.hidden||!l)return;
     var box=l.querySelector('.lprev');if(!box)return;
     box.innerHTML=LB;

@@ -492,3 +492,20 @@ html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 [data-look="a"] .req .yes{background:var(--ink);color:#fff}
 [data-look="a"] .hero{background:linear-gradient(135deg,#FFF09A,#FFE8A3)}
 [data-look="a"] .grid::before{background:rgba(255,200,222,.28)}
+
+/* calendar as one long list of months */
+#list{display:none}
+.calcard{overflow:visible}
+.calcard .stick{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:-4px -4px 0;padding:10px 6px 4px;border-radius:22px 22px 14px 14px;background:#fff;box-shadow:0 6px 12px -8px rgba(120,60,100,.15)}
+.months{display:flex;flex-direction:column;gap:6px}
+.mon{scroll-margin-top:90px}
+.mhd{font-size:17px;font-weight:800;padding:14px 6px 6px;color:var(--ink)}
+.mon:first-child .mhd{display:none}
+.mup{padding:8px 2px 4px}
+.muph{font-size:13px;font-weight:800;color:var(--soft);padding:0 4px 6px}
+.mup .lprev{margin:0}
+.calcard .mbar .hd{font-size:20px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .calcard .stick{background:var(--card)}}
+:root[data-theme="dark"] .calcard .stick{background:var(--card)}
+/* clip instead of hidden: still no sideways scroll, and the month bar can stay on top while scrolling */
+html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){overflow-x:clip}
