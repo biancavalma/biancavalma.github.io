@@ -23,21 +23,29 @@ jobs:
           echo "PUBLIC KEY:"; openssl rsa -in lock/priv.pem -pubout 2>/dev/null
       - uses: actions/cache/save@v4
         if: inputs.step == 'keypair'
-        with: { path: lock, key: push-lock-${{ github.run_id }} }
+        with:
+          path: lock
+          key: push-lock-${{ github.run_id }}
       - name: Find lock
         if: inputs.step == 'upload'
         id: f
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: echo "key=$(gh api repos/${{ github.repository }}/actions/caches --jq '[.actions_caches[]|select(.key|startswith("push-lock-"))][0].key')" >> "$GITHUB_OUTPUT"
       - uses: actions/cache/restore@v4
         if: inputs.step == 'upload'
-        with: { path: lock, key: '${{ steps.f.outputs.key }}', fail-on-cache-miss: true }
+        with:
+          path: lock
+          key: ${{ steps.f.outputs.key }}
+          fail-on-cache-miss: true
       - uses: actions/setup-node@v4
         if: inputs.step == 'upload'
-        with: { node-version: 22 }
+        with:
+          node-version: 22
       - name: Upload to Expo
         if: inputs.step == 'upload'
-        env: { EXPO_TOKEN: '${{ secrets.EXPO_TOKEN }}' }
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           base64 -d ios-app/push-key.enc > /tmp/k.bin
           openssl pkeyutl -decrypt -inkey lock/priv.pem -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in /tmp/k.bin -out /tmp/key.p8
@@ -45,5 +53,6 @@ jobs:
           node "$GITHUB_WORKSPACE/ios-app/scripts/push-key.cjs"
       - name: Throw lock away
         if: always() && inputs.step == 'upload'
-        env: { GH_TOKEN: '${{ github.token }}' }
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: gh api -X DELETE "repos/${{ github.repository }}/actions/caches?key=${{ steps.f.outputs.key }}" || true
