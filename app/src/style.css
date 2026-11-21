@@ -479,3 +479,7 @@ html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 .hero b{font-size:16px;font-weight:800;line-height:1.25}
 .hero i{font-style:normal;font-size:13px;font-weight:700;color:var(--soft)}
 .lprev .row .tx b{font-size:15px}
+[data-look="a"] .grid{column-gap:0}
+[data-look="a"] .cell.hit{border-radius:0}
+[data-look="a"] .cell.hit:not(.hp){border-top-left-radius:12px;border-bottom-left-radius:12px}
+[data-look="a"] .cell.hit:not(.hn){border-top-right-radius:12px;border-bottom-right-radius:12px}
