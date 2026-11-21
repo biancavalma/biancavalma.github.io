@@ -671,4 +671,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .yd i.t{background:var(--ink);color:#fff;border-radius:50%}
 
 /* older app builds: the phone adds the status bar space itself, which a pinned page would ignore, so keep it in the normal flow */
-.oldshell #app.oncal{position:relative;top:auto;bottom:auto;height:100vh!important;padding-top:8px}
+.oldshell #app.oncal{position:static;height:auto!important;overflow:visible;padding-bottom:110px}
+.oldshell #app.oncal .calcard,.oldshell #app.oncal #v-cal{flex:none}
+.oldshell #app.oncal .calframe{overflow:visible;height:auto;flex:none}
+.oldshell #app.oncal .calcard .stick{top:0}

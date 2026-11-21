@@ -362,7 +362,7 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
     hero();
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
-      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;var cf=$('calframe'),gd=sec.querySelector('.grid')||sec;cf.scrollTop=gd.offsetTop-stickH()+2;setTimeout(function(){scrolling=false},100)})}
+      if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;var cf=$('calframe'),gd=sec.querySelector('.grid')||sec;if(OLD)window.scrollTo(0,gd.getBoundingClientRect().top+window.scrollY-stickH()+2);else cf.scrollTop=gd.offsetTop-stickH()+2;setTimeout(function(){scrolling=false},100)})}
     topLabel();
   }
   function stickH(){var s=document.querySelector('.calcard .stick');return s?s.offsetHeight+4:60}
@@ -396,8 +396,12 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
   }
   /* more months load by themselves as you get near the end */
-  var tlT=0;$('calframe').addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){var cf=$('calframe');topLabel();
-    if(NM<120&&cf.scrollHeight-cf.scrollTop-cf.clientHeight<1500){NM+=6;renderGrid()}})},{passive:true});
+  /* new app and browsers: only the calendar box scrolls; older app builds: the whole page scrolls */
+  var OLD=document.documentElement.classList.contains('oldshell');
+  var tlT=0;function onCalScroll(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){if($('v-cal').hidden)return;topLabel();
+    var cf=$('calframe'),left=OLD?document.documentElement.scrollHeight-window.scrollY-window.innerHeight:cf.scrollHeight-cf.scrollTop-cf.clientHeight;
+    if(NM<120&&left<1500){NM+=6;renderGrid()}})}
+  $('calframe').addEventListener('scroll',onCalScroll,{passive:true});window.addEventListener('scroll',onCalScroll,{passive:true});
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
   var pkHide=false, gs=null, gbar=document.createElement('div');gbar.className='gbar';gbar.hidden=true;document.body.appendChild(gbar);
   function showBar(){
@@ -427,7 +431,7 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
     if(!gs||d<gs){gs=d;selD=null;showBar();renderGrid();return}
     openRange(gs,d);
   });
-  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;$('calframe').scrollTo({top:0,behavior:'smooth'})};
+  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;if(OLD)window.scrollTo({top:0,behavior:'smooth'});else $('calframe').scrollTo({top:0,behavior:'smooth'})};
   var swiped=0;
 
   function row(p,a,b,attrs,tagged){
@@ -719,7 +723,7 @@ import { LANG, LANGS, setLang, startI18n } from './i18n.js';
     }
     if(sheet==='year'){
       $('ypr').onclick=function(){yv--;renderSheet()};$('ynx').onclick=function(){yv++;renderSheet()};
-      document.querySelectorAll('[data-ym]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-ym').split('-');var y=+a[0],m=+a[1];goMonth(y,m);if(y===n0.getFullYear()&&m===n0.getMonth())$('calframe').scrollTop=0}});
+      document.querySelectorAll('[data-ym]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-ym').split('-');var y=+a[0],m=+a[1];goMonth(y,m);if(y===n0.getFullYear()&&m===n0.getMonth()){if(OLD)window.scrollTo(0,0);else $('calframe').scrollTop=0}}});
     }
     if(sheet==='invite'){
       var link=location.origin+'/?i='+encodeURIComponent(myCode);
