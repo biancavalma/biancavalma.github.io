@@ -723,3 +723,6 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .clb{display:flex;gap:8px;margin-top:8px}
 .clb button{height:34px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:800;background:#fff}
 .clb #clyes{background:var(--ink);color:#fff}
+
+/* every page can scroll its last item above the bottom bar */
+[data-look~="a"] .wrap,.wrap{padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))!important}
