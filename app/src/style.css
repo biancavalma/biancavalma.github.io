@@ -605,4 +605,5 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 
 /* like other apps: a solid strip behind the clock and battery, so the page never shows through blurred when you scroll.
    In the iPhone app the strip has no height (the app already starts below the clock). */
-body::after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#FFF6F9;z-index:100;pointer-events:none}
+/* Safari on new iPhones blurs the page under the clock unless a solid bar touches the top edge; this thin bar gives it the colour to use instead */
+body::after{content:"";position:fixed;left:0;right:0;top:0;height:max(env(safe-area-inset-top,0px),2px);background:#FFF6F9;z-index:100;pointer-events:none}
