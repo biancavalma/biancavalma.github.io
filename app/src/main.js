@@ -260,27 +260,25 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
+  $('tadd').onclick=function(){$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   $('t-cal').onclick=function(){tab='cal';renderAll()};
   $('t-fr').onclick=function(){tab='fr';renderAll()};
 
   var cq='';
   /* filters: everyone, only me, one city, one friend */
+  /* one filter button: it says what you are looking at, tap it to choose */
   function renderPills(){
     var cs=cities();if(selC&&cs.indexOf(selC)<0)selC=null;
-    var all=!onlyMe&&!selC&&selP===null;
-    $('pills').innerHTML='<button type="button" class="pillb'+(all?' on':'')+'" data-f="all">All</button>'
-      +'<button type="button" class="pillb'+(onlyMe?' on':'')+'" data-f="me">My calendar</button>'
-      +(selC?'<button type="button" class="pillb on" data-f="city">📍 '+esc(selC)+' ×</button>':'<button type="button" class="pillb" data-f="city">See city ▾</button>')
-      +(selP!==null?'<button type="button" class="pillb who on" data-f="friend">'+face(selP,22,false)+esc(people[selP].n)+' ×</button>':'<button type="button" class="pillb" data-f="friend">See friend ▾</button>');
+    var lab=onlyMe?'🙋 Just me':selC?'📍 '+esc(selC):selP!==null?face(selP,22,false)+esc(people[selP].n):'👥 Everyone';
+    var on=onlyMe||selC||selP!==null;
+    $('pills').innerHTML='<button type="button" class="pillb on fsel" data-f="menu">'+lab+' <span class="car">▾</span></button>'
+      +(on?'<button type="button" class="pillb fclr" data-f="all" aria-label="Show everyone">×</button>':'');
   }
   $('pills').addEventListener('click',function(e){
     var b=e.target.closest('button.pillb');if(!b)return;var f=b.getAttribute('data-f');
-    if(f==='all'){onlyMe=false;selC=null;selP=null}
-    else if(f==='me'){onlyMe=!onlyMe;if(onlyMe){selC=null;selP=null}}
-    else if(f==='city'){if(selC){selC=null}else{sheet='pickc';selD=null;renderSheet();return}}
-    else if(f==='friend'){if(selP!==null){selP=null}else{sheet='pickf';selD=null;renderSheet();return}}
-    selD=null;renderAll();
+    if(f==='all'){onlyMe=false;selC=null;selP=null;selD=null;renderAll();return}
+    sheet='filter';selD=null;renderSheet();
   });
 
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
@@ -595,6 +593,10 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<div class="f"><label>Which day?</label><div class="sug" id="mdays">'+days.map(function(x){return '<button type="button" data-md="'+x+'"'+(x===meetD?' class="on"':'')+'>'+day(x)+'</button>'}).join('')+'</div>'
         +'<label for="mnote">Where or when? (optional)</label><input id="mnote" maxlength="200" placeholder="Aperitivo at 7?">'
         +'<button type="button" class="add hd" id="msend">Send to '+esc(fm.n)+'</button></div>';
+    }else if(sheet==='filter'){
+      var cur=onlyMe?'me':selC?'city':selP!==null?'friend':'all';
+      var ops=[['all','👥','Everyone','All your friends and you'],['me','🙋','Just me','Only your own trips'],['city','📍','A city ›',selC?selC:'Who will be in one city'],['friend','🧑','A friend ›',selP!==null?people[selP].n:'Only one friend’s plans']];
+      h+=head('Show on the calendar')+ops.map(function(o){return '<button type="button" class="fopt'+(o[0]===cur?' on':'')+'" data-fo="'+o[0]+'"><span class="fe">'+o[1]+'</span><span class="tx"><b>'+o[2]+'</b><i>'+esc(o[3])+'</i></span>'+(o[0]===cur?'<span class="fck">✓</span>':'')+'</button>'}).join('');
     }else if(sheet==='about'){
       h+=head('About Overlap')
         +'<div class="about"><div class="wel">'+document.querySelector('.brand svg').outerHTML+'</div>'
@@ -715,6 +717,11 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       api.setClose(people[0].id,id,on).then(function(){toast(on?'Added to close friends':'Removed from close friends')},function(){b.classList.toggle('on',!on);toast('Could not save. Run the database update (sql.html).')})};
     if(sheet==='day')document.querySelectorAll('[data-meet]').forEach(function(b){b.onclick=function(){var k=+b.getAttribute('data-meet'),r=overlaps().filter(function(x){return x.p===k&&x.a<=selD&&selD<=x.b})[0];if(!r)return;
       meetF=k;meetD=selD;meetC=r.km?(r.fc||r.city):r.city;meetA=r.a;meetB=r.b;sheet='meet';renderSheet()}});
+    if(sheet==='filter')document.querySelectorAll('[data-fo]').forEach(function(b){b.onclick=function(){var f=b.getAttribute('data-fo');
+      if(f==='all'){onlyMe=false;selC=null;selP=null;close();renderAll()}
+      else if(f==='me'){onlyMe=true;selC=null;selP=null;close();renderAll()}
+      else if(f==='city'){sheet='pickc';renderSheet()}
+      else{sheet='pickf';renderSheet()}}});
     if(sheet==='meet'){
       $('mdays').onclick=function(e){var b=e.target.closest('[data-md]');if(!b)return;meetD=b.getAttribute('data-md');[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)})};
       $('msend').onclick=function(){var b=this;b.disabled=true;var note=String($('mnote').value||'').trim();

@@ -85,6 +85,7 @@ const IT = {
   '💛 Yellow': '💛 Giallo', '= you and a friend in the same place.': '= tu e un amico nello stesso posto.', 'Pink': 'Rosa', '= your own trips.': '= i tuoi viaggi.',
   'Only your friends see it': 'La vedono solo i tuoi amici',
   'Add your photo': 'Aggiungi la tua foto', 'Calendar': 'Calendario', 'Add trip': 'Aggiungi viaggio',
+  'Show on the calendar': 'Cosa vedere nel calendario', 'Everyone': 'Tutti', 'All your friends and you': 'Tutti i tuoi amici e te', 'Just me': 'Solo io', 'Only your own trips': 'Solo i tuoi viaggi', 'A city ›': 'Una città ›', 'Who will be in one city': 'Chi sarà in una città', 'A friend ›': 'Un amico ›', 'Only one friend’s plans': 'Solo i piani di un amico', 'Show everyone': 'Mostra tutti',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',
@@ -93,6 +94,8 @@ const IT = {
   'Only friends you accept see your plans. Trips marked Private are only for you.​': '',
 };
 const PAT = [
+  [/^👥 Everyone$/, '👥 Tutti'],
+  [/^🙋 Just me$/, '🙋 Solo io'],
   [/^Could not save the photo: (.+)$/, 'Non riesco a salvare la foto: $1'],
   [/^(.+): let’s meet in (.+)\?$/, '$1: vediamoci a $2?'],
   [/^Meeting (.+) in (.+)$/, '🥂 Vedi $1 a $2'],
