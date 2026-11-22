@@ -16,6 +16,10 @@ on:
         description: Send to TestFlight
         type: boolean
         default: true
+      friends:
+        description: Give the newest build to the TestFlight group "Amici"
+        type: boolean
+        default: true
 
 jobs:
   build:
@@ -67,3 +71,7 @@ jobs:
       - name: Send to TestFlight
         if: ${{ inputs.submit }}
         run: npx --yes eas-cli@latest submit --platform ios --profile production --latest --non-interactive
+
+      - name: Give it to the friends group
+        if: ${{ inputs.friends }}
+        run: node scripts/testflight-group.mjs
