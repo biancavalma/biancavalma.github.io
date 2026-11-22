@@ -795,6 +795,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   }
   /* suggestions: your own past cities first, then where friends are going, then a few common ones */
   var COMMON=['Florence','Milan','London','Paris','Rome','Barcelona','Lisbon','Munich'];
+  var KNOWN=['Zurich','Geneva','Basel','Bern','Venice','Turin','Naples','Bologna','Madrid','Berlin','Vienna','Amsterdam','New York','Los Angeles','Bali','Athens','Copenhagen','Stockholm','Brussels','Prague','Dublin','Edinburgh','Nice','Monaco','Genoa','Verona','Pisa','Siena','Lucca','Como','Palermo','Bari','Cagliari'];
   var pe=null;
   function tripCities(){
     var count={}, list=[], seen={};
@@ -880,17 +881,19 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
           out.push({c:nm,w:p.state&&p.state!==nm?p.state:(p.country||'')});
         });
         return out;
-      }).catch(function(){return []});
+      }).catch(function(){var e=[];e.offline=true;return e});
   }
   function lev(a,b){var m=a.length,n=b.length,d=[],i,j;for(i=0;i<=m;i++)d[i]=[i];for(j=0;j<=n;j++)d[0][j]=j;
     for(i=1;i<=m;i++)for(j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
   /* text typed -> one canonical city name, or '' when nothing real matches */
+  function nice(t){return String(t).trim().replace(/\s+/g,' ').split(' ').map(function(w){return w.charAt(0).toUpperCase()+w.slice(1)}).join(' ')}
   function resolveCity(t){
     var f=fold(t);if(!f)return Promise.resolve('');
-    var mine=cities().concat(COMMON,Object.keys(GEO)), hit=mine.filter(function(k){return fold(k)===f})[0];
+    var mine=cities().concat(COMMON,KNOWN,Object.keys(GEO)), hit=mine.filter(function(k){return fold(k)===f})[0];
     if(hit)return Promise.resolve(hit);
     var close=mine.filter(function(k){return f.length>3&&lev(fold(k),f)<=Math.min(2,Math.floor(f.length/4))})[0];
-    function tryQ(q,left){return photon(q,1).then(function(r){return r[0]?r[0].c:left>0&&q.length>4?tryQ(q.slice(0,-1),left-1):''})}
+    /* if the city service cannot be reached, trust what the person typed instead of blocking them */
+    function tryQ(q,left){return photon(q,1).then(function(r){if(r.offline)return nice(t);return r[0]?r[0].c:left>0&&q.length>4?tryQ(q.slice(0,-1),left-1):''})}
     return tryQ(t.trim(),3).then(function(c){return c||close||''});
   }
   /* never correct a city silently: if the list knows it under another name, ask first */
