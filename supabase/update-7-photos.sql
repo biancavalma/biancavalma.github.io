@@ -1,5 +1,6 @@
 -- Update 7: profile photos. A column for the photo link and a public folder "avatars" where each person can only write their own photo.
 alter table public.profiles add column if not exists avatar_url text;
+grant update (name, home, phone, username, avatar_url) on public.profiles to authenticated;
 
 insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true)
 on conflict (id) do update set public = true;
