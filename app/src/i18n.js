@@ -76,6 +76,7 @@ const IT = {
   'We look at every report. Reporting also blocks them.': 'Leggiamo ogni segnalazione. Segnalare blocca anche la persona.', 'Send report and block': 'Segnala e blocca',
   'Thanks, we got your report': 'Grazie, abbiamo ricevuto la segnalazione', 'Privacy': 'Privacy', 'Help and contact': 'Aiuto e contatti', 'Test account': 'Account di prova', 'Password': 'Password',
   'That password did not work.': 'Password sbagliata.',
+  'Not set': 'Non impostato', 'You show up here every day. Add a trip whenever you travel and it takes over for those days.': 'Compari qui ogni giorno. Aggiungi un viaggio quando parti e prende il posto di quei giorni.',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',

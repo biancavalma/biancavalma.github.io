@@ -1,3 +1,5 @@
+/* Overlap is a light, colourful app: it stays light even when the phone is in dark mode */
+:root{color-scheme:light}
 :root{
   --bg:#FFF5F0; --card:#ffffff; --ink:#2B1A1F; --soft:#7A6066; --pill:#FFE6DC;
   --pink:#FF8A65; --butter:#C9F2EC; --on:#2B1A1F; --mint:#4FD1C5; --mintink:#0D4D47; --face:#2B1A1F; --brand:#FF8A65; --brand2:#E8603C; --brand3:#4FD1C5; --ring:#ffffff;
@@ -5,16 +7,8 @@
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#1E1416; --card:#2C1F22; --ink:#FFF1EB; --soft:#C9AFA8; --pill:#3D2A2D; --ring:#2C1F22;
-    --shadow:0 6px 18px rgba(0,0,0,.35);
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#1E1416; --card:#2C1F22; --ink:#FFF1EB; --soft:#C9AFA8; --pill:#3D2A2D; --ring:#2C1F22;
-  --shadow:0 6px 18px rgba(0,0,0,.35);
-}
+
+
 *,*::before,*::after{box-sizing:inherit;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -224,8 +218,8 @@ input,textarea{font-size:var(--inp)}
 :root[data-pal="fucsia"]{--bg:#FFF0FA;--ink:#26112A;--soft:#7A5E7E;--pill:#FFD9F1;--pink:#FF7FD1;--butter:#B8F5EC;--mint:#2FD9C0;--mintink:#00473D;--on:#26112A;--brand:#FF7FD1;--brand2:#2FD9C0;--brand3:#2FD9C0;--face:#26112A}
 :root[data-pal="corallo"]{--bg:#FFF5F0;--ink:#2B1A1F;--soft:#7A6066;--pill:#FFE6DC;--pink:#FF8A65;--butter:#C9F2EC;--mint:#4FD1C5;--mintink:#0D4D47;--on:#2B1A1F;--brand:#FF8A65;--brand2:#E8603C;--brand3:#4FD1C5;--face:#2B1A1F}
 :root[data-pal="lavanda"]{--bg:#F3F0FF;--ink:#2A2350;--soft:#6B6490;--pill:#E8E3FF;--pink:#B9AEFF;--butter:#BFF0DC;--mint:#7DDCB5;--mintink:#0B4D36;--on:#2A2350;--brand:#B9AEFF;--brand2:#7C6CF2;--brand3:#9EE8C8;--face:#2A2350}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1619;--card:#2a2226;--ink:#f7eef2;--soft:#c2afb8;--pill:#3c3036;--ring:#2a2226}}
-:root[data-theme="dark"]{--bg:#1c1619;--card:#2a2226;--ink:#f7eef2;--soft:#c2afb8;--pill:#3c3036;--ring:#2a2226}
+
+
 .pals{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:6px}
 .pals button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;border-radius:16px;background:var(--pill);font-size:11.5px;font-weight:800;color:var(--ink)}
 .pals button.on{box-shadow:inset 0 0 0 2.5px var(--ink)}
@@ -388,12 +382,12 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 
 /* seasons: tint of the month at the top and falling emoji behind the cards */
 html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:var(--bg)}}
-:root[data-theme="dark"] body{background:var(--bg)}
+
+
 #app,.wrap,main{position:relative;z-index:1}
 .calcard,.list{background:rgba(255,255,255,.82);-webkit-backdrop-filter:none}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .calcard,:root:not([data-theme="light"]) .list{background:var(--card)}}
-:root[data-theme="dark"] .calcard,:root[data-theme="dark"] .list{background:var(--card)}
+
+
 /* coming up: trips as small colourful cards, two per row */
 .lprev{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:0;margin:4px 0 8px}
 .lprev .row{box-sizing:border-box;min-width:0;flex-wrap:wrap;gap:4px 8px;min-height:0;padding:9px 10px;border-radius:18px;background:linear-gradient(135deg,var(--butter),var(--pill))}
@@ -406,7 +400,7 @@ html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 
 /* minimal: white page, no shadows, light grey lines, small grey arrows */
 :root:not([data-theme="dark"]){--bg:#fff;--card:#fff;--shadow:none}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shadow:none}}
+
 .card,.calcard,.list{box-shadow:none}
 .calcard{padding:4px 2px 0}
 .list{padding:2px 4px}
@@ -470,8 +464,8 @@ html{background:var(--bg)}body{min-height:100vh;background:var(--bg)}
 .mhd{font-size:17px;font-weight:800;padding:14px 6px 6px;color:var(--ink)}
 .mon:first-child .mhd{display:none}
 .calcard .mbar .hd{font-size:20px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .calcard .stick{background:var(--card)}}
-:root[data-theme="dark"] .calcard .stick{background:var(--card)}
+
+
 /* clip instead of hidden: still no sideways scroll, and the month bar can stay on top while scrolling */
 html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr:not([hidden]){overflow-x:clip}
 
@@ -510,7 +504,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 /* days that are gone: very light */
 .cell.past .n{color:#D9D2D6!important}
 .cell.past .faces{opacity:.35}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .cell.past .n{color:#5A4F55!important}}
+
 /* round + exactly in the middle */
 [data-look~="a"] #add,[data-look~="a"] #add2{display:flex!important;align-items:center;justify-content:center}
 [data-look~="a"] #add::after,[data-look~="a"] #add2::after{content:"";width:22px;height:22px;line-height:0;background:linear-gradient(#fff,#fff) center/22px 3.2px no-repeat,linear-gradient(#fff,#fff) center/3.2px 22px no-repeat;border-radius:2px}
