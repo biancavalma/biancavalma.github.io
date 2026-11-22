@@ -1,4 +1,4 @@
-/* look: glass (a) by default; ?look=b shows the plain white one */
+/* look: glass (a) */
 document.documentElement.setAttribute('data-look','a');
 import './style.css';
 import * as api from './api.js';
@@ -234,9 +234,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   function guessName(){
     var u=String(gEmail||'').split('@')[0].replace(/[0-9_]+/g,' ').split(/[.\-\s]+/).filter(function(w){return w.length>1}).slice(0,1);
     return u.map(function(w){return w.charAt(0).toUpperCase()+w.slice(1)}).join(' ');
-  }
-  function guessCity(){
-    try{var z=Intl.DateTimeFormat().resolvedOptions().timeZone||'';var c=z.split('/').pop().replace(/_/g,' ');return /^[A-Za-z ]+$/.test(c)&&z.indexOf('/')>0&&!/^(UTC|GMT)/.test(z)?c:''}catch(e){return ''}
   }
   function cleanPhone(v){v=String(v||'').trim();var plus=v.charAt(0)==='+';v=v.replace(/\D/g,'');if(!v)return '';if(!plus&&v.indexOf('00')===0)v=v.slice(2);return '+'+v.slice(0,15)}
   function prev(s){var p=parts(s),x=new Date(p.y,p.m,p.d-1,12);return iso(x.getFullYear(),x.getMonth(),x.getDate())}

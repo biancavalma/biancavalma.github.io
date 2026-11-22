@@ -30,13 +30,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-o
 .pills::-webkit-scrollbar,.sug::-webkit-scrollbar{display:none}
 .pills{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;margin:0 -14px;padding:0 14px}
 .pillb{flex:none;white-space:nowrap;height:30px;padding:0 10px;border-radius:999px;background:var(--card);font-weight:800;font-size:12.5px;display:inline-flex;align-items:center;gap:7px}
-.pg{display:contents}
 .pillb.city{font-weight:600}
-.psr{padding:0 10px;gap:5px;color:var(--soft)}
 .pin{position:relative;width:56px;height:30px;overflow:hidden;flex:none}
 /* the field keeps a 16px+ font so Safari does not zoom, and is scaled down to look like the city pills */
-.psr input{position:absolute;left:0;top:0;height:30px;width:calc(56px / var(--ps));transform:scale(var(--ps));transform-origin:0 50%;border:0;background:transparent;font-size:var(--inp);font-weight:600;outline:none;color:var(--ink);padding:0;-webkit-appearance:none;appearance:none}
-.psr input::placeholder{color:var(--soft);font-weight:600}
 .pillb.on{background:var(--pink);color:var(--on)}
 .pillb.who{padding-left:3px}
 
@@ -122,21 +118,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-o
 .when{font-size:14px;font-weight:800;margin:8px 2px 0}
 .sug{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;margin-top:8px}
 .em{font-size:17px;line-height:20px;display:block;flex:none}
-.emo{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:5px;margin-top:2px;scrollbar-width:none;touch-action:pan-x;overscroll-behavior-x:contain}
-.emo::-webkit-scrollbar{display:none}
-.emo button{flex:none;width:40px;height:40px;border-radius:50%;background:var(--pill);font-size:20px;line-height:40px;text-align:center}
-.emo button.on{background:var(--pink);box-shadow:inset 0 0 0 2px var(--ink)}
 .sug button{flex:none;height:34px;padding:0 10px;border-radius:999px;background:var(--pink);color:var(--on);font-weight:800;font-size:13px}
 .f .add{margin-top:14px}
 .err{color:#c2185b;font-size:13px;min-height:0;margin:4px 2px 0}
-.mebtn{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 14px 0 4px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-weight:800;font-size:14px;max-width:175px;text-align:left}
-.mebtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.mebtn b,.mebtn i{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.15}
-.mebtn b{font-weight:800}
-.mebtn i{font-style:normal;font-size:11.5px;color:var(--soft)}
 .ghost{width:100%;height:48px;border-radius:999px;background:var(--pill);font-weight:800;font-size:15px;margin-top:8px}
 .hint{font-size:13.5px;color:var(--soft);margin:2px 2px 6px}
-.ro{background:var(--butter);color:var(--on);border-radius:18px;padding:10px 14px;font-size:13.5px;font-weight:800}
 .row.mine{background:var(--pill);border-radius:18px;padding:4px 10px 4px 4px;margin:2px 0}
 .edt{background:var(--pink);color:var(--on);font-size:12.5px;font-weight:800;padding:6px 11px;border-radius:999px;flex:none;white-space:nowrap}
 .wel{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:4px 0 2px}
@@ -255,11 +241,9 @@ input,textarea{font-size:var(--inp)}
 .ufield{display:flex;align-items:center;gap:0;position:relative}
 .ufield span{position:absolute;left:16px;font-weight:800;color:var(--soft);pointer-events:none}
 .ufield input{flex:1;padding-left:34px}
-.sharebtn{display:block;width:100%;margin-top:10px;height:42px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:14.5px}
 /* quicker ways to add trips */
 .imp{display:flex;gap:8px;margin:0 0 10px}
 .imp button{flex:1;height:38px;border-radius:999px;background:var(--pill);color:var(--ink);font-weight:800;font-size:13.5px}
-.sug.rep button.on{background:var(--ink);color:var(--bg)}
 textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;background:var(--pill);padding:12px 16px;font:inherit;font-size:16px;color:var(--ink);resize:vertical}
 .ilist{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
 .irow{display:flex;align-items:center;gap:10px;background:var(--pill);border-radius:16px;padding:10px 12px}
@@ -292,7 +276,6 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 .calcard .dows{padding-bottom:2px;font-size:12px}
 .calcard .grid{grid-auto-rows:46px}
 .calcard .cell{height:46px}
-.calcard .sharebtn{height:38px;margin-top:8px;font-size:13.5px}
 #v-cal .alerts{padding:8px 8px 8px 14px}
 #v-cal .alerts .tx{font-size:13.5px}
 #v-cal .alerts .tx i{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -302,9 +285,6 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 #v-ov,#v-cal,#v-fr,#app{overflow-x:hidden}
 /* month swipe */
 .calcard .grid{touch-action:pan-y}
-.grid.sl{animation:mSl .22s ease-out}.grid.sr{animation:mSr .22s ease-out}
-@keyframes mSl{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
-@keyframes mSr{from{transform:translateX(-24px);opacity:.4}to{transform:none;opacity:1}}
 /* city and friend pickers */
 .picks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
 .pickb{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;background:var(--pill);font-weight:800;font-size:15px;color:var(--ink)}
@@ -337,7 +317,6 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
   .brand{font-size:24px}
   .calcard{padding:8px 8px 8px}
   .calcard .grid{grid-auto-rows:clamp(30px,5.6dvh,46px)}
-  .calcard .sharebtn{height:34px;margin-top:6px}
   #v-cal .add{height:46px}
 }
 /* top right: Add friend and You */
@@ -359,13 +338,10 @@ textarea#ptxt{width:100%;box-sizing:border-box;border:0;border-radius:18px;backg
 /* emoji frame around the calendar (the share button stays outside) */
 .calframe{position:relative;padding:16px 14px 12px;margin:8px 8px 4px}
 .calcard{padding:8px 6px 10px!important}
-.calcard .sharebtn{margin:12px 8px 0;width:calc(100% - 16px)}
 .calframe{padding:13px 11px 8px;margin:6px 6px 2px}
-.calcard .sharebtn{margin-top:10px}
 .calcard .grid{grid-auto-rows:clamp(32px,5.8dvh,48px)}
 .calframe{padding:0!important;margin:0!important}
 .calcard{padding:12px 10px 10px!important}
-.calcard .sharebtn{margin:8px 0 0;width:100%}
 /* trips preview under the calendar header row */
 .lprev{display:flex;flex-direction:column;border-top:1px solid var(--pill);margin-top:4px}
 .lprev .row{padding-top:7px;padding-bottom:7px}

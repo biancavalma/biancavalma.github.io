@@ -168,7 +168,6 @@ async function tripsQuery() {
   if (r.error && missingCol(r.error)) { tripExtras = false; return q('id, user_id, city, start_date, end_date, emoji'); }
   return r;
 }
-export const tripExtrasReady = () => tripExtras;
 
 export async function addTrip(s) {
   let r = await sb.from('trips').insert(tripRow(s)).select('id').single();
@@ -376,4 +375,3 @@ export async function setClose(uid, friend, on) {
   const r = on ? await sb.from('close_friends').insert({ owner: uid, friend }) : await sb.from('close_friends').delete().eq('owner', uid).eq('friend', friend);
   if (r.error && r.error.code !== '23505') throw r.error;
 }
-export const closeReady = () => closeCol;
