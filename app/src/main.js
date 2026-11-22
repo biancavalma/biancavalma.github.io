@@ -260,7 +260,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
-  $('tadd').onclick=function(){$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   $('t-cal').onclick=function(){tab='cal';renderAll()};
   $('t-fr').onclick=function(){tab='fr';renderAll()};
