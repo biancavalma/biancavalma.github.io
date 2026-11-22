@@ -1063,6 +1063,13 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(!c){$('err').textContent='Add a city.';return}
     if(!ISO.test(a)){$('err').textContent='Tap the day you arrive in the calendar.';return}
     if(!ISO.test(b)||b<a){$('err').textContent='The last day is before the first one.';return}
+    var clash=people[0].stays.filter(function(x,j){return j!==edit&&x.a<=b&&x.b>=a})[0];
+    if(clash&&!saveTrip.ok){
+      $('err').innerHTML='<span class="clash">You already have '+(clash.e||emoFor(0,clash.city))+' '+esc(clash.city)+' on '+range(clash.a,clash.b)+'.<span class="clb"><button type="button" id="clyes">Save anyway</button><button type="button" id="clno">Change dates</button></span></span>';
+      $('clyes').onclick=function(){saveTrip.ok=true;saveTrip();saveTrip.ok=false};
+      $('clno').onclick=function(){$('err').textContent='';if($('chg'))$('chg').click()};
+      return;
+    }
     var bt=$('save');
     bt.disabled=false;
     checkCity($('fc'),c,function(r){
@@ -1153,10 +1160,11 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   /* ---------- real data ---------- */
 
-  function toast(t){var el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
+  function toast(t){var el=$('toast');if(undoToast.on){undoToast.next=t;return}el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
   /* a message with Undo, like Gmail: 6 seconds to take back what you just did */
-  function undoToast(t,fn){var el=$('toast');el.innerHTML='<span>'+esc(t)+'</span><button type="button" class="undo">Undo</button>';el.hidden=false;clearTimeout(toast.t);
-    el.querySelector('.undo').onclick=function(){el.hidden=true;clearTimeout(toast.t);fn()};toast.t=setTimeout(function(){el.hidden=true},6000)}
+  function undoToast(t,fn){var el=$('toast');el.innerHTML='<span>'+esc(t)+'</span><button type="button" class="undo">Undo</button>';el.hidden=false;clearTimeout(toast.t);undoToast.on=true;
+    var end=function(){el.hidden=true;undoToast.on=false;if(undoToast.next){var n=undoToast.next;undoToast.next=null;toast(n)}};
+    el.querySelector('.undo').onclick=function(){clearTimeout(toast.t);undoToast.next=null;end();fn()};toast.t=setTimeout(end,7000)}
   /* show changes straight away; if the save fails, say so and reload what is really saved */
   function keep(p){return p.catch(function(){toast('Could not save. Check your connection.');reload()})}
   function copyText(tx,b,label){
