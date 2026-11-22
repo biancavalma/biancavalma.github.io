@@ -84,6 +84,7 @@ const IT = {
   'Could not send. Run the database update (sql.html).': 'Non riesco a mandarlo. Fai l’aggiornamento del database (sql.html).',
   '💛 Yellow': '💛 Giallo', '= you and a friend in the same place.': '= tu e un amico nello stesso posto.', 'Pink': 'Rosa', '= your own trips.': '= i tuoi viaggi.',
   'Only your friends see it': 'La vedono solo i tuoi amici',
+  'Add your photo': 'Aggiungi la tua foto', 'Calendar': 'Calendario', 'Add trip': 'Aggiungi viaggio',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',

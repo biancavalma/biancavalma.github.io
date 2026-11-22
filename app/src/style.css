@@ -657,3 +657,25 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .cell{position:relative}
 
 .avnote{font-size:12px;font-weight:700;color:var(--soft)}
+
+/* one main colour: weekends are just pink numbers, no column */
+.grid::before,[data-look~="a"] .grid::before{display:none!important}
+.cell.we:not(.past) .n{color:#D2346F}
+.cell.we.hit .n{color:#B0245C}
+/* bright yellow for new meetings, soft yellow for people you are with all the time */
+[data-look~="a"] .cell.hit.soft,.cell.hit.soft{background:#FFF6D1}
+/* photos a bit bigger in the calendar */
+.calcard .grid{grid-auto-rows:46px}
+.calcard .cell{height:46px}
+.calcard .cell .faces{transform:none}
+/* bottom bar like Instagram: icons with a small word, + in the middle */
+[data-look~="a"] .tabs{left:16px;right:16px;display:flex;align-items:center;justify-content:space-around;padding:6px 8px;height:auto;border-radius:28px}
+[data-look~="a"] .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:auto;padding:6px 0 4px;background:none!important;box-shadow:none!important;color:#9A8590;border-radius:16px}
+[data-look~="a"] .tab.on{color:var(--ink)}
+.tab .ti{position:relative;width:26px;height:26px;display:block}
+.tab .ti svg{width:26px;height:26px}
+.tab.on .ti svg{stroke-width:2.6}
+.tab .tl{font-size:11.5px;font-weight:800;line-height:1}
+.tab .badge{position:absolute;top:-6px;right:-12px;min-width:18px;height:18px;font-size:11px;padding:0 4px;line-height:18px}
+.tadd{flex:none;width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 6px;box-shadow:0 6px 16px rgba(42,20,32,.25)}
+[data-look~="a"] #add,[data-look~="a"] #add2{display:none!important}

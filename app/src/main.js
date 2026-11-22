@@ -200,9 +200,13 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     var tries=0;(function check(){if(!uid){if(++tries<20)setTimeout(check,500);return}api.hasPhoneApp().then(function(has){$('getapp').hidden=has})})();
     $('getappx').onclick=function(){$('getapp').hidden=true;try{localStorage.setItem('ov-getapp-x',String(Date.now()))}catch(e){}};
   })();
+  var TI={"ov": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s-7-4.6-7-10.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 7 3.8C19 16.4 12 21 12 21z\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"3.5\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/></svg>", "fr": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8.5\" r=\"3.5\"/><path d=\"M2.8 19.5c.8-3.3 3.3-5.2 6.2-5.2s5.4 1.9 6.2 5.2\"/><circle cx=\"17\" cy=\"9.5\" r=\"2.7\"/><path d=\"M16.5 14.4c2.5.2 4.2 1.8 4.8 4.6\"/></svg>"};
   function renderTabs(){
     ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});$('app').classList.toggle('oncal',tab==='cal');
-    var nov=overlaps().length;$('t-ov').innerHTML='Overlaps'+(nov?'<b class="badge">'+nov+'</b>':'');
+    var nov=overlaps().length;
+    $('t-ov').innerHTML='<span class="ti">'+TI.ov+(nov?'<b class="badge">'+nov+'</b>':'')+'</span><span class="tl">Overlaps</span>';
+    $('t-cal').innerHTML='<span class="ti">'+TI.cal+'</span><span class="tl">Calendar</span>';
+    $('t-fr').innerHTML='<span class="ti">'+TI.fr+'</span><span class="tl">Friends</span>';
   }
   $('t-ov').onclick=function(){tab='ov';renderAll()};
 
@@ -256,6 +260,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
+  $('tadd').onclick=function(){$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   $('t-cal').onclick=function(){tab='cal';renderAll()};
   $('t-fr').onclick=function(){tab='fr';renderAll()};
@@ -295,22 +300,25 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       var st=d>=T&&shows(0,d)?stayAt(0,d):null;
       if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var isH=d>=T&&hit(d), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
-      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
+      var isH=d>=T&&hit(d), soft=isH&&who.length>0&&who.every(function(x){return x===0||oftenSet[x]})&&who.some(function(x){return x>0}), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
+      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(soft?' soft':'')+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
       var mt=meetups.some(function(m){return m.day===d&&m.status==='yes'});
       h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span>'+(mt?'<span class="mt" aria-label="Meeting">\ud83e\udd42</span>':'')+'<span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
         if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
         if(selP!==null&&x===selP){var fc=where(x,d),fs=stayAt(x,d);h+='<span class="em" role="img" aria-label="'+esc(people[x].n+' in '+fc)+'">'+((fs&&fs.e)||emoFor(x,fc))+'</span>';return}
-        h+=face(x,16,true)});
+        h+=face(x,20,true)});
       if(who.length>2)h+='<span class="more">+'+(who.length-1)+'</span>';
       h+='</span>'+bar+'</button>';
     }
     return h;
   }
+  /* friends you share many days with (a partner, a flatmate) get a soft yellow; meeting someone new stays bright */
+  var oftenSet={};
+  function calcOften(){oftenSet={};var cnt={},lim=addDays(T,90);overlaps().forEach(function(r){if(r.a>lim)return;var a=r.a<T?T:r.a,b=r.b>lim?lim:r.b;var n=Math.round((new Date(b+'T12:00')-new Date(a+'T12:00'))/864e5)+1;cnt[r.p]=(cnt[r.p]||0)+n});for(var k in cnt)if(cnt[k]>=20)oftenSet[k]=true}
   function startYM(){var y=n0.getFullYear(),m=n0.getMonth();if(vy<y||(vy===y&&vm<m)){y=vy;m=vm}return [y,m]}
   function renderGrid(){
-    var s0=startYM(), h='', k;
+    calcOften();var s0=startYM(), h='', k;
     for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
       h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div></section>'}
     $('grid').innerHTML=h;
@@ -1153,22 +1161,23 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
   function renderOnb(){
     var el=$('onb');if(!el)return;
-    var st=[[!!people[0].home,'Set where you live','onbhome'],[people[0].stays.length>0,'Add your first trip','onbtrip'],[people.length>1,'Invite a friend','onbinv']];
+    var st=[[!!people[0].home,'Set where you live','onbhome'],[people[0].stays.length>0,'Add your first trip','onbtrip'],[people.length>1,'Invite a friend','onbinv'],[!!people[0].av,'Add your photo','onbpic']];
     var done=st.filter(function(x){return x[0]}).length;
-    if(done===3||lsGet('ov-onb-x')){el.hidden=true;el.innerHTML='';}else{
+    if(done===st.length||lsGet('ov-onb-x')){el.hidden=true;el.innerHTML='';}else{
       el.hidden=false;
-      el.innerHTML='<div class="onbh"><b>Get started</b><span>'+done+' of 3</span><button type="button" class="x" id="onbx" aria-label="Close">\u00d7</button></div><div class="onbbar"><i style="width:'+Math.round(done/3*100)+'%"></i></div>'
+      el.innerHTML='<div class="onbh"><b>Get started</b><span>'+done+' of '+st.length+'</span><button type="button" class="x" id="onbx" aria-label="Close">\u00d7</button></div><div class="onbbar"><i style="width:'+Math.round(done/st.length*100)+'%"></i></div>'
         +st.map(function(x){return '<button type="button" class="onbs'+(x[0]?' ok':'')+'" id="'+x[2]+'"'+(x[0]?' disabled':'')+'><span class="ck">'+(x[0]?'\u2713':'')+'</span>'+x[1]+(x[0]?'':'<span class="go">\u203a</span>')+'</button>'}).join('');
     }
     var tip=$('ctip');
     if(tip){tip.hidden=!!lsGet('ov-tip')||people.length<2;}
   }
   document.addEventListener('click',function(e){
-    var b=e.target.closest('#onbx,#onbhome,#onbtrip,#onbinv,#ctipok');if(!b)return;
+    var b=e.target.closest('#onbx,#onbhome,#onbtrip,#onbinv,#onbpic,#ctipok');if(!b)return;
     if(b.id==='onbx'){lsSet('ov-onb-x','1');renderOnb()}
     else if(b.id==='onbhome'){setEdit=true;sheet='home';selD=null;renderSheet()}
     else if(b.id==='onbtrip'){openAdd(null)}
     else if(b.id==='onbinv'){sheet='invite';renderSheet()}
+    else if(b.id==='onbpic'){setEdit=false;sheet='home';selD=null;renderSheet()}
     else if(b.id==='ctipok'){lsSet('ov-tip','1');renderOnb()}
   });
   $('reqs').addEventListener('click',function(e){
