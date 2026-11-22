@@ -339,12 +339,14 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(want+3>NM)NM=Math.min(240,want+6);
     vy=y;vm=m;lastKey='';sheet=null;selD=null;renderAll();
   }
+  var curSec=null;
   function topLabel(){
     var secs=$("grid").querySelectorAll(".mon"), stk=document.querySelector('.calcard .stick'), lim=(stk?stk.getBoundingClientRect().bottom:60)+8, cur=secs[0];
     for(var i=0;i<secs.length;i++){if(secs[i].getBoundingClientRect().top<=lim)cur=secs[i];else break}
     if(!cur)return;
     var y=+cur.getAttribute('data-y'), m=+cur.getAttribute('data-m');
     if(!scrolling){vy=y;vm=m;lastKey=vy+'-'+vm}
+    if(cur!==curSec){if(curSec)curSec.classList.remove('cur');cur.classList.add('cur');curSec=cur}
     $('mlabel').textContent=MN[m]+' '+y;
     var far=y!==n0.getFullYear()||m!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
@@ -515,6 +517,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         h+='<div class="row">'+face(i,36,false)+'<span class="tx"><b>'+esc(x.n)+'</b><i>'+(away?ec(i,c,stayAt(i,selD)):esc(c)+', home')+(w?' \u00b7 '+HEART+'with you':'')+'</i></span>'+(ov?'<a class="wa dwa" href="'+waHref(ov)+'" target="_blank" rel="noopener" data-ext="1">'+WA+'</a>':'')+'</div>';
       });
       if(!any)h+='<p class="empty">Nobody has shared plans for this day.</p>';
+      if(selD>=T)h+='<button type="button" class="add hd addday" id="addday">+ Add a trip from this day</button>';
     }else if(sheet==='mineday'){
       var hs=people[0].home;
       h+=head('You on '+day(selD))
@@ -625,6 +628,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       if(s){openEdit(people[0].stays.indexOf(s));return}
       openAdd(selD);
     };
+    if(sheet==='day'&&$('addday'))$('addday').onclick=function(){openAdd(selD)};
     if(sheet==='mineday'){
       $('trip1').onclick=function(){openAdd(selD)};
       $('home1').onclick=function(){sheet='home';renderSheet()};
