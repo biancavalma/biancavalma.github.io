@@ -96,6 +96,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     for(j=1;j<low.length;j++)if(same.every(function(o){return o.charAt(j)!==low.charAt(j)}))return c+low.charAt(j);
     return c+(low.charAt(1)||'');
   }
+  function lab0(i){var n=String(people[i].n||'?');return n.slice(0,2)}
   function face(i,size,ring){
     var av=people[i]&&people[i].av;
     if(av)return '<img class="avimg'+(ring?' ring':'')+'" src="'+esc(av)+'" alt="'+esc(i===0?'You':people[i].n)+'" width="'+size+'" height="'+size+'" style="width:'+size+'px;height:'+size+'px">';
@@ -297,7 +298,15 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       var isH=d>=T&&hit(d), soft=isH&&who.length>0&&who.every(function(x){return x===0||oftenSet[x]})&&who.some(function(x){return x>0}), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(soft?' soft':'')+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
       var mt=meetups.some(function(m){return m.day===d&&m.status==='yes'});
-      h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span>'+(mt?'<span class="mt" aria-label="Meeting">\ud83e\udd42</span>':'')+'<span class="faces">';
+      /* days with a friend show that friend's photo; your own trips are a soft tint with the emoji on the first day */
+      var fr=isH?who.filter(function(x){return x>0})[0]:undefined, ph='', lab='';
+      if(fr!==undefined){var pv=people[fr].av;cls+=' pic';ph=pv?' style="background-image:url(\''+esc(pv)+'\')"':' style="background:'+COL[fr%COL.length]+'"';lab=pv?'':'<span class="pin">'+esc(lab0(fr))+'</span>';
+        var nfr=who.filter(function(x){return x>0}).length;if(nfr>1)lab+='<span class="more">+'+(nfr-1)+'</span>'}
+      else if(st&&d>=T){cls+=' mine';lab=(d===st.a||col===0||i===1)?'<span class="me">'+(st.e||emoFor(0,st.city))+'</span>':''}
+      else if(who.length&&d>=T){lab='<span class="faces">'+who.slice(0,2).map(function(x){return face(x,20,true)}).join('')+'</span>'}
+      h+='<button type="button" class="'+cls+'" data-d="'+d+'"'+ph+'><span class="n">'+i+'</span>'+(mt?'<span class="mt" aria-label="Meeting">\ud83e\udd42</span>':'')+lab+'</button>';
+      continue;
+      h+='<span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
         if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
         if(selP!==null&&x===selP){var fc=where(x,d),fs=stayAt(x,d);h+='<span class="em" role="img" aria-label="'+esc(people[x].n+' in '+fc)+'">'+((fs&&fs.e)||emoFor(x,fc))+'</span>';return}
