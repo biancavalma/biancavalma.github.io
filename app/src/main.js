@@ -543,16 +543,16 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       h+=head(LT)+LB;
     }else if(sheet==='add'){
       h+=head(edit!==null?'Edit your trip':'When are you away?')
-        +(edit===null?'<div class="imp"><button type="button" id="ipaste">\ud83d\udccb Paste plans</button>'+(api.calendarSupported?'<button type="button" id="ical">\ud83d\udcc5 From my calendar</button>':'')+'</div>':'')
         +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
+        +withFriends()
         +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note (optional)" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
         +(function(){var st=edit!==null?people[0].stays[edit]:null;visSel=st&&st.priv?'me':st&&st.close?'close':'all';
           var opts=[['all','\ud83d\udc65 All friends'],['close','\u2b50 Close friends'],['me','\ud83d\udd12 Only me']].filter(function(o){return o[0]!=='close'||v10});
           return '</div><div class="vis"><div class="vish">Who sees it</div><div class="visb" id="fvis">'+opts.map(function(o){return '<button type="button" data-vis="'+o[0]+'"'+(o[0]===visSel?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div></div>'})()
-        +withFriends()
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
-        +(edit!==null?'<button type="button" class="ghost" id="share1">'+SHARE_I+'Share this trip</button>'+calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
+        +(edit!==null?'<button type="button" class="ghost" id="share1">'+SHARE_I+'Share this trip</button>'+calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>'
+        +(edit===null?'<div class="imp"><button type="button" id="ipaste">\ud83d\udccb Paste plans</button>'+(api.calendarSupported?'<button type="button" id="ical">\ud83d\udcc5 From my calendar</button>':'')+'</div>':'');
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
@@ -791,7 +791,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       $('fw').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveWelcome()}});
       $('savew').onclick=saveWelcome;
     }
-    if(sheet==='add'&&$('del'))$('del').onclick=function(){var s=people[0].stays.splice(edit,1)[0];if(s&&s.id)keep(api.deleteTrip(s.id));edit=null;index();close();renderAll()};
+    if(sheet==='add'&&$('del'))$('del').onclick=function(){var s=people[0].stays.splice(edit,1)[0];if(s&&s.id)keep(api.deleteTrip(s.id));edit=null;index();close();renderAll();
+      if(s)undoToast('Trip removed',function(){var cp={city:s.city,a:s.a,b:s.b,e:s.e,note:s.note,priv:s.priv,close:s.close};addMine(cp);index();renderAll()})};
   }
   /* suggestions: your own past cities first, then where friends are going, then a few common ones */
   var COMMON=['Florence','Milan','London','Paris','Rome','Barcelona','Lisbon','Munich'];
@@ -853,7 +854,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       if(ra&&d===ra)cls.push('a');
       if(ra&&d===end)cls.push('b');
       if(ra&&rb&&d>ra&&d<rb)cls.push('in');
-      h+='<button type="button" data-d="'+d+'"'+(cls.length?' class="'+cls.join(' ')+'"':'')+(d<T?' disabled':'')+'>'+i+'</button>';
+      var bz=people[0].stays.filter(function(x,j){return j!==edit&&x.a<=d&&d<=x.b})[0];
+      if(bz&&d>=T)cls.push('busy');
+      h+='<button type="button" data-d="'+d+'"'+(cls.length?' class="'+cls.join(' ')+'"':'')+(d<T?' disabled':'')+(bz&&d>=T?' title="'+esc(bz.city)+'"':'')+'>'+i+(bz&&d>=T?'<i class="bz">'+(bz.e||emoFor(0,bz.city))+'</i>':'')+'</button>';
     }
     $('pkg').innerHTML=h;$('pkl').textContent=MN[rm]+' '+ry;
     $('pkp').disabled=ry===n0.getFullYear()&&rm===n0.getMonth();
@@ -1060,10 +1063,12 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     c=r;
     var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e,note:String($('fnote').value||'').trim().slice(0,200),priv:visSel==='me',close:visSel==='close'}, old=edit!==null?people[0].stays[edit]:null;
     var inv=ns.priv?[]:wfSel.slice();wfSel=[];
-    if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns));sendInvites(old.id,inv,c)}
+    if(old){ns.id=old.id;var ei=edit;people[0].stays[ei]=ns;keep(api.updateTrip(old.id,ns));sendInvites(old.id,inv,c);
+      undoToast('Trip saved',function(){var k=people[0].stays.indexOf(ns);if(k<0)return;people[0].stays[k]=old;keep(api.updateTrip(old.id,old));index();renderAll()})}
     else{
       var ron=$('frep')&&$('frep').querySelector('.on'), every=ron?+ron.getAttribute('data-r'):0;
-      addMine(ns).then(function(id){sendInvites(id,inv,c)});
+      var made=addMine(ns);made.then(function(id){sendInvites(id,inv,c)});
+      undoToast('Trip added',function(){var k=people[0].stays.indexOf(ns);if(k>=0)people[0].stays.splice(k,1);made.then(function(id){if(id)keep(api.deleteTrip(id))});index();renderAll()});
       if(every){var lim=addDays(a,92);for(var k=every;addDays(a,k)<=lim;k+=every){var cp={city:c,a:addDays(a,k),b:addDays(b,k),e:e,note:ns.note,priv:ns.priv,close:ns.close};addMine(cp)}}
     }
     pe=null;
@@ -1143,6 +1148,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* ---------- real data ---------- */
 
   function toast(t){var el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
+  /* a message with Undo, like Gmail: 6 seconds to take back what you just did */
+  function undoToast(t,fn){var el=$('toast');el.innerHTML='<span>'+esc(t)+'</span><button type="button" class="undo">Undo</button>';el.hidden=false;clearTimeout(toast.t);
+    el.querySelector('.undo').onclick=function(){el.hidden=true;clearTimeout(toast.t);fn()};toast.t=setTimeout(function(){el.hidden=true},6000)}
   /* show changes straight away; if the save fails, say so and reload what is really saved */
   function keep(p){return p.catch(function(){toast('Could not save. Check your connection.');reload()})}
   function copyText(tx,b,label){

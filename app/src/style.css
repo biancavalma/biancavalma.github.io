@@ -669,3 +669,25 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 /* the + lives inside the bar, at the right end */
 .tadd{flex:none;width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin-left:4px;box-shadow:0 4px 12px rgba(42,20,32,.22)}
 [data-look~="a"] #add,[data-look~="a"] #add2{display:none!important}
+
+/* add sheet: calmer picker, days you are already away show their emoji */
+.pk{background:#FAF5F7}
+.pkg button.in{background:#FFE9F1;color:var(--ink)}
+.pkg button.a,.pkg button.b{background:var(--ink);color:#fff}
+.pkg button{position:relative;height:40px;line-height:30px}
+.pkg span{height:40px}
+.pkg button .bz{position:absolute;left:0;right:0;bottom:1px;font-style:normal;font-size:11px;line-height:1}
+.pkg button.busy{color:#A8909B}
+/* paste and calendar import: small links at the bottom */
+.imp{justify-content:center;gap:18px;margin:14px 0 0}
+.imp button{flex:none;height:auto;background:none;color:var(--soft);font-size:13px;text-decoration:underline;padding:4px}
+/* undo message */
+.toast{display:flex;align-items:center;gap:14px}
+.toast[hidden]{display:none}
+.toast .undo{background:none;color:#FFD84D;font-weight:900;font-size:14px;padding:0}
+/* less pink in the trip sheet: soft grey fields and chips, pink only for the main button */
+#sheet .f input,#sheet .xtra input{background:#F7F2F4}
+#sheet #sug button,#sheet .visb button{background:#F7F2F4}
+#sheet .visb button.on{background:var(--ink);color:#fff}
+/* undo message sits above the bottom bar */
+.toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
