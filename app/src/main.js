@@ -178,9 +178,11 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(!e.target.closest('#avrm'))return;
     api.removeAvatar(people[0].id).then(function(){people[0].av='';renderAll();toast('Photo removed')},function(){toast('Could not remove it, try again.')});
   });
-  document.querySelector('#app .brand').onclick=function(){sheet='about';selD=null;renderSheet()};
+  /* the logo always takes you home: the calendar, at today */
+  document.querySelector('#app .brand').onclick=function(){sheet=null;selD=null;renderSheet();if(tab!=='cal')$('t-cal').click();vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;window.scrollTo({top:0,behavior:'smooth'})};
   document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b&&b.getAttribute('data-lang')!==LANG)setLang(b.getAttribute('data-lang'))});
   $('yearb').onclick=function(){yv=vy;sheet='year';selD=null;renderSheet()};
+  document.addEventListener('click',function(e){if(e.target.closest('#aboutb')){sheet='about';selD=null;renderSheet()}});
   function renderTop(){
     $('me').innerHTML='<span class="tbi">'+face(0,40,false)+'</span><b>You</b>';
     $('note').textContent='Only friends you accept see your plans.';
@@ -632,6 +634,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +(ps==='granted'?'<button type="button" id="poff">Turn off</button>':ps==='default'?'<button type="button" id="pon">Turn on</button>':ps==='install'?'<button type="button" id="phow">How</button>':'')+'</div>'
         +'<button type="button" class="ghost" id="out">Sign out</button>'
         +'<button type="button" class="link danger" id="delme">Delete my account</button>'
+        +'<button type="button" class="ghost" id="aboutb">About Overlap</button>'
         +'<p class="hint" style="text-align:center"><a href="/privacy.html" data-ext="1" target="_blank" rel="noopener">Privacy</a> \u00b7 <a href="/support.html" data-ext="1" target="_blank" rel="noopener">Help and contact</a></p>';
     }else{
       if(!me.stays[trip]){sheet=null;renderSheet();return}
