@@ -168,6 +168,11 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   /* photo: shrink to a 320px square on the phone, then upload */
   function shrink(file){return new Promise(function(ok,no){var u=URL.createObjectURL(file),im=new Image();im.onload=function(){var S=320,c=document.createElement('canvas'),k=Math.min(im.width,im.height);c.width=c.height=S;c.getContext('2d').drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,S,S);URL.revokeObjectURL(u);c.toBlob(function(b){b?ok(b):no(new Error('photo'))},'image/jpeg',.85)};im.onerror=function(){no(new Error('photo'))};im.src=u})}
+  /* older iPhone app versions close if you pick the camera: ask to update first */
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.avpick'))return;
+    if(api.native&&!(window.OverlapNative&&window.OverlapNative.photo)){e.preventDefault();e.stopPropagation();toast('To add a photo, first update Overlap: open TestFlight and tap Update.')}
+  },true);
   document.addEventListener('change',function(e){
     if(e.target.id!=='avin'||!e.target.files||!e.target.files[0])return;
     if(people[0].avCol===false){toast('Run the database update first (sql.html).');return}

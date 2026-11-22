@@ -32,7 +32,7 @@ Notifications.setNotificationHandler({
 
 // tells the page it runs inside the iPhone app, before any of its code runs
 const BRIDGE = `
-  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true, safe: true };
+  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true, safe: true, photo: true };
   true;
 `;
 
