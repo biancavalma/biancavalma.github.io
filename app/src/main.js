@@ -929,10 +929,13 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(!invOk)return '';
     var st=edit!==null?people[0].stays[edit]:null, g={};
     if(st&&st.id)guests.forEach(function(x){if(x.trip_id===st.id)g[x.to_user]=x.status});
-    var h='<div class="wf"><div class="wfh">Bring friends <i>they get an invite to add it to their calendar</i></div><div class="wfl">';
-    for(var i=1;i<people.length;i++){var id=people[i].id,stt=g[id];
-      h+='<button type="button" class="wfb'+(stt?' done':wfSel.indexOf(id)>=0?' on':'')+'" data-wf="'+id+'"'+(stt?' disabled':'')+'>'+face(i,34,false)+'<b>'+esc(people[i].n)+'</b>'+(stt?'<i>'+(stt==='accepted'?'joined':stt==='declined'?'not now':'invited')+'</i>':'')+'</button>'}
-    return h+'<button type="button" class="wfb wfnew" id="wfnew"><span class="wfplus">+</span><b>Invite</b><i>new friend</i></button></div></div>';
+    /* the invite box first, then every friend you are connected with (also the ones hidden from your calendar) */
+    var h='<div class="wf"><div class="wfh">Travelling with someone?</div><div class="wfl">'
+      +'<button type="button" class="wfb wfnew" id="wfnew"><span class="wfplus">+</span><b>Invite</b><i>new friend</i></button>';
+    var list=allF.length?allF:people.slice(1);
+    list.forEach(function(f){var id=f.id,stt=g[id],k=pidx(id);
+      h+='<button type="button" class="wfb'+(stt?' done':wfSel.indexOf(id)>=0?' on':'')+'" data-wf="'+id+'"'+(stt?' disabled':'')+'>'+(k>0?face(k,34,false):initials(f,34))+'<b>'+esc(f.n)+'</b>'+(stt?'<i>'+(stt==='accepted'?'joined':stt==='declined'?'not now':'invited')+'</i>':'')+'</button>'});
+    return h+'</div>'+(list.length?'<p class="wfhint">Tap a friend: they get an invite to add the trip to their calendar.</p>':'')+'</div>';
   }
   function sendInvites(tripId,ids,city){
     if(!ids.length||!tripId)return;
@@ -950,6 +953,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     var link=location.origin+'/?i='+encodeURIComponent(myCode);
     return 'I’ll be in '+(st.e||emoFor(0,st.city))+' '+st.city+', '+range(st.a,st.b)+'.'+(st.note?' '+st.note:'')+'\nJoin me on Overlap, so we know when we are in the same city: '+link;
   }
+  function initials(f,size){if(f.av)return '<img class="avimg" src="'+esc(f.av)+'" alt="'+esc(f.n)+'" style="width:'+size+'px;height:'+size+'px">';return '<span class="ini" style="width:'+size+'px;height:'+size+'px">'+esc(String(f.n||'?').slice(0,2))+'</span>'}
   function pidx(id){for(var k=0;k<people.length;k++)if(people[k].id===id)return k;return -1}
   function addMine(ns){people[0].stays.push(ns);var pr=api.addTrip(ns).then(function(id){ns.id=id;return id});keep(pr);return pr}
   function covered(c,a,b){return people[0].stays.some(function(s){return s.city===c&&s.a<=b&&s.b>=a})}
