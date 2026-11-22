@@ -74,20 +74,21 @@ if (info) {
   must('category Travel + Social Networking', await api('PATCH', `/v1/appInfos/${info.id}`, { data: { type: 'appInfos', id: info.id, relationships: { primaryCategory: { data: { type: 'appCategories', id: 'TRAVEL' } }, secondaryCategory: { data: { type: 'appCategories', id: 'SOCIAL_NETWORKING' } } } } }));
   const ar = await api('GET', `/v1/appInfos/${info.id}/ageRatingDeclaration`);
   if (ar.ok) {
-    const id = ar.json.data.id, cur = ar.json.data.attributes; const at = {};
-    for (const k of Object.keys(cur)) {
-      if (typeof cur[k] === 'boolean' || cur[k] === null) {
-        if (/^(gambling|unrestrictedWebAccess|lootBox|contests|seventeenPlus|advertising|parentalControls|ageAssurance|healthOrWellnessTopics|gunsOrOtherWeapons)$/.test(k)) at[k] = false;
-        if (/^(messagingAndChat|userGeneratedContent)$/.test(k)) at[k] = true;
-      }
-      if (typeof cur[k] === 'string' || (cur[k] === null && /Themes|Use|Humor|Nudity|Violence|violence|Information|Simulated|References|Realistic|Fantasy|Treatment|Contests|Weapons|Horror/i.test(k))) {
-        if (k !== 'kidsAgeBand' && k !== 'ageRatingOverride' && k !== 'koreaAgeRatingOverride' && k !== 'ageRatingOverrideV2' && k !== 'developerAgeRatingInfoUrl') at[k] = 'NONE';
-      }
-    }
-    let r = await api('PATCH', `/v1/ageRatingDeclarations/${id}`, { data: { type: 'ageRatingDeclarations', id, attributes: at } });
-    if (!r.ok) { // try one field at a time so one unknown name does not stop the rest
-      let bad = 0; for (const [k, val] of Object.entries(at)) { const x = await api('PATCH', `/v1/ageRatingDeclarations/${id}`, { data: { type: 'ageRatingDeclarations', id, attributes: { [k]: val } } }); if (!x.ok) { bad++; console.log('   age field', k, x.err); } }
-      r = { ok: bad === 0, status: 0, err: bad + ' fields not set' };
+    // all answers go together: nothing violent, adult or gambling; friends can see each other's photos and notes
+    const id = ar.json.data.id;
+    const at = {};
+    for (const k of ['alcoholTobaccoOrDrugUseOrReferences','contests','gamblingSimulated','gunsOrOtherWeapons','horrorOrFearThemes','matureOrSuggestiveThemes','medicalOrTreatmentInformation','profanityOrCrudeHumor','sexualContentGraphicAndNudity','sexualContentOrNudity','violenceCartoonOrFantasy','violenceRealistic','violenceRealisticProlongedGraphicOrSadistic']) at[k] = 'NONE';
+    for (const k of ['gambling','unrestrictedWebAccess','lootBox','advertising','parentalControls','ageAssurance','healthOrWellnessTopics','messagingAndChat']) at[k] = false;
+    at.userGeneratedContent = true; at.socialMedia = true;
+    let r;
+    for (let i = 0; i < 6; i++) {
+      r = await api('PATCH', `/v1/ageRatingDeclarations/${id}`, { data: { type: 'ageRatingDeclarations', id, attributes: at } });
+      if (r.ok) break;
+      let fixed = false;
+      for (const m of r.err.matchAll(/attribute '(\w+)'\. Expected a (BOOLEAN|STRING)/g)) { at[m[1]] = m[2] === 'BOOLEAN' ? (m[1] === 'userGeneratedContent' || m[1] === 'socialMedia') : 'NONE'; fixed = true; }
+      for (const m of r.err.matchAll(/value for the attribute '(\w+)'/g)) { if (!(m[1] in at)) { at[m[1]] = 'NONE'; fixed = true; } }
+      for (const m of r.err.matchAll(/'(\w+)' is not a valid|attribute '(\w+)' is not/g)) { delete at[m[1] || m[2]]; fixed = true; }
+      if (!fixed) break;
     }
     must('age rating', r);
   } else say('age rating read', ar);
