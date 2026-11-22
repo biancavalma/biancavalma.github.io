@@ -23,7 +23,7 @@ self.addEventListener('fetch', (e) => {
       .then((res) => {
         if (res.ok && (req.mode === 'navigate' || url.pathname.startsWith('/assets/'))) {
           const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req.mode === 'navigate' ? (url.pathname.startsWith('/v1/') ? '/v1/' : '/') : req, copy));
+          caches.open(CACHE).then((c) => c.put(req.mode === 'navigate' ? '/' : req, copy));
         }
         return res;
       })
