@@ -54,3 +54,7 @@ export const uploadAvatar = async (u, b) => URL.createObjectURL(b);
 export const removeAvatar = async () => {};
 export const inviteToTrip = async (t, ids) => ids.length;
 export const answerTripInvite = async () => { db.tripInvites = []; };
+export const REVIEW_EMAIL = 'review.overlap@example.com';
+export const signInPassword = async () => ({});
+export const blockUser = async () => {};
+export const reportUser = async () => {};

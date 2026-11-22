@@ -26,6 +26,8 @@ const config: ExpoConfig = {
       ITSAppUsesNonExemptEncryption: false,
       NSCalendarsUsageDescription: 'Overlap reads your calendar only when you tap "From my calendar", to suggest trips you can add with one tap.',
       NSCalendarsFullAccessUsageDescription: 'Overlap reads your calendar only when you tap "From my calendar", to suggest trips you can add with one tap.',
+      NSCameraUsageDescription: 'Overlap uses the camera only when you choose to take a new profile photo.',
+      NSPhotoLibraryUsageDescription: 'Overlap opens your photos only when you choose a profile photo.',
       NSLocationWhenInUseUsageDescription: 'Overlap uses your location once, only when you tap "Use my location", to fill in the city you live in.',
     },
   },

@@ -35,6 +35,24 @@ export async function verifyCode(email, token) {
   return data.session;
 }
 
+/* only for Apple's test account: sign in with a password instead of an email code */
+export const REVIEW_EMAIL = 'review.overlap@example.com';
+export async function signInPassword(email, password) {
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data.session;
+}
+
+/* block someone: no more sharing, requests or invites between you; a report also blocks */
+export async function blockUser(id) {
+  const { error } = await sb.rpc('block_user', { other: id });
+  if (error) throw error;
+}
+export async function reportUser(id, why) {
+  const { error } = await sb.rpc('report_user', { other: id, why: why || '' });
+  if (error) throw error;
+}
+
 export async function signOut() {
   await sb.auth.signOut();
 }

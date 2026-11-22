@@ -72,6 +72,10 @@ const IT = {
   '📍 Finding you…': '📍 Ti cerco…', '💛 Next overlap': '💛 Prossimo incrocio', 'Add to my calendar': 'Aggiungi al mio calendario', 'they get an invite to add it to their calendar': 'ricevono un invito per aggiungerlo al loro calendario',
   'One alert when a friend will be in your city': 'Un avviso quando un amico sarà nella tua città', 'Add Overlap to your Home Screen to turn on alerts': 'Aggiungi Overlap alla schermata Home per accendere le notifiche',
   'Full calendar': 'Tutto l’anno', 'Previous year': 'Anno prima', 'Next year': 'Anno dopo',
+  'Block': 'Blocca', 'Report': 'Segnala', 'Blocked': 'Bloccato', 'What happened? (optional)': 'Cos’è successo? (facoltativo)',
+  'We look at every report. Reporting also blocks them.': 'Leggiamo ogni segnalazione. Segnalare blocca anche la persona.', 'Send report and block': 'Segnala e blocca',
+  'Thanks, we got your report': 'Grazie, abbiamo ricevuto la segnalazione', 'Privacy': 'Privacy', 'Help and contact': 'Aiuto e contatti', 'Test account': 'Account di prova', 'Password': 'Password',
+  'That password did not work.': 'Password sbagliata.',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',
@@ -94,6 +98,7 @@ const PAT = [
   [/^Show (.+) again$/, 'Mostra di nuovo $1'],
   [/^You on (.+)$/, 'Tu il $1'],
   [/^You are at home in (.+) this day\.$/, 'Questo giorno sei a casa a $1.'],
+  [/^Tap again to block (.+)$/, 'Tocca di nuovo per bloccare $1'],
   [/^Next overlap with (.+)$/, 'Prossimo incrocio con $1'],
   [/^Tap again to stop sharing with (.+)$/, 'Tocca di nuovo per smettere di condividere con $1'],
 ];

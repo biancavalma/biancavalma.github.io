@@ -1,5 +1,5 @@
 /* look: glass (a) by default; ?look=b shows the plain white one */
-try{var lk0=new URLSearchParams(location.search).get('look')||'a';document.documentElement.setAttribute('data-look',lk0==='c'?'a c':lk0)}catch(e){document.documentElement.setAttribute('data-look','a')}
+document.documentElement.setAttribute('data-look','a');
 import './style.css';
 import * as api from './api.js';
 import { LANG, LANGS, setLang, startI18n } from './i18n.js';
@@ -277,51 +277,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     selD=null;renderAll();
   });
 
-  /* a frame of the month's emoji around the calendar, emoji next to each other */
-  var frameEm='';
-  function drawFrame(em){
-    if(em)frameEm=em;var f=$('calframe');if(!f||!frameEm)return;
-    [].forEach.call(f.querySelectorAll('.efr'),function(e){e.remove()});
-    var W=f.offsetWidth,H=f.offsetHeight;if(!W||!H)return;
-    var step=15,h='',nx=Math.max(2,Math.round(W/step)),ny=Math.max(2,Math.round(H/step)),sx=W/nx,sy=H/ny,i;
-    function at(x,y){h+='<span class="efr" style="left:'+x.toFixed(1)+'px;top:'+y.toFixed(1)+'px">'+frameEm+'</span>'}
-    for(i=0;i<=nx;i++){at(i*sx,0);at(i*sx,H)}
-    for(i=1;i<ny;i++){at(0,i*sy);at(W,i*sy)}
-    f.insertAdjacentHTML('beforeend',h);
-  }
-  window.addEventListener('resize',function(){drawFrame()});
-
-  /* seasonal look: soft colour of the month and a few emoji falling slowly behind the calendar */
-  var SEA=[['#E3EEFF',['❄️','⛄']],['#F1E8FF',['❄️','💗']],['#E6F6DF',['🌱','🌼']],['#FFE6F0',['🌸','🌷']],['#FFF1D6',['🌼','🐝']],['#FFEFD9',['🍓','🌼']],['#FFF0C2',['☀️','🍉']],['#DDF4FA',['🌊','🐚']],['#F3E6F6',['🍇','🍂']],['#FFE9D3',['🍂','🍁']],['#F7E9DD',['🍁','🍂']],['#E6F0FF',['❄️','🎄']]];
-  var seaM=-1;
-  function season(m){
-    if(m===seaM)return;seaM=m;
-    document.documentElement.style.setProperty('--sea',SEA[m][0]);
-    return;
-    var el=$('snow');if(!el){el=document.createElement('div');el.id='snow';el.setAttribute('aria-hidden','true');document.body.insertBefore(el,document.body.firstChild)}
-    var e=SEA[m][1],h='',i;
-    for(i=0;i<8;i++){var x=(i*29+7)%100,dur=14+(i*7)%12,del=-((i*53)%26),sz=11+(i%3)*5;
-      h+='<span style="left:'+x+'%;font-size:'+sz+'px;animation-duration:'+dur+'s,'+(4+i%3)+'s;animation-delay:'+del+'s,'+del+'s">'+e[i%e.length]+'</span>'}
-    el.innerHTML=h;
-  }
-
-  /* one line on top: the next time you and a friend are in the same place */
-  /* next overlap: the friend's face waits in the top bar, tap it for the details */
-  var nxR=null;
-  function hero(){
-    var el=$('nxt');if(!el)return;/* removed from the top bar */
-    var r=people[0].home&&!onlyMe?overlaps()[0]:null;nxR=r;
-    if(!r){el.hidden=true;$('nxpop').hidden=true;return}
-    el.innerHTML=face(r.p,40,false)+'<span class="nxh" aria-hidden="true">💛</span>';
-    el.setAttribute('aria-label','Next overlap with '+people[r.p].n);
-    el.hidden=false;
-  }
-  function nxPop(){
-    var r=nxR,pp=$('nxpop');if(!r)return;
-    var who=esc(people[r.p].n), em=emoFor(r.p,r.fc), dd=Math.round((new Date(r.a+'T12:00')-new Date(T+'T12:00'))/864e5);
-    pp.innerHTML='<b>💛 Next overlap</b><span>'+(r.km?who+' in '+em+' '+esc(r.fc)+', '+r.km+' km from you':'You and '+who+' in '+em+' '+esc(r.city))+'</span><i>'+range(r.a,r.b)+(dd>0?' · in '+dd+(dd===1?' day':' days'):' · now')+'</i>';
-    pp.hidden=!pp.hidden;
-  }
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
   var NM=12, lastKey='', scrolling=false;
   function monthCells(y,m){
@@ -350,22 +305,12 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }
     return h;
   }
-  /* the trips of one month, as small cards under it */
-  function monthTrips(y,m){
-    var m0=iso(y,m,1), m1=iso(y,m,new Date(y,m+1,0).getDate()), h='';
-    UP.filter(match).filter(function(s){return s.a<=m1&&s.b>=m0}).forEach(function(s){
-      var so=people[s.p].stays[s.i];
-      h+=row(s.p,ec(s.p,s.city,so),range(s.a,s.b),'data-p="'+s.p+'" data-i="'+s.i+'"',shared(s));
-    });
-    return h?'<div class="mup"><div class="muph">Coming up in '+MN[m]+'</div><div class="lprev">'+h+'</div></div>':'';
-  }
   function startYM(){var y=n0.getFullYear(),m=n0.getMonth();if(vy<y||(vy===y&&vm<m)){y=vy;m=vm}return [y,m]}
   function renderGrid(){
     var s0=startYM(), h='', k;
     for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
       h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div></section>'}
     $('grid').innerHTML=h;
-    hero();
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
       if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;toSec(sec);setTimeout(function(){scrolling=false},100)})}
@@ -397,7 +342,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(!cur)return;
     var y=+cur.getAttribute('data-y'), m=+cur.getAttribute('data-m');
     if(!scrolling){vy=y;vm=m;lastKey=vy+'-'+vm}
-    $('mlabel').textContent=MN[m]+' '+y;season(m);
+    $('mlabel').textContent=MN[m]+' '+y;
     var far=y!==n0.getFullYear()||m!==n0.getMonth();
     $('tod').hidden=!far;$('mlabel').parentNode.classList.toggle('far',far);
   }
@@ -442,19 +387,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     return '<button type="button" class="row" '+attrs+'>'+face(p,36,false)+'<span class="tx"><b>'+a+'</b><i>'+b+'</i></span>'+(tagged?'<span class="tag">'+HEART+'with you</span>':'')+'</button>';
   }
   var LT='',LB='';
-  /* show as many trips as fit in the space under the calendar, without making the page scroll */
-  function fitList(){return;
-    var v=$('v-cal'),l=$('list');if(!v||v.hidden||!l)return;
-    var box=l.querySelector('.lprev');if(!box)return;
-    box.innerHTML=LB;
-    var kids=[].slice.call(box.children);
-    var de=document.documentElement;
-    while(kids.length&&de.scrollHeight>window.innerHeight+1){box.removeChild(kids.pop())}
-    box.hidden=!kids.length;
-  }
-  window.addEventListener('resize',function(){requestAnimationFrame(fitList)});
-  /* refit only when the calendar itself changes size (never because of the rows, to avoid a loop) */
-  if(window.ResizeObserver){var fitT=0,lastH=0;new ResizeObserver(function(){var h=document.querySelector('.calcard').offsetHeight;if(h===lastH)return;lastH=h;cancelAnimationFrame(fitT);fitT=requestAnimationFrame(fitList)}).observe(document.querySelector('.calcard'))}
   function renderList(){
     var st=UP.filter(match), title, h='', homes='', cnt=0;
     if(!people[0].home&&!people[0].stays.length){
@@ -487,7 +419,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     LT=title;LB=h;cnt+=st.length;
     $('list').innerHTML='<button type="button" class="row" data-open="1"><span class="hd" style="flex:1;margin:0;font-size:16.5px;line-height:1.2">'+title+'</span><span class="cnt">'+cnt+' ›</span></button>'
       +'<div class="lprev">'+h+'</div>';
-    requestAnimationFrame(fitList);
+    
   }
   function pickRow(r){
     var p=+r.getAttribute('data-p');
@@ -640,7 +572,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<p>Add where you\u2019ll be: your home city, and the trips you plan. Your friends do the same.</p>'
         +'<p>When two of you are in the same city on the same days, or close by, Overlap tells you. Then you can send a message and meet.</p>'
         +'<p>Only friends you accept see your plans. Trips marked Private are only for you.</p>'
-        +'<p class="hint">Made with love by Bianca.</p></div>';
+        +'<p class="hint">Made with love by Bianca.</p><p class="hint"><a href="/privacy.html" data-ext="1" target="_blank" rel="noopener">Privacy</a> \u00b7 <a href="/support.html" data-ext="1" target="_blank" rel="noopener">Help and contact</a></p></div>';
     }else if(sheet==='invite'){
       h+=head('Invite a friend')
         +'<p class="hint">Send your personal link. When they join, you see each other\u2019s plans. People you invite never see each other unless they are friends too.</p>'
@@ -656,7 +588,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       h+=head(esc(fr?fr.full||fr.n:''))
         +'<div class="row">'+face(selF,46,false)+'<span class="tx"><b>'+esc(fr?fr.n:'')+'</b><i>'+esc(fr?status(selF):'')+'</i></span></div>'
         +'<button type="button" class="add hd" id="fsee">See their plans</button>'
-        +'<button type="button" class="ghost danger" id="unf">Stop sharing with '+esc(fr?fr.n:'')+'</button>';
+        +'<button type="button" class="ghost danger" id="unf">Stop sharing with '+esc(fr?fr.n:'')+'</button>'
+        +'<div class="brow"><button type="button" class="linkb" id="fblock">Block</button><button type="button" class="linkb" id="frep">Report</button></div>'
+        +'<div class="repbox" id="repbox" hidden><label for="repwhy">What happened? (optional)</label><textarea id="repwhy" maxlength="500" rows="3"></textarea><p class="hint">We look at every report. Reporting also blocks them.</p><button type="button" class="ghost danger" id="repsend">Send report and block</button></div>';
     }else if(sheet==='install'){
       h+=head('Add Overlap to your Home Screen')+installSteps()
         +'<p class="hint" style="margin-top:8px">Then open Overlap from its icon. Alerts only work from there.</p>'
@@ -675,7 +609,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<div class="frow"><span class="tx">Overlap alerts<i style="display:block;font-style:normal;font-weight:600;font-size:12.5px;color:var(--soft)">'+(ps==='granted'?'On for this phone':ps==='denied'?'Blocked in your phone settings':ps==='install'?'Add Overlap to your Home Screen first':ps==='unsupported'?'Not available in this browser':'Off')+'</i></span>'
         +(ps==='granted'?'<button type="button" id="poff">Turn off</button>':ps==='default'?'<button type="button" id="pon">Turn on</button>':ps==='install'?'<button type="button" id="phow">How</button>':'')+'</div>'
         +'<button type="button" class="ghost" id="out">Sign out</button>'
-        +'<button type="button" class="link danger" id="delme">Delete my account</button>';
+        +'<button type="button" class="link danger" id="delme">Delete my account</button>'
+        +'<p class="hint" style="text-align:center"><a href="/privacy.html" data-ext="1" target="_blank" rel="noopener">Privacy</a> \u00b7 <a href="/support.html" data-ext="1" target="_blank" rel="noopener">Help and contact</a></p>';
     }else{
       if(!me.stays[trip]){sheet=null;renderSheet();return}
       openEdit(trip);return;
@@ -747,6 +682,16 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         var f=people[selF];if(!f)return;
         if(!this.dataset.sure){this.dataset.sure='1';this.textContent='Tap again to stop sharing with '+f.n;return}
         api.unfriend(f.id).then(function(){close();reload()},function(){toast('Could not remove, try again.')});
+      };
+      $('fblock').onclick=function(){
+        var f=people[selF];if(!f)return;
+        if(!this.dataset.sure){this.dataset.sure='1';this.textContent='Tap again to block '+f.n;return}
+        api.blockUser(f.id).then(function(){close();toast('Blocked');reload()},function(){toast('Could not block. Run the database update (sql.html).')});
+      };
+      $('frep').onclick=function(){$('repbox').hidden=false;$('repwhy').focus()};
+      $('repsend').onclick=function(){
+        var f=people[selF];if(!f)return;this.disabled=true;
+        api.reportUser(f.id,$('repwhy').value).then(function(){close();toast('Thanks, we got your report');reload()},function(){toast('Could not send. Run the database update (sql.html).')});
       };
       $('fsee').onclick=function(){var i=selF;sheet=null;selP=i;selC=null;selD=null;tab='cal';jump();renderAll();window.scrollTo(0,0)};
     }
@@ -1247,6 +1192,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       var em=String($('gem').value||'').trim().toLowerCase();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){$('err').textContent='Check your email address.';return}
       gEmail=em;try{localStorage.setItem('ov-email',em)}catch(e){}
+      if(em===api.REVIEW_EMAIL){showPassword();return}
       $('gsend').disabled=true;$('gsend').textContent='Sending…';
       api.sendCode(em).then(function(){showCode()},function(e){
         $('gsend').disabled=false;$('gsend').textContent='Send me a code';
@@ -1255,6 +1201,13 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     };
     $('gsend').onclick=go;
     $('gem').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();go()}});
+  }
+  function showPassword(){
+    gate('<div class="hd">Test account</div><div class="f"><label for="gpw">Password</label><input id="gpw" type="password" autocomplete="current-password" enterkeyhint="go"></div>'
+      +'<p class="err" id="err"></p><button type="button" class="add hd" id="gok">Sign in</button><button type="button" class="link" id="gback">Use a different email</button>');
+    var go=function(){$('gok').disabled=true;api.signInPassword(gEmail,$('gpw').value).then(function(s){start(s)},function(){$('gok').disabled=false;$('err').textContent='That password did not work.'})};
+    $('gok').onclick=go;$('gpw').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();go()}});
+    $('gback').onclick=function(){showEmail()};
   }
   function showCode(){
     gate('<div class="hd">Check your email</div><p class="hint">We sent a code to '+esc(gEmail)+'. The newest email has the right one.</p>'
