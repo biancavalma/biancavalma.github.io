@@ -2,7 +2,6 @@
 document.documentElement.setAttribute('data-look','a');
 import './style.css';
 import * as api from './api.js';
-import { LANG, LANGS, setLang, startI18n } from './i18n.js';
 /* updates arrive at once: phones keep the old page for a few minutes, so compare with the newest build number and reload when it changed */
 function checkUpdate(){
   try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
@@ -16,10 +15,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
   var M3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var DW=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  if(LANG==='it'){MN=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];M3=['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];DW=['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica']}
   function $(id){return document.getElementById(id)}
-  startI18n();
-  if(LANG==='it'){var dws=document.querySelectorAll('.dows span');['L','M','M','G','V','S','D'].forEach(function(x,i){if(dws[i])dws[i].textContent=x})}
   function pad(x){return x<10?'0'+x:''+x}
   function iso(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d)}
   function parts(s){var a=s.split('-');return {y:+a[0],m:+a[1]-1,d:+a[2]}}
@@ -28,9 +24,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   function range(a,b){
     var x=parts(a),y=parts(b);
     if(a===b)return day(a);
-    var TO=LANG==='it'?'–':' to ';
+    var TO=' to ';
     if(x.m===y.m&&x.y===y.y)return x.d+TO+y.d+' '+M3[x.m];
-    return day(a)+(LANG==='it'?' – ':' to ')+day(b);
+    return day(a)+' to '+day(b);
   }
   function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
   function byStart(x,y){return x.a<y.a?-1:x.a>y.a?1:x.p-y.p}
@@ -185,7 +181,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   });
   /* the logo always takes you home: the calendar, at today */
   document.querySelector('#app .brand').onclick=function(){sheet=null;selD=null;renderSheet();if(tab!=='cal')$('t-cal').click();vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;window.scrollTo({top:0,behavior:'smooth'})};
-  document.addEventListener('click',function(e){var b=e.target.closest('[data-lang]');if(b&&b.getAttribute('data-lang')!==LANG)setLang(b.getAttribute('data-lang'))});
   $('yearb').onclick=function(){yv=vy;sheet='year';selD=null;renderSheet()};
   document.addEventListener('click',function(e){if(e.target.closest('#aboutb')){sheet='about';selD=null;renderSheet()}});
   function renderTop(){
@@ -637,7 +632,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<div class="f'+(setEdit?'':' locked')+'" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
         +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
-        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()+'<label>Language</label><div class="sug notr" id="langs">'+LANGS.map(function(l){return '<button type="button" data-lang="'+l[0]+'"'+(l[0]===LANG?' class="on"':'')+'>'+l[1]+'</button>'}).join('')+'</div>'
+        +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
         +'<p class="err" id="err"></p>'+(setEdit?'<button type="button" class="add hd" id="saveh">Save</button>':'<button type="button" class="add hd" id="edith">Edit</button>')+'</div>'
         +'<div class="sep"></div>'
@@ -667,6 +662,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(sheet==='add'){
       if(edit!==null&&me.stays[edit])$('fc').value=me.stays[edit].city;
       $('save').onclick=saveTrip;renderPick();
+      if($('wfnew'))$('wfnew').onclick=function(){var t=tripInviteText();if(api.canShare)api.shareText(t);else api.openExternal('https://wa.me/?text='+encodeURIComponent(t))};
       document.querySelectorAll('[data-wf]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-wf'),k=wfSel.indexOf(id);if(k>=0)wfSel.splice(k,1);else wfSel.push(id);b.classList.toggle('on',k<0)}});
       if($('share1'))$('share1').onclick=function(){var t=oneTripText(me.stays[edit]);if(api.canShare)api.shareText(t);else api.openExternal('https://wa.me/?text='+encodeURIComponent(t))};
       $('pkp').onclick=function(){rm--;if(rm<0){rm=11;ry--}renderPick()};
@@ -847,7 +843,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   }
   function renderPick(){
     var lead=(new Date(ry,rm,1).getDay()+6)%7, n=new Date(ry,rm+1,0).getDate(), h='', i;
-    (LANG==='it'?'LMMGVSD':'MTWTFSS').split('').forEach(function(x){h+='<em>'+x+'</em>'});
+    'MTWTFSS'.split('').forEach(function(x){h+='<em>'+x+'</em>'});
     for(i=0;i<lead;i++)h+='<span></span>';
     for(i=1;i<=n;i++){
       var d=iso(ry,rm,i), end=rb||ra, cls=[];
@@ -930,19 +926,25 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   var SHARE_I='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:6px;vertical-align:-3px"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>';
   /* friends you can bring on a trip: tap their faces, they get an invite to Join */
   function withFriends(){
-    if(!invOk||people.length<2)return '';
+    if(!invOk)return '';
     var st=edit!==null?people[0].stays[edit]:null, g={};
     if(st&&st.id)guests.forEach(function(x){if(x.trip_id===st.id)g[x.to_user]=x.status});
     var h='<div class="wf"><div class="wfh">Bring friends <i>they get an invite to add it to their calendar</i></div><div class="wfl">';
     for(var i=1;i<people.length;i++){var id=people[i].id,stt=g[id];
       h+='<button type="button" class="wfb'+(stt?' done':wfSel.indexOf(id)>=0?' on':'')+'" data-wf="'+id+'"'+(stt?' disabled':'')+'>'+face(i,34,false)+'<b>'+esc(people[i].n)+'</b>'+(stt?'<i>'+(stt==='accepted'?'joined':stt==='declined'?'not now':'invited')+'</i>':'')+'</button>'}
-    return h+'</div></div>';
+    return h+'<button type="button" class="wfb wfnew" id="wfnew"><span class="wfplus">+</span><b>Invite</b><i>new friend</i></button></div></div>';
   }
   function sendInvites(tripId,ids,city){
     if(!ids.length||!tripId)return;
     api.inviteToTrip(tripId,ids).then(function(){
       ids.forEach(function(u){guests.push({trip_id:tripId,to_user:u,status:'pending'})});
       toast(ids.length===1?'Invite sent':'Invites sent')},function(){toast('Could not send the invite. Run the database update (sql.html).')});
+  }
+  /* invite someone who is not on Overlap yet to the trip being added */
+  function tripInviteText(){
+    var c=String(($('fc')&&$('fc').value)||'').trim(), link=location.origin+'/?i='+encodeURIComponent(myCode), n=people[0].n||'I';
+    var when=ra?(rb?range(ra,rb):day(ra)):'';
+    return 'Join me on Overlap! '+(c||when?n+' will be '+(c?'in '+(emoFor(0,c)+' ')+c+' ':'')+(when?when:'')+'. ':'')+'Add your trips and we will see when we are in the same city: '+link;
   }
   function oneTripText(st){
     var link=location.origin+'/?i='+encodeURIComponent(myCode);

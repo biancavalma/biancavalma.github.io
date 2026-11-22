@@ -517,8 +517,6 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .calcard .stick{padding-top:8px}
 .tbtns{gap:6px!important}.shtop{width:28px}.brand{flex:none}.top{gap:6px}
 .tb{min-width:0}.tbtns{gap:10px!important}
-.locked #langs,.locked #langs *{pointer-events:auto!important;opacity:1!important}
-.locked #langs{display:flex!important}
 
 /* smaller round + */
 [data-look~="a"] #add,[data-look~="a"] #add2{width:46px!important;height:46px!important;right:20px;bottom:calc(19px + env(safe-area-inset-bottom,0px))}
@@ -691,3 +689,22 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 #sheet .visb button.on{background:var(--ink);color:#fff}
 /* undo message sits above the bottom bar */
 .toast{bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+
+/* settings, when not editing: one compact list, label on the left and value on the right (like iPhone Settings) */
+#setf.locked{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:12px;align-items:center;background:#FAF5F7;border-radius:18px;padding:2px 14px 12px}
+#setf.locked>label{margin:0;padding:11px 0;font-size:14px;border-bottom:1px solid #F0E6EB;color:var(--soft)}
+#setf.locked>input,#setf.locked>.ufield,#setf.locked>.sug,#setf.locked>div{border-bottom:1px solid #F0E6EB;min-width:0}
+#setf.locked>input,#setf.locked .ufield input{text-align:right;font-size:15px!important;padding:11px 0!important;margin:0;border-radius:0}
+#setf.locked .ufield{position:relative;display:flex;justify-content:flex-end}
+#setf.locked .ufield span{position:static;padding:11px 0;font-weight:800;color:var(--soft);font-size:15px}
+#setf.locked .ufield input{padding-left:2px!important;width:auto;max-width:100%}
+#setf.locked .err,#setf.locked .add,#setf.locked .hint,#setf.locked>p{grid-column:1/-1;border:0}
+#setf.locked #edith{height:42px;font-size:15px;margin-top:12px;background:#fff;box-shadow:inset 0 0 0 1.5px #EBDCE3}
+.avrow{margin:0 0 10px}
+.avbig .avimg,.avbig svg{width:60px!important;height:60px!important}
+#sheet .sep{margin:12px 0}
+#sheet #out,#sheet #aboutb{height:42px;font-size:15px;margin-top:8px}
+#sheet #delme{font-size:13.5px;margin:6px auto}
+
+.wfnew{border-style:dashed}
+.wfplus{width:34px;height:34px;border-radius:50%;background:#FDE3EC;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--ink)}
