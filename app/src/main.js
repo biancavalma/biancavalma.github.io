@@ -316,7 +316,10 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;toSec(sec);setTimeout(function(){scrolling=false},100)})}
     topLabel();
   }
-  function stickH(){var s=document.querySelector('.calcard .stick');return s?s.offsetHeight+4:60}
+  function stickH(){var s=document.querySelector('.calcard .stick'),t=document.querySelector('#app .top');return (s?s.offsetHeight+4:60)+(t?t.offsetHeight:0)}
+  /* the month bar sticks right under the header, whatever its height on this phone */
+  function setHdr(){var t=document.querySelector('#app .top');if(t)document.documentElement.style.setProperty('--hdr',t.offsetHeight+'px')}
+  window.addEventListener('resize',setHdr);setTimeout(setHdr,0);setTimeout(setHdr,600);
   /* the month name on top follows the month you are looking at */
   /* full year: twelve small months, arrows for other years, tap a month to jump there */
   var yv=null;

@@ -605,5 +605,10 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 
 /* like other apps: a solid strip behind the clock and battery, so the page never shows through blurred when you scroll.
    In the iPhone app the strip has no height (the app already starts below the clock). */
-/* Safari on new iPhones blurs the page under the clock unless a solid bar touches the top edge; this thin bar gives it the colour to use instead */
-body::after{content:"";position:fixed;left:0;right:0;top:0;height:max(env(safe-area-inset-top,0px),2px);background:#FFF6F9;z-index:100;pointer-events:none}
+
+
+/* like Spotify and Instagram on the web: a solid header that stays on top and also covers the clock area,
+   so iPhone never shows the page blurred under the status bar. The month bar sticks just under it. */
+.wrap,.native .wrap{padding-top:0!important}
+.top{position:sticky;top:0;z-index:50;background:#FFF6F9;margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 8px max(14px,env(safe-area-inset-left,0px))}
+.calcard .stick{top:var(--hdr,0px)!important}
