@@ -1,0 +1,33 @@
+# Fills the App Store page for Overlap and, if chosen, sends it to Apple for review.
+name: App Store page
+
+on:
+  workflow_dispatch:
+    inputs:
+      submit:
+        description: Send to Apple for review after filling the page
+        type: boolean
+        default: false
+
+jobs:
+  listing:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ios-app
+    env:
+      EXPO_ASC_KEY_ID: V5JXP95HSG
+      EXPO_ASC_ISSUER_ID: 4bad4f17-f8fe-4b02-a968-6f35809a69a3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Apple key
+        run: |
+          printf '%s\n' "${{ secrets.ASC_KEY_P8 }}" > asc.p8
+          echo "EXPO_ASC_API_KEY_PATH=$PWD/asc.p8" >> "$GITHUB_ENV"
+      - name: Fill the App Store page
+        run: node scripts/store-listing.mjs
+        env:
+          SUBMIT: ${{ inputs.submit && '1' || '0' }}
