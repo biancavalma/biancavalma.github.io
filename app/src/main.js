@@ -281,29 +281,42 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
   var NM=12, lastKey='', scrolling=false;
   function monthCells(y,m){
-    var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p;
-    for(i=0;i<lead;i++)h+='<span></span>';
+    var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p, D=[];
+    /* first pass: who is there each day, and what kind of band the day gets */
     for(i=1;i<=n;i++){
-      var d=iso(y,m,i), who=[], col=(lead+i-1)%7, bar='';
+      var d=iso(y,m,i), who=[];
       /* with no filter on, a friend only appears on days you are in the same city and one of you travelled */
       var L0=where(0,d);
       if(d>=T&&!onlyMe)for(p=1;p<people.length;p++){
         if(selP===null&&!selC){if(L0&&where(p,d)===L0&&(tripAt(0,d)||tripAt(p,d)))who.push(p)}
         else if(shows(p,d))who.push(p);
       }
-      var st=d>=T&&shows(0,d)?stayAt(0,d):null;
-      if(st){who.unshift(0);bar='<span class="cn">'+esc(st.city)+'</span>'}
-      else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
-      var isH=d>=T&&hit(d), soft=isH&&who.length>0&&who.every(function(x){return x===0||oftenSet[x]})&&who.some(function(x){return x>0}), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
-      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(soft?' soft':'')+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
+      var st=d>=T&&shows(0,d)?stayAt(0,d):null, isH=d>=T&&hit(d);
+      var key=isH?'h':st?'m|'+st.city:(selP!==null&&who.length)?'f|'+(where(selP,d)||''):(selC&&who.length)?'f|'+selC:'';
+      D.push({d:d,who:who,st:st,isH:isH,key:key,soft:isH&&who.length>0&&who.every(function(x){return oftenSet[x]})});
+    }
+    /* each band gets one short label: your city, or one friend's name (+ how many more) */
+    function label(s,e){
+      var k=D[s].key;if(k.charAt(0)==='m')return D[s].st.city;
+      if(k.charAt(0)==='f'&&selP!==null)return where(selP,D[s].d)||'';
+      var cnt={};for(var j=s;j<=e;j++)D[j].who.forEach(function(x){cnt[x]=(cnt[x]||0)+1});
+      var ids=Object.keys(cnt).map(Number);if(!ids.length)return '';
+      /* close friends first, then the one there the most days, then the one you see most often */
+      ids.sort(function(x,y){var cx=closeIds.indexOf(people[x].id)>=0,cy=closeIds.indexOf(people[y].id)>=0;if(cx!==cy)return cx?-1:1;if(cnt[y]!==cnt[x])return cnt[y]-cnt[x];return (oftenSet[y]?1:0)-(oftenSet[x]?1:0)});
+      return people[ids[0]].n.split(' ')[0]+(ids.length>1?' +'+(ids.length-1):'');
+    }
+    var lab=[];for(i=0;i<n;i++){if(!D[i].key||(i>0&&D[i-1].key===D[i].key))continue;var e=i;while(e+1<n&&D[e+1].key===D[i].key)e++;var t=label(i,e);for(var j=i;j<=e;j++)lab[j]=t}
+    for(i=0;i<lead;i++)h+='<span></span>';
+    for(i=1;i<=n;i++){
+      var x=D[i-1], d=x.d, col=(lead+i-1)%7, k=x.key;
+      var bp=k&&col>0&&i>1&&D[i-2].key===k, bn=k&&col<6&&i<n&&D[i].key===k;
+      var band=k?(x.isH?' hit'+(x.soft?' soft':''):' mine')+(bp?' hp':'')+(bn?' hn':''):'';
+      var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+band+(d===selD||d===gs?' sel':'');
+      if(k&&!bp&&lab[i-1])cls+=' haslab';
       var mt=meetups.some(function(m){return m.day===d&&m.status==='yes'});
-      h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span>'+(mt?'<span class="mt" aria-label="Meeting">\ud83e\udd42</span>':'')+'<span class="faces">';
-      who.slice(0,who.length>2?1:2).forEach(function(x){
-        if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
-        if(selP!==null&&x===selP){var fc=where(x,d),fs=stayAt(x,d);h+='<span class="em" role="img" aria-label="'+esc(people[x].n+' in '+fc)+'">'+((fs&&fs.e)||emoFor(x,fc))+'</span>';return}
-        h+=face(x,20,true)});
-      if(who.length>2)h+='<span class="more">+'+(who.length-1)+'</span>';
-      h+='</span>'+bar+'</button>';
+      /* the label sits on the first day of the band and again at the start of each new week */
+      var lb='';if(k&&!bp&&lab[i-1]){var len=1;while(col+len<7&&i+len<=n&&D[i+len-1].key===k)len++;lb='<span class="blab" style="width:calc('+len+'00% - 10px)">'+esc(lab[i-1])+'</span>'}
+      h+='<button type="button" class="'+cls+'" data-d="'+d+'" aria-label="'+d+(lab[i-1]?', '+esc(lab[i-1]):'')+'"><span class="n">'+i+'</span>'+(mt?'<span class="mt" aria-label="Meeting">\ud83e\udd42</span>':'')+lb+'</button>';
     }
     return h;
   }
@@ -359,6 +372,11 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* one simple rule everywhere: the whole page scrolls, the small month bar sticks on top */
   function toSec(sec){var gd=sec.querySelector('.grid')||sec;window.scrollTo(0,gd.getBoundingClientRect().top+window.scrollY-stickH()+2)}
   /* more months load by themselves when the last one gets close */
+  /* the bottom bar gets smaller while you scroll down and comes back when you scroll up */
+  var lastY=0;window.addEventListener('scroll',function(){var y=window.scrollY,tb=document.querySelector('.tabs');if(!tb)return;
+    if(y<40||y<lastY-6)tb.classList.remove('mini');else if(y>lastY+6)tb.classList.add('mini');
+    if(Math.abs(y-lastY)>6)lastY=y},{passive:true});
+  document.addEventListener('click',function(e){if(e.target.closest('.tabs'))document.querySelector('.tabs').classList.remove('mini')},true);
   var tlT=0;document.addEventListener('scroll',function(){cancelAnimationFrame(tlT);tlT=requestAnimationFrame(function(){if($('v-cal').hidden)return;topLabel();
     var last=$('grid').lastElementChild;if(NM<120&&last&&last.getBoundingClientRect().top<window.innerHeight*3){NM+=6;renderGrid()}})},{passive:true,capture:true});
   /* like booking a flight: tap the first day, then the last day, and the trip form opens with both */
