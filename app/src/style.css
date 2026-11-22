@@ -655,3 +655,5 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 #mdays button.on{background:var(--ink);color:#fff}
 .cell .mt{position:absolute;top:1px;right:2px;font-size:11px;line-height:1}
 .cell{position:relative}
+
+.avnote{font-size:12px;font-weight:700;color:var(--soft)}

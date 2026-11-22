@@ -172,7 +172,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(e.target.id!=='avin'||!e.target.files||!e.target.files[0])return;
     if(people[0].avCol===false){toast('Run the database update first (sql.html).');return}
     toast('Uploading photo…');
-    shrink(e.target.files[0]).then(function(b){return api.uploadAvatar(people[0].id,b)}).then(function(url){people[0].av=url;renderAll();toast('Photo saved')},function(){toast('Could not save the photo, try again.')});
+    shrink(e.target.files[0]).then(function(b){return api.uploadAvatar(people[0].id,b)}).then(function(url){people[0].av=url;renderAll();toast('Photo saved')},function(err){var m=String(err&&(err.message||err.error||err.statusCode)||'').slice(0,90);toast('Could not save the photo'+(m?': '+m:'. Try again.'));try{console.error(err)}catch(e){}});
   });
   document.addEventListener('click',function(e){
     if(!e.target.closest('#avrm'))return;
@@ -620,7 +620,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }else if(sheet==='home'){
       var ps=api.pushState();
       h+=head('Your settings')
-        +'<div class="avrow"><span class="avbig">'+face(0,72,false)+'</span><div class="avbtns"><label class="ghost avpick">'+(people[0].av?'Change photo':'Add a photo')+'<input id="avin" type="file" accept="image/*" hidden></label>'+(people[0].av?'<button type="button" class="linkb" id="avrm">Remove photo</button>':'')+'</div></div>'
+        +'<div class="avrow"><span class="avbig">'+face(0,72,false)+'</span><div class="avbtns"><label class="ghost avpick">'+(people[0].av?'Change photo':'Add a photo')+'<input id="avin" type="file" accept="image/*" hidden></label>'+'<span class="avnote">Only your friends see it</span>'+(people[0].av?'<button type="button" class="linkb" id="avrm">Remove photo</button>':'')+'</div></div>'
         +'<div class="f'+(setEdit?'':' locked')+'" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
         +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'

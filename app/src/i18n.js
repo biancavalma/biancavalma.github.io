@@ -83,6 +83,7 @@ const IT = {
   'Let’s meet?': 'Vediamoci?', 'Which day?': 'Che giorno?', 'Where or when? (optional)': 'Dove o a che ora? (facoltativo)', 'Aperitivo at 7?': 'Aperitivo alle 7?', 'See you there 🥂': 'Ci vediamo lì 🥂', 'Answered': 'Risposto', 'Yes': 'Sì', 'No': 'No',
   'Could not send. Run the database update (sql.html).': 'Non riesco a mandarlo. Fai l’aggiornamento del database (sql.html).',
   '💛 Yellow': '💛 Giallo', '= you and a friend in the same place.': '= tu e un amico nello stesso posto.', 'Pink': 'Rosa', '= your own trips.': '= i tuoi viaggi.',
+  'Only your friends see it': 'La vedono solo i tuoi amici',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',
@@ -91,6 +92,7 @@ const IT = {
   'Only friends you accept see your plans. Trips marked Private are only for you.​': '',
 };
 const PAT = [
+  [/^Could not save the photo: (.+)$/, 'Non riesco a salvare la foto: $1'],
   [/^(.+): let’s meet in (.+)\?$/, '$1: vediamoci a $2?'],
   [/^Meeting (.+) in (.+)$/, '🥂 Vedi $1 a $2'],
   [/^Waiting for (.+) to answer$/, 'Aspetti la risposta di $1'],
