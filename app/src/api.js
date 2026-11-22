@@ -110,12 +110,14 @@ export async function unfriend(id) {
 
 // Me, my friends, all trips we can see (from two months ago on), and requests waiting for me
 export async function loadAll(uid) {
-  const [p, t, r, ti, tg] = await Promise.all([
+  const [p, t, r, ti, tg, mu, cf] = await Promise.all([
     sb.from('profiles').select('id, name, home, invite_code, phone, username, avatar_url').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone, username') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
     tripsQuery(),
     sb.rpc('my_requests'),
     sb.rpc('my_trip_invites'),
     sb.rpc('my_trip_guests'),
+    sb.rpc('my_meetups'),
+    sb.from('close_friends').select('friend'),
   ]);
   if (p.error) throw p.error;
   if (t.error) throw t.error;
@@ -125,7 +127,7 @@ export async function loadAll(uid) {
   const stays = (id) =>
     (t.data || [])
       .filter((s) => s.user_id === id)
-      .map((s) => ({ id: s.id, city: s.city, a: s.start_date, b: s.end_date, e: s.emoji || undefined, note: s.note || '', priv: !!s.private }));
+      .map((s) => ({ id: s.id, city: s.city, a: s.start_date, b: s.end_date, e: s.emoji || undefined, note: s.note || '', priv: !!s.private, close: !!s.close }));
   return {
     me: { ...me, stays: stays(uid) },
     friends: friends.map((f) => ({ ...f, stays: stays(f.id) })),
@@ -133,6 +135,9 @@ export async function loadAll(uid) {
     tripInvites: ti.error ? [] : ti.data || [],
     guests: tg.error ? [] : tg.data || [],
     invitesReady: !tg.error,
+    meetups: mu.error ? [] : mu.data || [],
+    close: cf.error ? [] : (cf.data || []).map((x) => x.friend),
+    v10: !mu.error && !cf.error,
   };
 }
 
@@ -148,15 +153,18 @@ export async function saveProfile(uid, fields) {
 
 // notes and private trips need update-4-trips.sql; until it has run, trips save without them
 let tripExtras = true;
+let closeCol = true; // trips for close friends need update-10
 const missingCol = (e) => e && (e.code === '42703' || e.code === 'PGRST204' || /column/i.test(e.message || ''));
 function tripRow(s) {
   const r = { city: s.city, start_date: s.a, end_date: s.b, emoji: s.e || null };
   if (tripExtras) { r.note = s.note || null; r.private = !!s.priv; }
+  if (tripExtras && closeCol) r.close = !!s.close;
   return r;
 }
 async function tripsQuery() {
   const q = (cols) => sb.from('trips').select(cols).gte('end_date', back(62)).order('start_date');
-  const r = await q('id, user_id, city, start_date, end_date, emoji, note, private');
+  let r = await q('id, user_id, city, start_date, end_date, emoji, note, private, close');
+  if (r.error && missingCol(r.error)) { closeCol = false; r = await q('id, user_id, city, start_date, end_date, emoji, note, private'); }
   if (r.error && missingCol(r.error)) { tripExtras = false; return q('id, user_id, city, start_date, end_date, emoji'); }
   return r;
 }
@@ -164,6 +172,7 @@ export const tripExtrasReady = () => tripExtras;
 
 export async function addTrip(s) {
   let r = await sb.from('trips').insert(tripRow(s)).select('id').single();
+  if (r.error && missingCol(r.error) && closeCol) { closeCol = false; r = await sb.from('trips').insert(tripRow(s)).select('id').single(); }
   if (r.error && missingCol(r.error) && tripExtras) { tripExtras = false; r = await sb.from('trips').insert(tripRow(s)).select('id').single(); }
   if (r.error) throw r.error;
   return r.data.id;
@@ -171,6 +180,7 @@ export async function addTrip(s) {
 
 export async function updateTrip(id, s) {
   let r = await sb.from('trips').update(tripRow(s)).eq('id', id);
+  if (r.error && missingCol(r.error) && closeCol) { closeCol = false; r = await sb.from('trips').update(tripRow(s)).eq('id', id); }
   if (r.error && missingCol(r.error) && tripExtras) { tripExtras = false; r = await sb.from('trips').update(tripRow(s)).eq('id', id); }
   if (r.error) throw r.error;
 }
@@ -352,3 +362,18 @@ export async function answerTripInvite(id, yes) {
   const { error } = await sb.rpc('answer_trip_invite', { i: id, yes });
   if (error) throw error;
 }
+
+/* "Let's meet?" proposals, and the close friends list (update-10) */
+export async function proposeMeetup(other, day, city, note) {
+  const { error } = await sb.rpc('propose_meetup', { other, d: day, place: city, msg: note || '' });
+  if (error) throw error;
+}
+export async function answerMeetup(id, yes) {
+  const { error } = await sb.rpc('answer_meetup', { m: id, yes });
+  if (error) throw error;
+}
+export async function setClose(uid, friend, on) {
+  const r = on ? await sb.from('close_friends').insert({ owner: uid, friend }) : await sb.from('close_friends').delete().eq('owner', uid).eq('friend', friend);
+  if (r.error && r.error.code !== '23505') throw r.error;
+}
+export const closeReady = () => closeCol;

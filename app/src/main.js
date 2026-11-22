@@ -117,7 +117,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
   var setEdit=false, onlyMe=false, tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
-  var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false, tripInv=[], guests=[], invOk=false, wfSel=[];
+  var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false, tripInv=[], guests=[], invOk=false, wfSel=[], meetups=[], closeIds=[], v10=false, visSel='all', meetF=0, meetD='', meetC='', meetA='', meetB='';
 
   function index(){
     UP=[];
@@ -295,7 +295,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       else if(selP&&who.length)bar='<span class="cn">'+esc(where(selP,d)||'')+'</span>';
       var isH=d>=T&&hit(d), isHp=isH&&col>0&&i>1&&iso(y,m,i-1)>=T&&hit(iso(y,m,i-1));
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+(isH?' hit'+(isHp?' hp':'')+(col<6&&i<n&&hit(iso(y,m,i+1))?' hn':''):'')+(d===selD||d===gs?' sel':'');
-      h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span><span class="faces">';
+      var mt=meetups.some(function(m){return m.day===d&&m.status==='yes'});
+      h+='<button type="button" class="'+cls+'" data-d="'+d+'"><span class="n">'+i+'</span>'+(mt?'<span class="mt" aria-label="Meeting">\ud83e\udd42</span>':'')+'<span class="faces">';
       who.slice(0,who.length>2?1:2).forEach(function(x){
         if(x===0&&st){h+='<span class="em" role="img" aria-label="You">'+(st.e||emoFor(0,st.city))+'</span>';return}
         if(selP!==null&&x===selP){var fc=where(x,d),fs=stayAt(x,d);h+='<span class="em" role="img" aria-label="'+esc(people[x].n+' in '+fc)+'">'+((fs&&fs.e)||emoFor(x,fc))+'</span>';return}
@@ -513,9 +514,14 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
           h+=(away?'<button type="button" class="row mine" id="mine">':'<div class="row">')+face(0,36,false)+'<span class="tx"><b>You</b><i>'+(away?ec(0,c,stayAt(0,selD)):esc(c)+', home')+'</i></span>'+(away?'<span class="edt">Edit \u203a</span></button>':'</div>');
           return;
         }
-        var ov=w?overlaps().filter(function(r){return r.p===i&&r.a<=selD&&selD<=r.b})[0]:null;
-        h+='<div class="row">'+face(i,36,false)+'<span class="tx"><b>'+esc(x.n)+'</b><i>'+(away?ec(i,c,stayAt(i,selD)):esc(c)+', home')+(w?' \u00b7 '+HEART+'with you':'')+'</i></span>'+(ov?'<a class="wa dwa" href="'+waHref(ov)+'" target="_blank" rel="noopener" data-ext="1">'+WA+'</a>':'')+'</div>';
+        var ov=i>0?overlaps().filter(function(r){return r.p===i&&r.a<=selD&&selD<=r.b})[0]:null;
+        var tag=ov?(ov.km?' \u00b7 \ud83d\udccd '+ov.km+' km from you':' \u00b7 '+HEART+'with you'):'';
+        h+='<div class="row">'+face(i,36,false)+'<span class="tx"><b>'+esc(x.n)+'</b><i>'+(away?ec(i,c,stayAt(i,selD)):esc(c)+', home')+tag+'</i></span>'
+          +(ov&&v10?'<button type="button" class="meetb" data-meet="'+i+'" aria-label="Let\u2019s meet?">\ud83e\udd42</button>':'')
+          +(ov?'<a class="wa dwa" href="'+waHref(ov)+'" target="_blank" rel="noopener" data-ext="1">'+WA+'</a>':'')+'</div>';
       });
+      meetups.filter(function(m){return m.day===selD}).forEach(function(m){var o=m.from_user===people[0].id?m.to_user:m.from_user,k=pidx(o);if(k<1)return;
+        h+='<div class="mline">\ud83e\udd42 '+(m.status==='yes'?'Meeting '+esc(people[k].n)+' in '+esc(m.city):(m.from_user===people[0].id?'Waiting for '+esc(people[k].n)+' to answer':esc(people[k].n)+' asked to meet in '+esc(m.city)))+(m.note?'<i>'+esc(m.note)+'</i>':'')+'</div>'});
       if(!any)h+='<p class="empty">Nobody has shared plans for this day.</p>';
       if(selD>=T)h+='<button type="button" class="add hd addday" id="addday">+ Add a trip from this day</button>';
     }else if(sheet==='mineday'){
@@ -532,7 +538,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<div class="f"><div class="whenrow"><p class="when" id="when"></p><button type="button" class="chg" id="chg"'+(pkHide?'':' hidden')+'>Change</button></div><div class="pk"'+(pkHide?' hidden':'')+'><div class="pkh"><button type="button" id="pkp" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button><div class="hd" id="pkl"></div><button type="button" id="pkn" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button></div><div class="pkg" id="pkg"></div></div>'
         +'<label for="fc" style="margin-top:14px">Where?</label><input id="fc" type="text" maxlength="30" placeholder="Florence" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="sug"></div>'
         +'<div class="xtra"><input id="fnote" type="text" maxlength="200" placeholder="Note (optional)" autocomplete="off" value="'+esc(edit!==null?(people[0].stays[edit].note||''):'')+'">'
-        +'<button type="button" class="priv'+(edit!==null&&people[0].stays[edit].priv?' on':'')+'" id="fpriv" aria-pressed="'+(edit!==null&&people[0].stays[edit].priv?'true':'false')+'"><span class="sw"></span><span class="pl"><b>Private</b><i>Visible only to me</i></span></button></div>'
+        +(function(){var st=edit!==null?people[0].stays[edit]:null;visSel=st&&st.priv?'me':st&&st.close?'close':'all';
+          var opts=[['all','\ud83d\udc65 All friends'],['close','\u2b50 Close friends'],['me','\ud83d\udd12 Only me']].filter(function(o){return o[0]!=='close'||v10});
+          return '</div><div class="vis"><div class="vish">Who sees it</div><div class="visb" id="fvis">'+opts.map(function(o){return '<button type="button" data-vis="'+o[0]+'"'+(o[0]===visSel?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div></div>'})()
         +withFriends()
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?'<button type="button" class="ghost" id="share1">'+SHARE_I+'Share this trip</button>'+calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>';
@@ -570,6 +578,14 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +myTripsCal();
     }else if(sheet==='year'){
       h+=yearView();
+    }else if(sheet==='meet'){
+      var fm=people[meetF], days=[], dd=meetA<T?T:meetA;
+      for(var q=0;q<7&&dd<=meetB;q++){days.push(dd);dd=addDays(dd,1)}
+      h+=head('Let\u2019s meet?')
+        +'<div class="row">'+face(meetF,40,false)+'<span class="tx"><b>'+esc(fm.n)+'</b><i>'+esc(meetC)+'</i></span></div>'
+        +'<div class="f"><label>Which day?</label><div class="sug" id="mdays">'+days.map(function(x){return '<button type="button" data-md="'+x+'"'+(x===meetD?' class="on"':'')+'>'+day(x)+'</button>'}).join('')+'</div>'
+        +'<label for="mnote">Where or when? (optional)</label><input id="mnote" maxlength="200" placeholder="Aperitivo at 7?">'
+        +'<button type="button" class="add hd" id="msend">Send to '+esc(fm.n)+'</button></div>';
     }else if(sheet==='about'){
       h+=head('About Overlap')
         +'<div class="about"><div class="wel">'+document.querySelector('.brand svg').outerHTML+'</div>'
@@ -592,6 +608,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       var fr=people[selF];
       h+=head(esc(fr?fr.full||fr.n:''))
         +'<div class="row">'+face(selF,46,false)+'<span class="tx"><b>'+esc(fr?fr.n:'')+'</b><i>'+esc(fr?status(selF):'')+'</i></span></div>'
+        +(v10?'<button type="button" class="priv'+(closeIds.indexOf(fr.id)>=0?' on':'')+'" id="fclose"><span class="sw"></span><span class="pl"><b>\u2b50 Close friend</b><i>Sees your trips for close friends</i></span></button>':'')
         +'<button type="button" class="add hd" id="fsee">See their plans</button>'
         +'<button type="button" class="ghost danger" id="unf">Stop sharing with '+esc(fr?fr.n:'')+'</button>'
         +'<div class="brow"><button type="button" class="linkb" id="fblock">Block</button><button type="button" class="linkb" id="frep">Report</button></div>'
@@ -650,7 +667,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       if($('frep'))$('frep').onclick=function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});$('rephint').hidden=b.getAttribute('data-r')==='0'};
       if($('ipaste'))$('ipaste').onclick=function(){imp={mode:'paste',list:null};sheet='import';renderSheet()};
       if($('ical'))$('ical').onclick=function(){imp={mode:'cal',list:null};sheet='import';renderSheet();fromCalendar()};
-      $('fpriv').onclick=function(){var on=!this.classList.contains('on');this.classList.toggle('on',on);this.setAttribute('aria-pressed',on)};
+      $('fvis').onclick=function(e){var b=e.target.closest('[data-vis]');if(!b)return;visSel=b.getAttribute('data-vis');[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)})};
       $('chg').onclick=function(){pkHide=false;document.querySelector('.pk').hidden=false;$('chg').hidden=true};
       citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent=''});
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
@@ -682,6 +699,17 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         var b=this;b.disabled=true;
         api.requestByEmail(em).then(function(){$('iem').value='';b.disabled=false;toast('Request sent. They see it when they sign in.')},function(){b.disabled=false;$('err').textContent='Could not send that request.'});
       };
+    }
+    if(sheet==='friend'&&$('fclose'))$('fclose').onclick=function(){var b=this,on=!b.classList.contains('on'),id=people[selF].id;b.classList.toggle('on',on);
+      if(on)closeIds.push(id);else closeIds=closeIds.filter(function(x){return x!==id});
+      api.setClose(people[0].id,id,on).then(function(){toast(on?'Added to close friends':'Removed from close friends')},function(){b.classList.toggle('on',!on);toast('Could not save. Run the database update (sql.html).')})};
+    if(sheet==='day')document.querySelectorAll('[data-meet]').forEach(function(b){b.onclick=function(){var k=+b.getAttribute('data-meet'),r=overlaps().filter(function(x){return x.p===k&&x.a<=selD&&selD<=x.b})[0];if(!r)return;
+      meetF=k;meetD=selD;meetC=r.km?(r.fc||r.city):r.city;meetA=r.a;meetB=r.b;sheet='meet';renderSheet()}});
+    if(sheet==='meet'){
+      $('mdays').onclick=function(e){var b=e.target.closest('[data-md]');if(!b)return;meetD=b.getAttribute('data-md');[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)})};
+      $('msend').onclick=function(){var b=this;b.disabled=true;var note=String($('mnote').value||'').trim();
+        api.proposeMeetup(people[meetF].id,meetD,meetC,note).then(function(){meetups.push({id:'tmp'+Date.now(),from_user:people[0].id,to_user:people[meetF].id,day:meetD,city:meetC,note:note,status:'pending'});close();toast('Sent to '+people[meetF].n);renderGrid()},
+          function(){b.disabled=false;toast('Could not send. Run the database update (sql.html).')})};
     }
     if(sheet==='friend'){
       $('unf').onclick=function(){
@@ -895,6 +923,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     var link=location.origin+'/?i='+encodeURIComponent(myCode);
     return 'I’ll be in '+(st.e||emoFor(0,st.city))+' '+st.city+', '+range(st.a,st.b)+'.'+(st.note?' '+st.note:'')+'\nJoin me on Overlap, so we know when we are in the same city: '+link;
   }
+  function pidx(id){for(var k=0;k<people.length;k++)if(people[k].id===id)return k;return -1}
   function addMine(ns){people[0].stays.push(ns);var pr=api.addTrip(ns).then(function(id){ns.id=id;return id});keep(pr);return pr}
   function covered(c,a,b){return people[0].stays.some(function(s){return s.city===c&&s.a<=b&&s.b>=a})}
   var imp=null;
@@ -1007,13 +1036,13 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     bt.disabled=false;
     checkCity($('fc'),c,function(r){
     c=r;
-    var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e,note:String($('fnote').value||'').trim().slice(0,200),priv:$('fpriv').classList.contains('on')}, old=edit!==null?people[0].stays[edit]:null;
+    var e=emoFor(0,c), ns={city:c,a:a,b:b,e:e,note:String($('fnote').value||'').trim().slice(0,200),priv:visSel==='me',close:visSel==='close'}, old=edit!==null?people[0].stays[edit]:null;
     var inv=ns.priv?[]:wfSel.slice();wfSel=[];
     if(old){ns.id=old.id;people[0].stays[edit]=ns;keep(api.updateTrip(old.id,ns));sendInvites(old.id,inv,c)}
     else{
       var ron=$('frep')&&$('frep').querySelector('.on'), every=ron?+ron.getAttribute('data-r'):0;
       addMine(ns).then(function(id){sendInvites(id,inv,c)});
-      if(every){var lim=addDays(a,92);for(var k=every;addDays(a,k)<=lim;k+=every){var cp={city:c,a:addDays(a,k),b:addDays(b,k),e:e,note:ns.note,priv:ns.priv};addMine(cp)}}
+      if(every){var lim=addDays(a,92);for(var k=every;addDays(a,k)<=lim;k+=every){var cp={city:c,a:addDays(a,k),b:addDays(b,k),e:e,note:ns.note,priv:ns.priv,close:ns.close};addMine(cp)}}
     }
     pe=null;
     edit=null;index();
@@ -1111,9 +1140,38 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       return '<div class="req"><span class="tx">'+esc(r.from_name)+' wants to share plans with you</span><button type="button" class="no" data-no="'+r.id+'">Not now</button><button type="button" class="yes" data-yes="'+r.id+'">Accept</button></div>';
     }).join('')+tripInv.map(function(r){var fi=-1;for(var k=1;k<people.length;k++)if(people[k].id===r.from_user)fi=k;
       return '<div class="req tinv">'+(fi>0?face(fi,30,false):'')+'<span class="tx">'+esc(String(r.from_name||'A friend').split(' ')[0])+' invites you to '+(r.emoji||emoFor(0,r.city))+' '+esc(r.city)+'<i>'+range(r.start_date,r.end_date)+'</i></span><button type="button" class="no" data-tno="'+r.id+'">Not now</button><button type="button" class="yes" data-tyes="'+r.id+'">Join</button></div>';
+    }).join('')+meetups.filter(function(m){return m.status==='pending'&&m.to_user===people[0].id}).map(function(m){var k=pidx(m.from_user);if(k<1)return '';
+      return '<div class="req tinv">'+face(k,30,false)+'<span class="tx">'+esc(people[k].n)+': let\u2019s meet in '+esc(m.city)+'?<i>'+day(m.day)+(m.note?' \u00b7 '+esc(m.note):'')+'</i></span><button type="button" class="no" data-mno="'+m.id+'">No</button><button type="button" class="yes" data-myes="'+m.id+'">Yes</button></div>';
     }).join('');
+    renderOnb();
   }
+  /* first steps for new people: where you live, a first trip, a friend */
+  function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+  function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+  function renderOnb(){
+    var el=$('onb');if(!el)return;
+    var st=[[!!people[0].home,'Set where you live','onbhome'],[people[0].stays.length>0,'Add your first trip','onbtrip'],[people.length>1,'Invite a friend','onbinv']];
+    var done=st.filter(function(x){return x[0]}).length;
+    if(done===3||lsGet('ov-onb-x')){el.hidden=true;el.innerHTML='';}else{
+      el.hidden=false;
+      el.innerHTML='<div class="onbh"><b>Get started</b><span>'+done+' of 3</span><button type="button" class="x" id="onbx" aria-label="Close">\u00d7</button></div><div class="onbbar"><i style="width:'+Math.round(done/3*100)+'%"></i></div>'
+        +st.map(function(x){return '<button type="button" class="onbs'+(x[0]?' ok':'')+'" id="'+x[2]+'"'+(x[0]?' disabled':'')+'><span class="ck">'+(x[0]?'\u2713':'')+'</span>'+x[1]+(x[0]?'':'<span class="go">\u203a</span>')+'</button>'}).join('');
+    }
+    var tip=$('ctip');
+    if(tip){tip.hidden=!!lsGet('ov-tip')||people.length<2;}
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('#onbx,#onbhome,#onbtrip,#onbinv,#ctipok');if(!b)return;
+    if(b.id==='onbx'){lsSet('ov-onb-x','1');renderOnb()}
+    else if(b.id==='onbhome'){setEdit=true;sheet='home';selD=null;renderSheet()}
+    else if(b.id==='onbtrip'){openAdd(null)}
+    else if(b.id==='onbinv'){sheet='invite';renderSheet()}
+    else if(b.id==='ctipok'){lsSet('ov-tip','1');renderOnb()}
+  });
   $('reqs').addEventListener('click',function(e){
+    var my=e.target.closest('[data-myes]'),mn=e.target.closest('[data-mno]');
+    if(my||mn){var mid=(my||mn).getAttribute(my?'data-myes':'data-mno');meetups=meetups.map(function(m){if(m.id===mid)m.status=my?'yes':'no';return m}).filter(function(m){return m.status!=='no'});renderReqs();renderGrid();
+      api.answerMeetup(mid,!!my).then(function(){toast(my?'See you there 🥂':'Answered')},function(){toast('Could not answer, try again.')});return}
     var ty=e.target.closest('[data-tyes]'), tn=e.target.closest('[data-tno]');
     if(ty||tn){var tid=(ty||tn).getAttribute(ty?'data-tyes':'data-tno');(ty||tn).disabled=true;tripInv=tripInv.filter(function(r){return r.id!==tid});renderReqs();api.answerTripInvite(tid,!!ty).then(function(){if(ty){toast('Added to your calendar');reload()}},function(){toast('Could not answer, try again.')});return}
     var y=e.target.closest('[data-yes]'), n=e.target.closest('[data-no]');
@@ -1157,7 +1215,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     var me=d.me;
     people[0].id=me.id;people[0].home=me.home||'';people[0].full=me.name||'';people[0].phone=me.phone||'';people[0].phoneCol=me.phone!==undefined;people[0].av=me.avatar_url||'';people[0].avCol=me.avatar_url!==undefined;people[0].stays=me.stays;
     people[0].user=me.username||'';people[0].userCol=me.username!==undefined;autoUser(me);
-    myCode=me.invite_code||'';requests=d.requests;tripInv=d.tripInvites||[];guests=d.guests||[];invOk=!!d.invitesReady;
+    myCode=me.invite_code||'';requests=d.requests;tripInv=d.tripInvites||[];guests=d.guests||[];invOk=!!d.invitesReady;meetups=d.meetups||[];closeIds=d.close||[];v10=!!d.v10;
     allF=d.friends.map(function(f){
       return {id:f.id,n:String(f.name||'Friend').trim().split(' ')[0].slice(0,20)||'Friend',full:f.name||'',home:f.home||'',phone:f.phone||'',av:f.avatar_url||'',stays:f.stays};
     });

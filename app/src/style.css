@@ -622,3 +622,36 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 /* no double month name: the one in the list hides while the bar on top shows it */
 .mon.cur .mhd{visibility:hidden}
 .addday{margin-top:12px;width:100%}
+
+/* get started card */
+.onb{background:#fff;border-radius:22px;padding:12px 14px 8px;box-shadow:0 2px 6px rgba(42,20,32,.05),0 10px 26px rgba(42,20,32,.08)}
+.onb[hidden],.ctip[hidden]{display:none}
+.onbh{display:flex;align-items:center;gap:8px}
+.onbh b{font-size:16px;font-weight:800}
+.onbh span{font-size:12.5px;font-weight:800;color:var(--soft);margin-right:auto}
+.onbh .x{width:30px;height:30px}
+.onbbar{height:6px;border-radius:9px;background:#FDE3EC;margin:8px 0 6px;overflow:hidden}
+.onbbar i{display:block;height:100%;background:var(--pink);border-radius:9px}
+.onbs{display:flex;align-items:center;gap:10px;width:100%;padding:10px 2px;background:none;font-size:15px;font-weight:800;color:var(--ink);text-align:left;border-top:1px solid #F6EBF0}
+.onbs:first-of-type{border-top:0}
+.onbs .ck{width:24px;height:24px;border-radius:50%;border:2px solid #E8CFDA;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none}
+.onbs.ok{color:var(--soft);text-decoration:line-through}
+.onbs.ok .ck{background:var(--pink);border-color:var(--pink);color:#fff}
+.onbs .go{margin-left:auto;color:var(--soft);font-size:18px}
+/* colour tip */
+.ctip{display:flex;align-items:center;gap:10px;background:#FFF7CC;border-radius:16px;padding:9px 10px 9px 14px;font-size:13.5px;font-weight:700;line-height:1.35}
+.ctip button{flex:none;height:30px;padding:0 12px;border-radius:999px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:800}
+/* who sees a trip */
+.vis{margin:12px 0 4px}
+.vish{font-size:14px;font-weight:800;margin-bottom:8px}
+.visb{display:flex;flex-wrap:wrap;gap:6px}
+.visb button{height:36px;padding:0 12px;border-radius:999px;background:#FDE3EC;font-size:13.5px;font-weight:800;color:var(--ink)}
+.visb button.on{background:var(--ink);color:#fff}
+/* let's meet */
+.meetb{flex:none;width:40px;height:40px;border-radius:50%;background:#FFF3B0;font-size:19px;margin-left:auto;display:flex;align-items:center;justify-content:center}
+.meetb+.dwa{margin-left:8px}
+.mline{background:#FFF7CC;border-radius:14px;padding:9px 12px;font-size:14px;font-weight:800;margin-top:8px}
+.mline i{display:block;font-style:normal;font-weight:600;color:var(--soft);font-size:12.5px}
+#mdays button.on{background:var(--ink);color:#fff}
+.cell .mt{position:absolute;top:1px;right:2px;font-size:11px;line-height:1}
+.cell{position:relative}

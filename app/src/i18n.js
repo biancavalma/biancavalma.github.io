@@ -77,6 +77,12 @@ const IT = {
   'Thanks, we got your report': 'Grazie, abbiamo ricevuto la segnalazione', 'Privacy': 'Privacy', 'Help and contact': 'Aiuto e contatti', 'Test account': 'Account di prova', 'Password': 'Password',
   'That password did not work.': 'Password sbagliata.',
   'Not set': 'Non impostato', 'You show up here every day. Add a trip whenever you travel and it takes over for those days.': 'Compari qui ogni giorno. Aggiungi un viaggio quando parti e prende il posto di quei giorni.',
+  'Get started': 'Per iniziare', 'Set where you live': 'Imposta dove vivi', 'Add your first trip': 'Aggiungi il tuo primo viaggio', 'Got it': 'Capito',
+  'Who sees it': 'Chi lo vede', '👥 All friends': '👥 Tutti gli amici', '⭐ Close friends': '⭐ Amici stretti', '🔒 Only me': '🔒 Solo io',
+  '⭐ Close friend': '⭐ Amico stretto', 'Sees your trips for close friends': 'Vede i tuoi viaggi per amici stretti', 'Added to close friends': 'Aggiunto agli amici stretti', 'Removed from close friends': 'Tolto dagli amici stretti',
+  'Let’s meet?': 'Vediamoci?', 'Which day?': 'Che giorno?', 'Where or when? (optional)': 'Dove o a che ora? (facoltativo)', 'Aperitivo at 7?': 'Aperitivo alle 7?', 'See you there 🥂': 'Ci vediamo lì 🥂', 'Answered': 'Risposto', 'Yes': 'Sì', 'No': 'No',
+  'Could not send. Run the database update (sql.html).': 'Non riesco a mandarlo. Fai l’aggiornamento del database (sql.html).',
+  '💛 Yellow': '💛 Giallo', '= you and a friend in the same place.': '= tu e un amico nello stesso posto.', 'Pink': 'Rosa', '= your own trips.': '= i tuoi viaggi.',
   'Language': 'Lingua', 'with you': 'con te', 'WhatsApp': 'WhatsApp', 'Invite sent': 'Invito inviato', 'Invites sent': 'Inviti inviati', 'joined': 'partecipa', 'invited': 'invitato', 'not now': 'non ora',
   'Add to my calendar.': 'Aggiungi al mio calendario.', 'Your trips': 'I tuoi viaggi', 'Private trip': 'Viaggio privato', 'Pick chat': 'Scrivi',
   'Overlap reads nothing until you tap "From my calendar".': 'Overlap non legge niente finché non tocchi "Dal mio calendario".',
@@ -85,6 +91,12 @@ const IT = {
   'Only friends you accept see your plans. Trips marked Private are only for you.​': '',
 };
 const PAT = [
+  [/^(.+): let’s meet in (.+)\?$/, '$1: vediamoci a $2?'],
+  [/^Meeting (.+) in (.+)$/, '🥂 Vedi $1 a $2'],
+  [/^Waiting for (.+) to answer$/, 'Aspetti la risposta di $1'],
+  [/^(.+) asked to meet in (.+)$/, '$1 ti ha chiesto di vedervi a $2'],
+  [/^Send to (.+)$/, 'Manda a $1'],
+  [/^Sent to (.+)$/, 'Mandato a $1'],
   [/^(.+) wants to share plans with you$/, '$1 vuole condividere i piani con te'],
   [/^(.+) invites you to (.+)$/, '$1 ti invita a $2'],
   [/^You and (.+) are both in (.+)$/, 'Tu e $1 siete entrambi a $2'],
@@ -106,6 +118,7 @@ const PAT = [
 const PART = [
   [/ · in (\d+) days?/g, (m, n) => ' · tra ' + n + (n === '1' ? ' giorno' : ' giorni')],
   [/ · now/g, ' · adesso'],
+  [/ · 📍 (\d+) km from you/g, ' · 📍 a $1 km da te'],
   [/, with you\b/g, ', con te'],
   [/, in your city\b/g, ', nella tua città'],
   [/ to /g, '–'],

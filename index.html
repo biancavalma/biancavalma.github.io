@@ -6,6 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Overlap</title>
 <meta name="description" content="See when your friends will be in the same city as you.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Overlap">
+  <meta property="og:title" content="Join me on Overlap">
+  <meta property="og:description" content="See when you and your friends are in the same city.">
+  <meta property="og:image" content="https://biancavalma.github.io/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="description" content="See when you and your friends are in the same city.">
 <meta name="theme-color" content="#FFF6F9">
 <script>try{var p=localStorage.getItem("ovpal");if(p)document.documentElement.setAttribute("data-pal",p)}catch(e){}</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,8 +26,8 @@
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-DTwEn45z.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-C3nGAW1W.css">
+  <script type="module" crossorigin src="/assets/index-CiuNXKvD.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CS1-3Y_L.css">
 </head>
 <body>
 <div id="splash" aria-hidden="true"><div class="spin"><svg width="96" height="96" viewBox="10 0 44 44" aria-hidden="true"><defs><clipPath id="lgc"><path transform="translate(32 34) rotate(-22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z"/></clipPath></defs><path transform="translate(32 34) rotate(-22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" style="fill:var(--brand)"/><path transform="translate(32 34) rotate(22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" style="fill:var(--brand3)"/><g clip-path="url(#lgc)"><path transform="translate(32 34) rotate(22) translate(0 -20)" d="M0 26 C-9 14 -14 8 -14 0 A14 14 0 1 1 14 0 C14 8 9 14 0 26Z" style="fill:var(--brand2)"/></g><circle transform="translate(32 34) rotate(-22) translate(0 -20)" r="5" fill="#fff"/><circle transform="translate(32 34) rotate(22) translate(0 -20)" r="5" fill="#fff"/></svg><div class="spt">Overlap</div></div></div>
@@ -40,6 +49,7 @@
 
   <div id="getapp" class="getapp" hidden><span class="tx"><b>Get the Overlap app</b><i>Faster, and it tells you when you overlap</i></span><a id="getappgo" class="gbtn" target="_blank" rel="noopener">Get it</a><button type="button" class="x" id="getappx" aria-label="Not now">×</button></div>
   <div id="reqs"></div>
+  <div class="onb" id="onb" hidden></div>
 
   <div class="tabs">
     <button type="button" class="tab" id="t-ov">Overlaps</button>
@@ -58,6 +68,7 @@
       <div class="pills" id="pills"></div>
       <button type="button" class="shtop" id="share" aria-label="Share my plans"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
     </div>
+    <div class="ctip" id="ctip" hidden><span><b>💛 Yellow</b> = you and a friend in the same place. <b>Pink</b> = your own trips.</span><button type="button" id="ctipok">Got it</button></div>
     <div class="card calcard">
       <div class="calframe" id="calframe">
       <div class="stick">
