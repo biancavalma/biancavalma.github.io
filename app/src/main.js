@@ -376,9 +376,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(Date.now()-swiped<400)return;
     var c=e.target.closest('.cell');if(!c)return;
     var d=c.getAttribute('data-d');
-    if(d<T){selD=d;sheet='day';renderGrid();renderSheet();return}
-    if(!gs||d<gs){gs=d;selD=null;showBar();renderGrid();return}
-    openRange(gs,d);
+    /* tapping a day shows who is where; new trips are added with the + button */
+    gs=null;showBar();selD=d;sheet='day';renderGrid();renderSheet();
   });
   $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;window.scrollTo({top:0,behavior:'smooth'})};
   var swiped=0;
@@ -506,13 +505,13 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         var c=where(i,selD);if(!c)return;any=true;
         var away=!!tripAt(i,selD), w=i>0&&c===where(0,selD)&&(away||tripAt(0,selD));
         if(i===0){
-          h+='<button type="button" class="row mine" id="mine">'+face(0,36,false)+'<span class="tx"><b>You</b><i>'+(away?ec(0,c,stayAt(0,selD)):esc(c)+', home')+'</i></span><span class="edt">'+(away?'Edit ›':'+ Add trip')+'</span></button>';
+          h+=(away?'<button type="button" class="row mine" id="mine">':'<div class="row">')+face(0,36,false)+'<span class="tx"><b>You</b><i>'+(away?ec(0,c,stayAt(0,selD)):esc(c)+', home')+'</i></span>'+(away?'<span class="edt">Edit \u203a</span></button>':'</div>');
           return;
         }
-        h+='<div class="row">'+face(i,36,false)+'<span class="tx"><b>'+esc(x.n)+'</b><i>'+(away?ec(i,c,stayAt(i,selD)):esc(c)+', home')+'</i></span>'+(w?'<span class="tag">'+HEART+'with you</span>':'')+'</div>';
+        var ov=w?overlaps().filter(function(r){return r.p===i&&r.a<=selD&&selD<=r.b})[0]:null;
+        h+='<div class="row">'+face(i,36,false)+'<span class="tx"><b>'+esc(x.n)+'</b><i>'+(away?ec(i,c,stayAt(i,selD)):esc(c)+', home')+(w?' \u00b7 '+HEART+'with you':'')+'</i></span>'+(ov?'<a class="wa dwa" href="'+waHref(ov)+'" target="_blank" rel="noopener" data-ext="1">'+WA+'</a>':'')+'</div>';
       });
-      if(!where(0,selD)&&selD>=T)h+='<button type="button" class="ghost" id="mine" style="margin-top:4px">Add a trip from this day</button>';
-      else if(!any)h+='<p class="empty">Nobody has shared plans for this day.</p>';
+      if(!any)h+='<p class="empty">Nobody has shared plans for this day.</p>';
     }else if(sheet==='mineday'){
       var hs=people[0].home;
       h+=head('You on '+day(selD))

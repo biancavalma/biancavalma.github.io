@@ -127,7 +127,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-o
 .emo button{flex:none;width:40px;height:40px;border-radius:50%;background:var(--pill);font-size:20px;line-height:40px;text-align:center}
 .emo button.on{background:var(--pink);box-shadow:inset 0 0 0 2px var(--ink)}
 .sug button{flex:none;height:34px;padding:0 10px;border-radius:999px;background:var(--pink);color:var(--on);font-weight:800;font-size:13px}
-.f .add{margin-top:10px;position:sticky;bottom:0;z-index:2;box-shadow:0 0 0 12px var(--card)}
+.f .add{margin-top:14px}
 .err{color:#c2185b;font-size:13px;min-height:0;margin:4px 2px 0}
 .mebtn{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 14px 0 4px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);font-weight:800;font-size:14px;max-width:175px;text-align:left}
 .mebtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
@@ -598,3 +598,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .repbox{margin-top:8px}
 .repbox label{font-size:13px;font-weight:800}
 .repbox textarea{width:100%;box-sizing:border-box;border-radius:14px;border:1.5px solid #EADDE3;padding:10px;font:inherit;font-size:16px;margin-top:4px}
+
+/* WhatsApp in the day sheet: a small round green button */
+.dwa{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:auto;padding:0}
+.dwa svg{width:20px;height:20px;margin:0}
