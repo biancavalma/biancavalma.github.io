@@ -612,3 +612,9 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .wrap,.native .wrap{padding-top:0!important}
 .top{position:sticky;top:0;z-index:50;background:#FFF6F9;margin:0 calc(-1 * max(14px,env(safe-area-inset-left,0px)));padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 8px max(14px,env(safe-area-inset-left,0px))}
 .calcard .stick{top:var(--hdr,0px)!important}
+
+/* bottom bar easy to read over the calendar: almost solid white, soft clear shadow, thin edge (like Telegram and Facebook) */
+[data-look~="a"] .tabs{background:rgba(255,255,255,.94);border:1px solid rgba(42,20,32,.06);box-shadow:0 2px 6px rgba(42,20,32,.06),0 12px 32px rgba(42,20,32,.16)}
+[data-look~="a"] .tab{color:#8A7480}
+[data-look~="a"] .tab.on{background:#FDE3EC;color:var(--ink);box-shadow:none}
+[data-look~="a"] #add,[data-look~="a"] #add2{box-shadow:0 2px 6px rgba(42,20,32,.12),0 12px 28px rgba(42,20,32,.28)}
