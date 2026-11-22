@@ -280,6 +280,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
   var NM=12, lastKey='', scrolling=false;
+  var TRASH='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
   function monthCells(y,m){
     var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p, D=[];
     /* first pass: who is there each day, and what kind of band the day gets */
@@ -533,7 +534,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         var c=where(i,selD);if(!c)return;any=true;
         var away=!!tripAt(i,selD), w=i>0&&c===where(0,selD)&&(away||tripAt(0,selD));
         if(i===0){
-          h+=(away?'<button type="button" class="row mine" id="mine">':'<div class="row">')+face(0,36,false)+'<span class="tx"><b>You</b><i>'+(away?ec(0,c,stayAt(0,selD)):esc(c)+', home')+'</i></span>'+(away?'<span class="edt">Edit \u203a</span></button>':'</div>');
+          h+=(away?'<div class="rowmine"><button type="button" class="row mine" id="mine">':'<div class="row">')+face(0,36,false)+'<span class="tx"><b>You</b><i>'+(away?ec(0,c,stayAt(0,selD)):esc(c)+', home')+'</i></span>'+(away?'<span class="edt">Edit \u203a</span></button><button type="button" class="dtrip" id="dtrip" aria-label="Remove this trip">'+TRASH+'</button></div>':'</div>');
           return;
         }
         var ov=i>0?overlaps().filter(function(r){return r.p===i&&r.a<=selD&&selD<=r.b})[0]:null;
@@ -666,6 +667,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }
     el.innerHTML=h+'</div>';
     $('x').onclick=close;
+    /* remove the trip straight from the day, with Undo */
+    if(sheet==='day'&&$('dtrip'))$('dtrip').onclick=function(){var s=stayAt(0,selD);if(!s)return;var i=people[0].stays.indexOf(s);people[0].stays.splice(i,1);if(s.id)keep(api.deleteTrip(s.id));index();close();renderAll();
+      undoToast('Trip removed',function(){var cp={city:s.city,a:s.a,b:s.b,e:s.e,note:s.note,priv:s.priv,close:s.close};addMine(cp);index();renderAll()})};
     if(sheet==='day'&&$('mine'))$('mine').onclick=function(){
       
       var s=stayAt(0,selD);
