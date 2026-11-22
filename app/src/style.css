@@ -602,3 +602,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 /* WhatsApp in the day sheet: a small round green button */
 .dwa{flex:none;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:auto;padding:0}
 .dwa svg{width:20px;height:20px;margin:0}
+
+/* like other apps: a solid strip behind the clock and battery, so the page never shows through blurred when you scroll.
+   In the iPhone app the strip has no height (the app already starts below the clock). */
+body::after{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#FFF6F9;z-index:100;pointer-events:none}
