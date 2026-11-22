@@ -56,3 +56,9 @@ console.log('Added to', GROUP + ':', add.status, add.ok ? '' : add.text.slice(0,
 const rev = await api('POST', '/v1/betaAppReviewSubmissions', { data: { type: 'betaAppReviewSubmissions', relationships: { build: { data: { type: 'builds', id: build.id } } } } });
 console.log('Sent to Apple for the quick tester check:', rev.status, rev.ok ? '' : rev.text.slice(0, 300));
 if (!add.ok && add.status !== 409) process.exit(1);
+
+// how the newest build stands for the friends group
+const det = await api('GET', `/v1/builds/${build.id}/buildBetaDetail`);
+console.log('Build', build.attributes.version, 'for friends:', det.json && det.json.data && det.json.data.attributes.externalBuildState, '| expires', build.attributes.expirationDate);
+const grpB = await api('GET', `/v1/betaGroups/${group.id}?fields[betaGroups]=name,publicLinkEnabled,publicLink`);
+console.log('Group', GROUP, 'public link on:', grpB.json && grpB.json.data.attributes.publicLinkEnabled);
