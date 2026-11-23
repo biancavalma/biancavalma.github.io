@@ -99,9 +99,14 @@ if (info) {
   } else say('age rating read', ar);
 }
 
+// no third-party content (Apple asks before review)
+must('content rights', await api('PATCH', `/v1/apps/${APP}`, { data: { type: 'apps', id: APP, attributes: { contentRightsDeclaration: 'DOES_NOT_USE_THIRD_PARTY_CONTENT' } } }));
+
 // price: free
 const ps = await api('GET', `/v1/apps/${APP}/appPriceSchedule`);
-if (!ps.ok || !ps.json || !ps.json.data) {
+let hasPrice = false;
+if (ps.ok && ps.json && ps.json.data) { const mp = await api('GET', `/v1/appPriceSchedules/${ps.json.data.id}/manualPrices?limit=1`); hasPrice = !!(mp.ok && mp.json && mp.json.data && mp.json.data.length); }
+if (!hasPrice) {
   const pts = await api('GET', `/v1/apps/${APP}/appPricePoints?filter[territory]=USA&limit=200`);
   const free = pts.json && pts.json.data.find((x) => Number(x.attributes.customerPrice) === 0);
   if (free) must('price free', await api('POST', '/v1/appPriceSchedules', { data: { type: 'appPriceSchedules', relationships: { app: { data: { type: 'apps', id: APP } }, baseTerritory: { data: { type: 'territories', id: 'USA' } }, manualPrices: { data: [{ type: 'appPrices', id: '${p1}' }] } } }, included: [{ type: 'appPrices', id: '${p1}', attributes: { startDate: null }, relationships: { appPricePoint: { data: { type: 'appPricePoints', id: free.id } } } }] }));
