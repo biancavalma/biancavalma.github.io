@@ -286,9 +286,8 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
   var NM=12, lastKey='', scrolling=false;
   var TRASH='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
-  function monthCells(y,m,from){
-    from=from||1;
-    var lead=from>1?0:(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p, D=[];
+  function monthCells(y,m){
+    var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p, D=[];
     /* first pass: who is there each day, and what kind of band the day gets */
     for(i=1;i<=n;i++){
       var d=iso(y,m,i), who=[];
@@ -314,8 +313,8 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
     }
     var lab=[];for(i=0;i<n;i++){if(!D[i].key||(i>0&&D[i-1].key===D[i].key))continue;var e=i;while(e+1<n&&D[e+1].key===D[i].key)e++;var t=label(i,e);for(var j=i;j<=e;j++)lab[j]=t}
     for(i=0;i<lead;i++)h+='<span></span>';
-    for(i=from;i<=n;i++){
-      var x=D[i-1], d=x.d, col=(lead+i-from)%7, k=x.key;
+    for(i=1;i<=n;i++){
+      var x=D[i-1], col=(lead+i-1)%7, k=x.key; d=x.d;
       var bp=k&&col>0&&i>1&&D[i-2].key===k, bn=k&&col<6&&i<n&&D[i].key===k;
       var band=k?(x.isH?' hit'+(x.soft?' soft':''):' mine')+(bp?' hp':'')+(bn?' hn':''):'';
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+band+(d===selD||d===gs?' sel':'');
@@ -334,7 +333,7 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
   function renderGrid(){
     calcOften();var s0=startYM(), h='', k;
     for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
-      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m,1)+'</div></section>'}
+      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div></section>'}
     $('grid').innerHTML=h;
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
@@ -594,11 +593,6 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||guessName())+'">'+(people[0].userCol?'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(people[0].user||slug(people[0].full||guessName()))+'"></div>':'')+'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="savew">Start</button></div>';
-    }else if(sheet==='pickc'||sheet==='pickf'){
-      h+=head(sheet==='pickc'?'See a city':'See a friend')+'<div class="picks">';
-      if(sheet==='pickc')cities().forEach(function(c){h+='<button type="button" class="pickb" data-c="'+esc(c)+'">'+emoFor(0,c)+' '+esc(c)+'</button>'});
-      else for(var pf=1;pf<people.length;pf++)h+='<button type="button" class="pickb" data-p="'+pf+'">'+face(pf,26,false)+esc(people[pf].n)+'</button>';
-      h+='</div>'+((sheet==='pickf'&&people.length<2)?'<p class="hint">No friends yet. Invite one from the Friends tab.</p>':'');
     }else if(sheet==='delete'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">\u00d7</button></div>'
         +'<div class="sure"><div style="font-size:44px">\u26a0\ufe0f</div><div class="big hd">Are you sure?</div><p>This deletes your account, your trips and your friends on Overlap. It cannot be undone.</p>'
@@ -725,7 +719,6 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
-      if(!setEdit)[].forEach.call(document.querySelectorAll('#setf input'),function(i){i.readOnly=true;i.tabIndex=-1;i.placeholder='Not set'});
       if($('edith'))$('edith').onclick=function(){setEdit=true;renderSheet();var f=$('fn');if(f)f.focus()};
       if($('pals'))$('pals').onclick=function(e){var b=e.target.closest('button');if(!b)return;setPal(b.getAttribute('data-p'));[].forEach.call($('pals').children,function(x){x.classList.toggle('on',x===b)})};
       if($('saveh')){$('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true)}
@@ -759,9 +752,7 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       meetF=k;meetD=selD;meetC=r.km?(r.fc||r.city):r.city;meetA=r.a;meetB=r.b;sheet='meet';renderSheet()}});
     if(sheet==='filter')document.querySelectorAll('[data-fo]').forEach(function(b){b.onclick=function(){var f=b.getAttribute('data-fo');
       if(f==='all'){onlyMe=false;selC=null;selP=null;close();renderAll()}
-      else if(f==='me'){onlyMe=true;selC=null;selP=null;close();renderAll()}
-      else if(f==='city'){sheet='pickc';renderSheet()}
-      else{sheet='pickf';renderSheet()}}});
+      else if(f==='me'){onlyMe=true;selC=null;selP=null;close();renderAll()}}});
     if(sheet==='meet'){
       $('mdays').onclick=function(e){var b=e.target.closest('[data-md]');if(!b)return;meetD=b.getAttribute('data-md');[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)})};
       $('msend').onclick=function(){var b=this;b.disabled=true;var note=String($('mnote').value||'').trim();
@@ -787,8 +778,8 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       $('fsee').onclick=function(){var i=selF;sheet=null;selP=i;selC=null;selD=null;tab='cal';jump();renderAll();window.scrollTo(0,0)};
     }
     if(sheet==='install')$('ok').onclick=close;
-    if(sheet==='pickc'||sheet==='pickf'||sheet==='filter'){
-      [].forEach.call(document.querySelectorAll('.picks'),function(pk){pk.onclick=function(e){var b=e.target.closest('.pickb');if(!b)return;onlyMe=false;
+    if(sheet==='filter'){
+      [].forEach.call(document.querySelectorAll('.picks'),function(pk){pk.onclick=function(e){var b=e.target.closest('.pickb');if(!b)return;
         onlyMe=false;if(b.getAttribute('data-c')){selC=b.getAttribute('data-c');selP=null;sheet=null;jump()}else{selP=+b.getAttribute('data-p');selC=null;sheet=null}
         selD=null;renderAll()}});
     }
