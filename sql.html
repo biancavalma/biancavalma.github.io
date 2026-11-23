@@ -6,13 +6,13 @@ button{width:100%;height:60px;border:0;border-radius:999px;background:#FF8FB8;co
 a{display:block;text-align:center;margin-top:14px;font-size:17px;font-weight:700;color:#2A1420}
 pre{white-space:pre-wrap;font-size:11px;background:#fff;border-radius:14px;padding:12px;margin-top:18px;max-height:40vh;overflow:auto}
 </style></head><body>
-<h1>Overlap photo check</h1>
+<h1>Overlap update 13: unblock</h1>
 <p>1. Tap the pink button to copy.<br>2. Open the Supabase editor with the link below.<br>3. Delete what is in the box, paste, press Run.</p>
 <button id="b">Copy the update</button>
 <a href="https://supabase.com/dashboard/project/ngsvrqecszehmskkunku/sql/new" target="_blank" rel="noopener">Open the Supabase editor &rarr;</a>
 <pre id="t"></pre>
 <script>
-var S="-- Check: who has a profile photo saved (shows only names and yes/no)\nselect name, (avatar_url is not null) as has_photo\nfrom public.profiles order by name;\n";
+var S="-- Update 13: see the people you blocked and unblock them\ncreate or replace function public.my_blocks() returns table (id uuid, name text)\nlanguage sql security definer set search_path = public stable as $$\n  select p.id, p.name from blocks b join profiles p on p.id = b.blocked where b.blocker = auth.uid() order by p.name;\n$$;\ngrant execute on function public.my_blocks() to authenticated;\n\n-- unblocking lets you add each other again (it does not make you friends by itself)\ncreate or replace function public.unblock_user(other uuid) returns void\nlanguage sql security definer set search_path = public as $$\n  delete from blocks where blocker = auth.uid() and blocked = other;\n$$;\ngrant execute on function public.unblock_user(uuid) to authenticated;\n\n-- one-off: Bianca blocked Ghigo by mistake. Remove the block and make them friends again.\ndelete from blocks b using profiles a, profiles g\n where a.username = 'bianca' and g.name = 'Ghigo'\n   and ((b.blocker = a.id and b.blocked = g.id) or (b.blocker = g.id and b.blocked = a.id));\ninsert into friendships (user_a, user_b)\nselect least(a.id, g.id), greatest(a.id, g.id) from profiles a, profiles g\n where a.username = 'bianca' and g.name = 'Ghigo'\non conflict do nothing;\n\nselect (select count(*) from blocks b join profiles a on a.id = b.blocker join profiles g on g.id = b.blocked where a.username = 'bianca' and g.name = 'Ghigo') as blocks_left,\n       (select count(*) from friendships f join profiles a on a.username = 'bianca' join profiles g on g.name = 'Ghigo' where f.user_a = least(a.id, g.id) and f.user_b = greatest(a.id, g.id)) as friends_again;\n";
 document.getElementById('t').textContent=S;
 document.getElementById('b').onclick=function(){var b=this;
  function done(){b.textContent='Copied \u2713 Now open the editor';}

@@ -48,6 +48,15 @@ export async function blockUser(id) {
   const { error } = await sb.rpc('block_user', { other: id });
   if (error) throw error;
 }
+export async function myBlocks() {
+  const { data, error } = await sb.rpc('my_blocks');
+  if (error) return [];
+  return data || [];
+}
+export async function unblockUser(id) {
+  const { error } = await sb.rpc('unblock_user', { other: id });
+  if (error) throw error;
+}
 export async function reportUser(id, why) {
   const { error } = await sb.rpc('report_user', { other: id, why: why || '' });
   if (error) throw error;

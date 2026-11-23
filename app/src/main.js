@@ -670,6 +670,7 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
         +'<div class="sep"></div>'
         +'<div class="frow"><span class="tx">Overlap alerts<i style="display:block;font-style:normal;font-weight:600;font-size:12.5px;color:var(--soft)">'+(ps==='granted'?'On for this phone':ps==='denied'?'Blocked in your phone settings':ps==='install'?'Add Overlap to your Home Screen first':ps==='unsupported'?'Get them in the Overlap iPhone app':'Off')+'</i></span>'
         +(ps==='granted'?'<button type="button" id="poff">Turn off</button>':ps==='default'?'<button type="button" id="pon">Turn on</button>':ps==='install'?'<button type="button" id="phow">How</button>':'')+'</div>'
+        +'<div id="blkbox"></div>'
         +'<button type="button" class="ghost" id="out">Sign out</button>'
         +'<button type="button" class="link delsm" id="delme">Delete my account</button>'
         +'<button type="button" class="ghost" id="aboutb">About Overlap</button>'
@@ -719,6 +720,11 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       $('fc').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();saveTrip()}});
     }
     if(sheet==='home'){
+      /* people you blocked: listed only when there are some, each with Unblock */
+      api.myBlocks().then(function(list){var bx=$('blkbox');if(!bx||!list.length)return;
+        bx.innerHTML='<div class="sep"></div><p class="fsub2">Blocked</p>'+list.map(function(b){return '<div class="frow"><span class="tx">'+esc(b.name||'Someone')+'</span><button type="button" class="pillb" data-unb="'+esc(b.id)+'">Unblock</button></div>'}).join('')+'<p class="hint">After unblocking, add each other again from Friends.</p>';
+        bx.onclick=function(e){var u=e.target.closest('[data-unb]');if(!u)return;u.disabled=true;
+          api.unblockUser(u.getAttribute('data-unb')).then(function(){tap('success');toast('Unblocked');renderSheet();reload()},function(){u.disabled=false;toast('Could not unblock. Run the database update (sql.html).')})}});
       if($('edith'))$('edith').onclick=function(){setEdit=true;renderSheet();var f=$('fn');if(f)f.focus()};
       if($('pals'))$('pals').onclick=function(e){var b=e.target.closest('button');if(!b)return;setPal(b.getAttribute('data-p'));[].forEach.call($('pals').children,function(x){x.classList.toggle('on',x===b)})};
       if($('saveh')){$('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true)}

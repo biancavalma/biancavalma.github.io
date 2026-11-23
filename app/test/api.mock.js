@@ -58,6 +58,8 @@ export const REVIEW_EMAIL = 'review.overlap@example.com';
 export const signInPassword = async () => ({});
 export const blockUser = async () => {};
 export const reportUser = async () => {};
+export const myBlocks = async () => [{ id: 'x1', name: 'Ghigo' }];
+export const unblockUser = async () => {};
 export const proposeMeetup = async () => {};
 export const answerMeetup = async () => { db.meetups = []; };
 export const setClose = async () => {};
