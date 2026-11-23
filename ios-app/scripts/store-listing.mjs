@@ -89,7 +89,7 @@ if (info) {
       let fixed = false;
       for (const m of r.err.matchAll(/attribute '(\w+)'\. Expected a (BOOLEAN|STRING)/g)) { at[m[1]] = m[2] === 'BOOLEAN' ? (YES.includes(m[1]) || /location/i.test(m[1])) : 'NONE'; fixed = true; }
       for (const m of r.err.matchAll(/value for the attribute '(\w+)'/g)) { if (!(m[1] in at)) { at[m[1]] = 'NONE'; fixed = true; } }
-      for (const m of r.err.matchAll(/'(\w+)' is not a valid|attribute '(\w+)' is not/g)) { delete at[m[1] || m[2]]; fixed = true; }
+      for (const m of r.err.matchAll(/'(\w+)' is not a valid|attribute '(\w+)' is not|'(\w+)' is not an attribute/g)) { delete at[m[1] || m[2] || m[3]]; fixed = true; }
       if (!fixed) break;
     }
     must('age rating', r);
