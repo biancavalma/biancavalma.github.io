@@ -294,12 +294,12 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         else if(shows(p,d))who.push(p);
       }
       var st=d>=T&&shows(0,d)?stayAt(0,d):null, isH=d>=T&&hit(d);
-      var key=isH?'h':st?'m|'+st.city:(selP!==null&&who.length)?'f|'+(where(selP,d)||''):(selC&&who.length)?'f|'+selC:'';
+      var key=isH?'h':st?'m|'+st.city+'|'+st.a:(selP!==null&&who.length)?'f|'+(where(selP,d)||''):(selC&&who.length)?'f|'+selC:'';
       D.push({d:d,who:who,st:st,isH:isH,key:key,soft:isH&&who.length>0&&who.every(function(x){return oftenSet[x]})});
     }
     /* each band gets one short label: your city, or one friend's name (+ how many more) */
     function label(s,e){
-      var k=D[s].key;if(k.charAt(0)==='m')return D[s].st.city;
+      var k=D[s].key;if(k.charAt(0)==='m'){var st0=D[s].st;return st0.city+(st0.note?' \u00b7 '+String(st0.note).trim():'')}
       if(k.charAt(0)==='f'&&selP!==null)return where(selP,D[s].d)||'';
       var cnt={};for(var j=s;j<=e;j++)D[j].who.forEach(function(x){cnt[x]=(cnt[x]||0)+1});
       var ids=Object.keys(cnt).map(Number);if(!ids.length)return '';
