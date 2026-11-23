@@ -760,5 +760,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .pickb.on{background:#2A1420;color:#fff}
 
 /* the filter row stays under the header, the month bar under it; past days scroll up above today */
-[data-look~="a"] .prow,.prow{position:sticky;top:var(--hdr,0px);z-index:7;background:#FFF6F9;padding-block:6px;margin-inline:-16px;padding-inline:16px}
-[data-look~="a"] .calcard .stick,.calcard .stick{top:calc(var(--hdr,0px) + var(--prowh,0px))!important}
+.top{flex-wrap:wrap}
+.top>.prow{flex:0 0 100%;padding-top:8px}
+.top>.prow[hidden]{display:none}
+[data-look~="a"] .calcard .stick,.calcard .stick{top:calc(var(--hdr,0px) - 1px)!important}

@@ -207,7 +207,7 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
   })();
   var TI={"ov": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 21s-7-4.6-7-10.2A4.8 4.8 0 0 1 12 7a4.8 4.8 0 0 1 7 3.8C19 16.4 12 21 12 21z\"/></svg>", "cal": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"3.5\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/></svg>", "fr": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8.5\" r=\"3.5\"/><path d=\"M2.8 19.5c.8-3.3 3.3-5.2 6.2-5.2s5.4 1.9 6.2 5.2\"/><circle cx=\"17\" cy=\"9.5\" r=\"2.7\"/><path d=\"M16.5 14.4c2.5.2 4.2 1.8 4.8 4.6\"/></svg>"};
   function renderTabs(){
-    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});$('app').classList.toggle('oncal',tab==='cal');
+    ['ov','cal','fr'].forEach(function(t){$('t-'+t).className='tab'+(tab===t?' on':'');$('v-'+t).hidden=tab!==t});setHdr();$('app').classList.toggle('oncal',tab==='cal');
     var nov=overlaps().length;
     $('t-ov').innerHTML='<span class="ti">'+TI.ov+(nov?'<b class="badge">'+nov+'</b>':'')+'</span><span class="tl">Overlaps</span>';
     $('t-cal').innerHTML='<span class="ti">'+TI.cal+'</span><span class="tl">Calendar</span>';
@@ -341,9 +341,11 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;toSec(sec);setTimeout(function(){scrolling=false},100)})}
     topLabel();
   }
-  function stickH(){var s=document.querySelector('.calcard .stick'),t=document.querySelector('#app .top'),r=document.querySelector('.prow');return (s?s.offsetHeight+4:60)+(t?t.offsetHeight:0)+(r?r.offsetHeight:0)}
+  function stickH(){var s=document.querySelector('.calcard .stick'),t=document.querySelector('#app .top');return (s?s.offsetHeight+4:60)+(t?t.offsetHeight:0)}
   /* the month bar sticks right under the header, whatever its height on this phone */
-  function setHdr(){var t=document.querySelector('#app .top'),r=document.querySelector('.prow');if(t)document.documentElement.style.setProperty('--hdr',t.offsetHeight+'px');if(r)document.documentElement.style.setProperty('--prowh',r.offsetHeight+'px')}
+  /* the filter row lives inside the header, so one block stays still while scrolling (two separate ones wobble on iPhone) */
+  (function(){var t=document.querySelector('#app .top'),r=document.querySelector('#v-cal .prow');if(t&&r)t.appendChild(r)})();
+  function setHdr(){var t=document.querySelector('#app .top'),r=document.querySelector('#app .top .prow');if(r)r.hidden=tab!=='cal';if(t)document.documentElement.style.setProperty('--hdr',Math.floor(t.getBoundingClientRect().height)+'px')}
   window.addEventListener('resize',setHdr);setTimeout(setHdr,0);setTimeout(setHdr,600);
   /* the month name on top follows the month you are looking at */
   /* full year: twelve small months, arrows for other years, tap a month to jump there */
