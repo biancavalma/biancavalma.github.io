@@ -586,15 +586,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
         +'<div class="f"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(people[0].full||guessName())+'">'+(people[0].userCol?'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(people[0].user||slug(people[0].full||guessName()))+'"></div>':'')+'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(people[0].phone||'')+'"><label for="fw">Your city</label><input id="fw" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" enterkeyhint="done"><div class="sug" id="wsug"></div>'
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="savew">Start</button></div>';
-    }else if(sheet==='import'){
-      h+=head(imp.mode==='cal'?'From my calendar':'Paste your plans');
-      if(imp.mode==='paste'&&!imp.list)h+='<p class="hint">Paste or type your trips, one per line. For example:<br><b>London 2-4 Dec</b><br><b>Ibiza 9/12-13/12</b><br><b>Paris 28 Dec - 2 Jan</b></p><div class="f"><textarea id="ptxt" rows="5" placeholder="London 2-4 Dec"></textarea></div><p class="err" id="err"></p><button type="button" class="add hd" id="pfind">Find my trips</button>';
-      else if(!imp.list)h+='<p class="hint">Looking for trips in your calendar\u2026</p>';
-      else{
-        h+=imp.list.length?'<p class="hint">Tap the ones to add.</p><div class="ilist">'+imp.list.map(function(t,i){return '<div class="irow"><span class="tx"><b>'+emoFor(0,t.city)+' '+esc(t.city)+'</b><i>'+range(t.a,t.b)+(t.from?' \u00b7 '+esc(t.from):'')+'</i></span><button type="button" class="padd'+(t.done?' done':'')+'" data-i="'+i+'"'+(t.done?' disabled':'')+'>'+(t.done?'Added':'Add')+'</button></div>'}).join('')+'</div>'
-          +(imp.list.some(function(t){return !t.done})?'<button type="button" class="add hd" id="iall">Add all</button>':'<button type="button" class="add hd" id="idone">Done</button>')
-          :'<p class="hint">'+esc(imp.msg||'No trips found.')+'</p>'+(imp.mode==='paste'?'<button type="button" class="ghost" id="iback">Try again</button>':'');
-      }
     }else if(sheet==='pickc'||sheet==='pickf'){
       h+=head(sheet==='pickc'?'See a city':'See a friend')+'<div class="picks">';
       if(sheet==='pickc')cities().forEach(function(c){h+='<button type="button" class="pickb" data-c="'+esc(c)+'">'+emoFor(0,c)+' '+esc(c)+'</button>'});
@@ -607,7 +598,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }else if(sheet==='share'){
       h+=head('Your plans as text')
         +'<p class="hint">Copy it and paste it into any chat, for friends who are not on Overlap.</p>'
-        +'<div class="sug" id="plang">'+[['en','English'],['it','Italiano'],['de','Deutsch'],['fr','Français'],['es','Español']].map(function(o){return '<button type="button" data-l="'+o[0]+'"'+(o[0]===plang?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div>'
         +'<div class="ptxv" id="ptxv"></div><textarea class="ptx" id="ptx" readonly aria-hidden="true" tabindex="-1"></textarea>'
         +'<div class="shb"><button type="button" class="add" id="copy">Copy text</button>'
         +'<button type="button" class="ghost wa2" id="nwa">'+WA+'WhatsApp</button>'
@@ -711,8 +701,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         if(rb&&edit===null){pkHide=true;document.querySelector('.pk').hidden=true;$('chg').hidden=false}
       };
       if($('frep'))$('frep').onclick=function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)});$('rephint').hidden=b.getAttribute('data-r')==='0'};
-      if($('ipaste'))$('ipaste').onclick=function(){imp={mode:'paste',list:null};sheet='import';renderSheet()};
-      if($('ical'))$('ical').onclick=function(){imp={mode:'cal',list:null};sheet='import';renderSheet();fromCalendar()};
       $('fvis').onclick=function(e){var b=e.target.closest('[data-vis]');if(!b)return;visSel=b.getAttribute('data-vis');[].forEach.call(this.children,function(x){x.classList.toggle('on',x===b)})};
       $('chg').onclick=function(){pkHide=false;document.querySelector('.pk').hidden=false;$('chg').hidden=true};
       citySug($('fc'),$('sug'),tripCities,function(){$('err').textContent=''});
@@ -791,23 +779,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       $('delyes').onclick=function(){var b=this;b.disabled=true;b.textContent='Deleting\u2026';
         api.deleteAccount().then(function(){try{localStorage.clear()}catch(e){}location.replace('/')},function(){b.disabled=false;b.textContent='Yes, delete my account';toast('Could not delete, try again.')})};
     }
-    if(sheet==='import'){
-      function addOne(t){if(t.done)return;t.done=true;addMine({city:t.city,a:t.a,b:t.b,e:emoFor(0,t.city),note:'',priv:false})}
-      if($('pfind'))$('pfind').onclick=function(){
-        var found=parsePlans($('ptxt').value);
-        if(!found.length){$('err').textContent='No dates found. Try "London 2-4 Dec".';return}
-        this.disabled=true;this.textContent='Finding…';
-        resolveAll(found).then(function(r){imp.list=r;imp.msg='Those trips are already in your calendar, or the cities were not found.';renderSheet()});
-      };
-      if($('iback'))$('iback').onclick=function(){imp.list=null;renderSheet()};
-      var il=document.querySelector('.ilist');
-      if(il)il.onclick=function(e){var b=e.target.closest('[data-i]');if(!b)return;addOne(imp.list[+b.getAttribute('data-i')]);index();renderAll()};
-      if($('iall'))$('iall').onclick=function(){imp.list.forEach(addOne);index();sheet=null;renderAll();toast('Trips added')};
-      if($('idone'))$('idone').onclick=function(){sheet=null;renderAll()};
-    }
     if(sheet==='share'){
       var tx=plainPlans(plang);$('ptx').value=tx;$('ptxv').textContent=tx;
-      $('plang').onclick=function(e){var b=e.target.closest('button');if(!b)return;plang=b.getAttribute('data-l');try{localStorage.setItem('ovlang',plang)}catch(x){}renderSheet()};
       $('copy').onclick=function(){
         var b=this,done=function(){b.textContent='Copied ✓';setTimeout(function(){if(b.isConnected)b.textContent='Copy text'},1800)};
         var old=function(){var t=$('ptx');t.focus();t.select();t.setSelectionRange(0,tx.length);var ok=false;try{ok=document.execCommand('copy')}catch(e){}t.blur();if(ok)done();else b.textContent='Select the text above and copy'};
@@ -992,64 +965,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   function initials(f,size){if(f.av)return '<img class="avimg" src="'+esc(f.av)+'" alt="'+esc(f.n)+'" style="width:'+size+'px;height:'+size+'px">';return '<span class="ini" style="width:'+size+'px;height:'+size+'px">'+esc(String(f.n||'?').slice(0,2))+'</span>'}
   function pidx(id){for(var k=0;k<people.length;k++)if(people[k].id===id)return k;return -1}
   function addMine(ns){people[0].stays.push(ns);var pr=api.addTrip(ns).then(function(id){ns.id=id;return id});keep(pr);return pr}
-  function covered(c,a,b){return people[0].stays.some(function(s){return s.city===c&&s.a<=b&&s.b>=a})}
-  var imp=null;
-  var MON={gen:0,jan:0,ene:0,feb:1,fev:1,fév:1,mar:2,mär:2,mrz:2,apr:3,avr:3,abr:3,mag:4,may:4,mai:4,giu:5,jun:5,jui:5,lug:6,jul:6,ago:7,aug:7,aou:7,aoû:7,set:8,sep:8,ott:9,oct:9,okt:9,nov:10,dic:11,dec:11,déc:11,dez:11};
-  function mon(w){w=String(w||'').toLowerCase().slice(0,3);if(w==='jui')return null;return MON[w]!==undefined?MON[w]:null}
-  function nextDate(d,m){var y=n0.getFullYear(),x=iso(y,m,d);if(x<addDays(T,-1))x=iso(y+1,m,d);return x}
-  /* "Londra 2-4 dic", "Paris 28 Dec - 2 Jan", "Ibiza 9/12-13/12", "Rome 5 dic" -> {city text, a, b} */
-  function parsePlans(t){
-    var out=[];
-    String(t||'').split(/\n|;|,(?![^(]*\))/).forEach(function(line){
-      var L=line.trim();if(!L)return;var m,a,b,rest;
-      if((m=L.match(/(\d{1,2})\s*([a-zà-ü]{3,})\.?\s*(?:-|–|—|to|al|bis|au|a)\s*(\d{1,2})\s*([a-zà-ü]{3,})/i))&&mon(m[2])!==null&&mon(m[4])!==null){a=nextDate(+m[1],mon(m[2]));b=nextDate(+m[3],mon(m[4]));if(b<a)b=iso(+b.slice(0,4)+1,mon(m[4]),+m[3])}
-      else if((m=L.match(/(\d{1,2})\s*(?:-|–|—|to|al|bis|au|a)\s*(\d{1,2})\s*([a-zà-ü]{3,})/i))&&mon(m[3])!==null){a=nextDate(+m[1],mon(m[3]));b=nextDate(+m[2],mon(m[3]))}
-      else if(m=L.match(/(\d{1,2})[.\/](\d{1,2})(?:[.\/]\d{2,4})?\s*(?:-|–|—|to|al|bis|au|a)\s*(\d{1,2})[.\/](\d{1,2})(?:[.\/]\d{2,4})?/)){a=nextDate(+m[1],+m[2]-1);b=nextDate(+m[3],+m[4]-1)}
-      else if((m=L.match(/(\d{1,2})\s*([a-zà-ü]{3,})/i))&&mon(m[2])!==null){a=b=nextDate(+m[1],mon(m[2]))}
-      if(!m||!a)return;
-      rest=L.replace(m[0],' ').replace(/\b(dal|dall'|al|from|to|in|a|à|en|nach|von|bis|del|le|il|the|on)\b/gi,' ').replace(/[:\-–—()]/g,' ').replace(/\s+/g,' ').trim();
-      if(rest.length<2)return;
-      out.push({t:rest,a:a,b:b<a?a:b});
-    });
-    return out;
-  }
-  function resolveAll(list){
-    return Promise.all(list.map(function(x){return resolveCity(x.t).then(function(c){return c?{city:c,a:x.a,b:x.b,from:x.t}:null})})).then(function(r){
-      return r.filter(function(x){return x&&!covered(x.city,x.a,x.b)});
-    });
-  }
-  /* calendar events -> trips: events whose place is in another city, joined when they follow each other */
-  function fromCalendar(){
-    api.calendarEvents().then(function(r){
-      if(!r||r.state!=='granted'){imp.list=[];imp.msg=r&&r.state==='denied'?'Overlap can’t see your calendar. You can allow it in iPhone Settings, Overlap, Calendars.':'Could not read your calendar.';renderSheet();return}
-      var evs=(r.events||[]).filter(function(e){return e.location&&e.location.trim()});
-      var locs={};evs.forEach(function(e){locs[e.location.trim()]=1});
-      var keys=Object.keys(locs).slice(0,40);
-      Promise.all(keys.map(function(k){return photonCity(k).then(function(c){locs[k]=c})})).then(function(){
-        var home=people[0].home, trips=[];
-        evs.forEach(function(e){
-          var c=locs[e.location.trim()];if(!c||c===home)return;
-          var a=e.start.slice(0,10), b=e.end.slice(0,10);
-          if(e.allDay&&b>a)b=addDays(b,-1);
-          if(b<a)b=a;
-          var last=trips.filter(function(t){return t.city===c})[0];
-          if(last&&a<=addDays(last.b,1)&&b>=addDays(last.a,-1)){if(a<last.a)last.a=a;if(b>last.b)last.b=b}
-          else trips.push({city:c,a:a,b:b,from:e.title||e.location});
-        });
-        imp.list=trips.filter(function(t){return t.b>=T&&!covered(t.city,t.a,t.b)}).sort(function(x,y){return x.a<y.a?-1:1});
-        if(!imp.list.length)imp.msg='No trips found in your calendar for the next 6 months.';
-        renderSheet();
-      });
-    });
-  }
-  function photonCity(q){
-    return fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q)+'&limit=1&lang=en').then(function(r){return r.json()}).then(function(j){
-      var f=(j.features||[])[0];if(!f)return '';var p=f.properties||{};
-      var c=p.city||(p.osm_key==='place'&&!SKIP[p.osm_value]?p.name:'')||'';
-      if(c&&f.geometry&&!GEO[c]){GEO[c]=[f.geometry.coordinates[1],f.geometry.coordinates[0]];saveGeo()}
-      return c;
-    }).catch(function(){return ''});
-  }
   /* colour palettes: each person picks their own, kept on this phone */
   var PALS={"lampone": ["Lampone", "#FFF6F9", "#FF8FB8", "#FFE14D"], "matcha": ["Matcha", "#F4F7EE", "#A8D672", "#FF9FB2"], "albicocca": ["Albicocca", "#FFF7EC", "#FFB86B", "#6FA3FF"], "cielo": ["Cielo", "#F1F7FF", "#8EC5FF", "#FF9F5A"], "sabbia": ["Sabbia", "#F6F1E8", "#F2C14E", "#3E8E63"], "fucsia": ["Fucsia", "#FFF0FA", "#FF7FD1", "#2FD9C0"], "corallo": ["Corallo", "#FFF5F0", "#FF8A65", "#4FD1C5"], "lavanda": ["Lavanda", "#F3F0FF", "#B9AEFF", "#7DDCB5"]};
   function curPal(){var p=document.documentElement.getAttribute('data-pal');return PALS[p]?p:'lampone'}
@@ -1154,12 +1069,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* your plans as plain text: home base, then every upcoming trip in date order */
   var PL={
     en:{j:'Join me on Overlap',f:'',t:'My plans',h:'Home base: ',none:'No trips planned yet.',noneH:'No trips planned yet, so I am in {c}.',to:' to ',oth:'Otherwise in {c}.'},
-    it:{j:'Unisciti a me su Overlap',f:'dal ',t:'I miei piani',h:'Casa: ',none:'Nessun viaggio in programma.',noneH:'Nessun viaggio in programma, quindi sono a {c}.',to:' al ',oth:'Per il resto sono a {c}.'},
-    de:{j:'Komm zu mir auf Overlap',f:'',t:'Meine Pläne',h:'Zuhause: ',none:'Noch keine Reisen geplant.',noneH:'Noch keine Reisen geplant, ich bin also in {c}.',to:' bis ',oth:'Sonst bin ich in {c}.'},
-    fr:{j:'Rejoins-moi sur Overlap',f:'du ',t:'Mes plans',h:'À la maison : ',none:'Aucun voyage prévu.',noneH:'Aucun voyage prévu, je suis donc à {c}.',to:' au ',oth:'Sinon je suis à {c}.'},
-    es:{j:'Únete a mí en Overlap',f:'del ',t:'Mis planes',h:'Casa: ',none:'Aún no hay viajes.',noneH:'Aún no hay viajes, así que estoy en {c}.',to:' al ',oth:'El resto del tiempo estoy en {c}.'}
   };
-  var plang=(function(){try{var v=localStorage.getItem('ovlang');if(PL[v])return v}catch(e){}var n=(navigator.language||'en').slice(0,2);return PL[n]?n:'en'})();
+  var plang='en';
   function plainPlans(lg){
     lg=PL[lg]?lg:'en';var w=PL[lg], me=people[0];
     var mf=new Intl.DateTimeFormat(lg,{month:'short'});

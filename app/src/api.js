@@ -316,12 +316,6 @@ export async function deleteAccount() {
 
 export { today };
 
-// the phone's calendar, read only when the person taps "From my calendar" (iPhone app 1.0.0 build 7 and later)
-export const calendarSupported = native && !!window.OverlapNative.calendar;
-export function calendarEvents() {
-  return ask('calendar-events', 90000);
-}
-
 // the phone's own share menu (iPhone app build 8 and later)
 export const canShare = (native && !!window.OverlapNative.share) || (typeof navigator !== 'undefined' && !!navigator.share);
 export function shareText(text) {
