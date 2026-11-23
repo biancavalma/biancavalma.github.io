@@ -93,7 +93,8 @@ if (info) {
       if (!fixed) break;
     }
     must('age rating', r);
-    const now = await api('GET', `/v1/ageRatingDeclarations/${id}`);
+    const now = await api('GET', `/v1/appInfos/${info.id}/ageRatingDeclaration`);
+    console.log('     sent: ' + Object.keys(at).filter((k) => at[k] === true).join(', ') + ' | all keys: ' + (now.ok ? Object.keys(now.json.data.attributes).join(',') : now.status));
     if (now.ok) console.log('     answers: ' + Object.entries(now.json.data.attributes).filter(([, v]) => v === true || (typeof v === 'string' && v !== 'NONE')).map(([k, v]) => k + '=' + v).join(', '));
   } else say('age rating read', ar);
 }
