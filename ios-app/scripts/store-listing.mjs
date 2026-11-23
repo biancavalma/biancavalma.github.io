@@ -78,19 +78,23 @@ if (info) {
     const id = ar.json.data.id;
     const at = {};
     for (const k of ['alcoholTobaccoOrDrugUseOrReferences','contests','gamblingSimulated','gunsOrOtherWeapons','horrorOrFearThemes','matureOrSuggestiveThemes','medicalOrTreatmentInformation','profanityOrCrudeHumor','sexualContentGraphicAndNudity','sexualContentOrNudity','violenceCartoonOrFantasy','violenceRealistic','violenceRealisticProlongedGraphicOrSadistic']) at[k] = 'NONE';
-    for (const k of ['gambling','unrestrictedWebAccess','lootBox','advertising','parentalControls','ageAssurance','healthOrWellnessTopics','messagingAndChat']) at[k] = false;
-    at.userGeneratedContent = true; at.socialMedia = true;
+    for (const k of ['gambling','unrestrictedWebAccess','lootBox','advertising','parentalControls','ageAssurance','healthOrWellnessTopics','socialMedia']) at[k] = false;
+    /* Bianca's answers in App Store Connect: user content yes, messages yes (meet-up notes and invites), shared location yes (which city you will be in), no public feed */
+    const YES = ['userGeneratedContent', 'messagingAndChat', 'sharedLocation', 'locationSharing'];
+    for (const k of YES) at[k] = true;
     let r;
     for (let i = 0; i < 6; i++) {
       r = await api('PATCH', `/v1/ageRatingDeclarations/${id}`, { data: { type: 'ageRatingDeclarations', id, attributes: at } });
       if (r.ok) break;
       let fixed = false;
-      for (const m of r.err.matchAll(/attribute '(\w+)'\. Expected a (BOOLEAN|STRING)/g)) { at[m[1]] = m[2] === 'BOOLEAN' ? (m[1] === 'userGeneratedContent' || m[1] === 'socialMedia') : 'NONE'; fixed = true; }
+      for (const m of r.err.matchAll(/attribute '(\w+)'\. Expected a (BOOLEAN|STRING)/g)) { at[m[1]] = m[2] === 'BOOLEAN' ? (YES.includes(m[1]) || /location/i.test(m[1])) : 'NONE'; fixed = true; }
       for (const m of r.err.matchAll(/value for the attribute '(\w+)'/g)) { if (!(m[1] in at)) { at[m[1]] = 'NONE'; fixed = true; } }
       for (const m of r.err.matchAll(/'(\w+)' is not a valid|attribute '(\w+)' is not/g)) { delete at[m[1] || m[2]]; fixed = true; }
       if (!fixed) break;
     }
     must('age rating', r);
+    const now = await api('GET', `/v1/ageRatingDeclarations/${id}`);
+    if (now.ok) console.log('     answers: ' + Object.entries(now.json.data.attributes).filter(([, v]) => v === true || (typeof v === 'string' && v !== 'NONE')).map(([k, v]) => k + '=' + v).join(', '));
   } else say('age rating read', ar);
 }
 
