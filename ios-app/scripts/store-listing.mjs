@@ -19,7 +19,7 @@ async function api(method, url, data) {
   const r = await fetch(url.startsWith('http') ? url : 'https://api.appstoreconnect.apple.com' + url, {
     method, headers: { Authorization: 'Bearer ' + token(), 'Content-Type': 'application/json' }, body: data ? JSON.stringify(data) : undefined });
   const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch {}
-  return { ok: r.ok, status: r.status, json: j, err: r.ok ? '' : (j && j.errors ? j.errors.map((e) => e.detail || e.title).join(' | ') : t).slice(0, 400) };
+  return { ok: r.ok, status: r.status, json: j, err: r.ok ? '' : (j && j.errors ? j.errors.map((e) => (e.detail || e.title) + (e.meta ? ' ' + JSON.stringify(e.meta) : '')).join(' | ') : t).slice(0, 3000) };
 }
 const say = (step, r) => console.log((r.ok ? 'OK   ' : 'FAIL ') + step + (r.ok ? '' : ' -> ' + r.status + ' ' + r.err));
 let problems = 0; const must = (step, r) => { say(step, r); if (!r.ok) problems++; return r; };
@@ -183,7 +183,10 @@ console.log(problems ? `\n${problems} step(s) need a look.` : '\nAll set.');
 
 if (SUBMIT) {
   if (problems) { console.log('Not sending to Apple: fix the steps above first.'); process.exit(1); }
-  const sub = must('review submission', await api('POST', '/v1/reviewSubmissions', { data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' }, relationships: { app: { data: { type: 'apps', id: APP } } } } }));
+  /* reuse a submission left open by an earlier try */
+  const open = await api('GET', `/v1/reviewSubmissions?filter[app]=${APP}&filter[state]=READY_FOR_REVIEW&limit=5`);
+  const old = open.json && open.json.data && open.json.data[0];
+  const sub = old ? { ok: true, json: { data: old } } : must('review submission', await api('POST', '/v1/reviewSubmissions', { data: { type: 'reviewSubmissions', attributes: { platform: 'IOS' }, relationships: { app: { data: { type: 'apps', id: APP } } } } }));
   if (sub.ok) {
     const sid = sub.json.data.id;
     must('add version', await api('POST', '/v1/reviewSubmissionItems', { data: { type: 'reviewSubmissionItems', relationships: { reviewSubmission: { data: { type: 'reviewSubmissions', id: sid } }, appStoreVersion: { data: { type: 'appStoreVersions', id: ver.id } } } } }));
