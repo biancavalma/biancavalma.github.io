@@ -638,9 +638,6 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .tadd{flex:none;width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 6px;box-shadow:0 6px 16px rgba(42,20,32,.25)}
 
 /* the single filter button and its menu */
-.fsel{display:inline-flex;align-items:center;gap:6px}
-.fsel .car{font-size:11px}
-.fclr{width:34px;padding:0;justify-content:center;font-size:16px}
 .fopt{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border-radius:16px;margin-bottom:6px;background:#FAF5F7;text-align:left}
 .fopt.on{background:#FDE3EC}
 .fopt .fe{font-size:24px;width:30px;text-align:center}
@@ -737,3 +734,25 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 #ptr svg{width:20px;height:20px;color:#2A1420}
 #ptr.spin svg{animation:ptrs .8s linear infinite}
 @keyframes ptrs{to{transform:rotate(360deg)}}
+
+/* settings: compact profile card */
+.pcard{display:flex;align-items:center;gap:14px;background:#FAF5F7;border-radius:20px;padding:12px 12px 12px 12px;margin:0 0 10px}
+.pcard .avbig{flex:none}
+.pinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pinfo b{font-size:18px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pinfo .pun{font-size:13.5px;font-weight:700;color:var(--soft)}
+.pinfo i{font-style:normal;font-size:13.5px;font-weight:600;color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pedit{flex:none;align-self:flex-start;height:34px;padding:0 14px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1.5px #EBDCE3;font-weight:800;font-size:14px;color:var(--ink);position:relative}
+.pedit::after{content:"";position:absolute;inset:-6px -4px}
+.avsm{display:inline-flex;height:36px;padding:0 14px;align-items:center;font-size:14px;margin:0 0 6px}
+.link.delsm{font-size:12.5px;font-weight:600;color:#A99AA2;text-decoration:none;margin-top:6px}
+
+/* filter chips: one row, scrolls inside itself on small phones */
+#pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;padding:2px 0}
+#pills::-webkit-scrollbar{display:none}
+.pillb.fchip{flex:none;height:34px;padding:0 13px;border-radius:999px;font-size:14px;font-weight:800;display:inline-flex;align-items:center;gap:5px;background:#F3ECEF;color:#5E4654;white-space:nowrap}
+.pillb.fchip.on{background:#2A1420;color:#fff}
+.pillb.fchip .car{font-size:11px;opacity:.8}
+.pillb.fchip::after{inset:-6px -2px}
+.pillb.fchip{padding:0 11px;font-size:13.5px;gap:4px}
+.avpick.avsm{width:auto!important;display:inline-flex!important}

@@ -265,17 +265,22 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   var cq='';
   /* filters: everyone, only me, one city, one friend */
   /* one filter button: it says what you are looking at, tap it to choose */
+  /* filters in one row, one tap each: Everyone, Me, a city, a friend */
   function renderPills(){
     var cs=cities();if(selC&&cs.indexOf(selC)<0)selC=null;
-    var lab=onlyMe?'🙋 Just me':selC?'📍 '+esc(selC):selP!==null?face(selP,22,false)+esc(people[selP].n):'👥 Everyone';
-    var on=onlyMe||selC||selP!==null;
-    $('pills').innerHTML='<button type="button" class="pillb on fsel" data-f="menu">'+lab+' <span class="car">▾</span></button>'
-      +(on?'<button type="button" class="pillb fclr" data-f="all" aria-label="Show everyone">×</button>':'');
+    var all=!onlyMe&&!selC&&selP===null;
+    var chip=function(f,on,lab){return '<button type="button" class="pillb fchip'+(on?' on':'')+'" data-f="'+f+'">'+lab+'</button>'};
+    $('pills').innerHTML=chip('all',all,'Everyone')+chip('me',onlyMe,'Just me')
+      +chip('city',!!selC,selC?esc(selC)+' <span class="car">\u00d7</span>':'City <span class="car">\u25be</span>')
+      +chip('friend',selP!==null,selP!==null?face(selP,20,false)+esc(people[selP].n)+' <span class="car">\u00d7</span>':'Friend <span class="car">\u25be</span>');
   }
   $('pills').addEventListener('click',function(e){
-    var b=e.target.closest('button.pillb');if(!b)return;var f=b.getAttribute('data-f');
-    if(f==='all'){onlyMe=false;selC=null;selP=null;selD=null;renderAll();return}
-    sheet='filter';selD=null;renderSheet();
+    var b=e.target.closest('button.pillb');if(!b)return;var f=b.getAttribute('data-f');tap();selD=null;
+    if(f==='all'){onlyMe=false;selC=null;selP=null;renderAll();return}
+    if(f==='me'){onlyMe=true;selC=null;selP=null;renderAll();return}
+    /* tapping a chosen city or friend again clears it */
+    if(f==='city'){if(selC){selC=null;renderAll()}else{sheet='pickc';renderSheet()}return}
+    if(f==='friend'){if(selP!==null){selP=null;renderAll()}else{sheet='pickf';renderSheet()}return}
   });
 
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
@@ -651,18 +656,23 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }else if(sheet==='home'){
       var ps=api.pushState();
       h+=head('Your settings')
-        +'<div class="avrow"><span class="avbig">'+face(0,72,false)+'</span><div class="avbtns"><label class="ghost avpick">'+(people[0].av?'Change photo':'Add a photo')+'<input id="avin" type="file" accept="image/*" hidden></label>'+'<span class="avnote">Only your friends see it</span>'+(people[0].av?'<button type="button" class="linkb" id="avrm">Remove photo</button>':'')+'</div></div>'
-        +'<div class="f'+(setEdit?'':' locked')+'" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
+        +(!setEdit
+          /* at a glance: photo, name with @username, city and number; one small Edit */
+          ?'<div class="pcard"><span class="avbig">'+face(0,64,false)+'</span><div class="pinfo"><b>'+esc(me.full||'Your name')+'</b>'+(me.user?'<span class="pun">@'+esc(me.user)+'</span>':'')
+            +'<i>\ud83d\udccd '+esc(me.home||'Where you live')+'</i>'+(me.phone?'<i>WhatsApp '+esc(me.phone)+'</i>':'')+'</div><button type="button" class="pedit" id="edith">Edit</button></div>'
+            +(!people[0].av?'<label class="ghost avpick avsm">Add a photo<input id="avin" type="file" accept="image/*" hidden></label>':'')
+          :'<div class="avrow"><span class="avbig">'+face(0,72,false)+'</span><div class="avbtns"><label class="ghost avpick">'+(people[0].av?'Change photo':'Add a photo')+'<input id="avin" type="file" accept="image/*" hidden></label>'+'<span class="avnote">Only your friends see it</span>'+(people[0].av?'<button type="button" class="linkb" id="avrm">Remove photo</button>':'')+'</div></div>'
+          +'<div class="f" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
         +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
         +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
-        +'<p class="err" id="err"></p>'+(setEdit?'<button type="button" class="add hd" id="saveh">Save</button>':'<button type="button" class="add hd" id="edith">Edit</button>')+'</div>'
+        +'<p class="err" id="err"></p>'+'<button type="button" class="add hd" id="saveh">Save</button>'+'</div>')
         +'<div class="sep"></div>'
-        +'<div class="frow"><span class="tx">Overlap alerts<i style="display:block;font-style:normal;font-weight:600;font-size:12.5px;color:var(--soft)">'+(ps==='granted'?'On for this phone':ps==='denied'?'Blocked in your phone settings':ps==='install'?'Add Overlap to your Home Screen first':ps==='unsupported'?'Not available in this browser':'Off')+'</i></span>'
+        +'<div class="frow"><span class="tx">Overlap alerts<i style="display:block;font-style:normal;font-weight:600;font-size:12.5px;color:var(--soft)">'+(ps==='granted'?'On for this phone':ps==='denied'?'Blocked in your phone settings':ps==='install'?'Add Overlap to your Home Screen first':ps==='unsupported'?'Get them in the Overlap iPhone app':'Off')+'</i></span>'
         +(ps==='granted'?'<button type="button" id="poff">Turn off</button>':ps==='default'?'<button type="button" id="pon">Turn on</button>':ps==='install'?'<button type="button" id="phow">How</button>':'')+'</div>'
         +'<button type="button" class="ghost" id="out">Sign out</button>'
-        +'<button type="button" class="link danger" id="delme">Delete my account</button>'
+        +'<button type="button" class="link delsm" id="delme">Delete my account</button>'
         +'<button type="button" class="ghost" id="aboutb">About Overlap</button>'
         +'<p class="hint" style="text-align:center"><a href="/privacy.html" data-ext="1" target="_blank" rel="noopener">Privacy</a> \u00b7 <a href="/support.html" data-ext="1" target="_blank" rel="noopener">Help and contact</a></p>';
     }else{
@@ -709,7 +719,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(sheet==='home'){
       if(!setEdit)[].forEach.call(document.querySelectorAll('#setf input'),function(i){i.readOnly=true;i.tabIndex=-1;i.placeholder='Not set'});
       if($('edith'))$('edith').onclick=function(){setEdit=true;renderSheet();var f=$('fn');if(f)f.focus()};
-      $('pals').onclick=function(e){var b=e.target.closest('button');if(!b)return;setPal(b.getAttribute('data-p'));[].forEach.call($('pals').children,function(x){x.classList.toggle('on',x===b)})};
+      if($('pals'))$('pals').onclick=function(e){var b=e.target.closest('button');if(!b)return;setPal(b.getAttribute('data-p'));[].forEach.call($('pals').children,function(x){x.classList.toggle('on',x===b)})};
       if($('saveh')){$('saveh').onclick=saveHome;citySug($('fh'),$('hsug'),homeList,null,true)}
       if($('pon'))$('pon').onclick=function(){turnOnAlerts().then(function(){renderSheet()})};
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
@@ -771,7 +781,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(sheet==='install')$('ok').onclick=close;
     if(sheet==='pickc'||sheet==='pickf'){
       document.querySelector('.picks').onclick=function(e){var b=e.target.closest('.pickb');if(!b)return;onlyMe=false;
-        if(b.getAttribute('data-c')){selC=b.getAttribute('data-c');selP=null;sheet=null;jump()}else{selP=+b.getAttribute('data-p');selC=null;sheet=null}
+        onlyMe=false;if(b.getAttribute('data-c')){selC=b.getAttribute('data-c');selP=null;sheet=null;jump()}else{selP=+b.getAttribute('data-p');selC=null;sheet=null}
         selD=null;renderAll()};
     }
     if(sheet==='delete'){
