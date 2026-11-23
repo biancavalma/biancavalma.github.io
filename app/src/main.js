@@ -333,19 +333,17 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
   function startYM(){var y=n0.getFullYear(),m=n0.getMonth();if(vy<y||(vy===y&&vm<m)){y=vy;m=vm}return [y,m]}
   function renderGrid(){
     calcOften();var s0=startYM(), h='', k;
-    /* this month starts from the current week: past weeks are in Full calendar */
-    var cur=s0[0]===n0.getFullYear()&&s0[1]===n0.getMonth(), wk0=Math.max(1,n0.getDate()-(n0.getDay()+6)%7);
     for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
-      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m,cur&&k===0?wk0:1)+'</div></section>'}
+      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m,1)+'</div></section>'}
     $('grid').innerHTML=h;
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
       if(sec&&!(vy===n0.getFullYear()&&vm===n0.getMonth()))requestAnimationFrame(function(){scrolling=true;toSec(sec);setTimeout(function(){scrolling=false},100)})}
     topLabel();
   }
-  function stickH(){var s=document.querySelector('.calcard .stick'),t=document.querySelector('#app .top');return (s?s.offsetHeight+4:60)+(t?t.offsetHeight:0)}
+  function stickH(){var s=document.querySelector('.calcard .stick'),t=document.querySelector('#app .top'),r=document.querySelector('.prow');return (s?s.offsetHeight+4:60)+(t?t.offsetHeight:0)+(r?r.offsetHeight:0)}
   /* the month bar sticks right under the header, whatever its height on this phone */
-  function setHdr(){var t=document.querySelector('#app .top');if(t)document.documentElement.style.setProperty('--hdr',t.offsetHeight+'px')}
+  function setHdr(){var t=document.querySelector('#app .top'),r=document.querySelector('.prow');if(t)document.documentElement.style.setProperty('--hdr',t.offsetHeight+'px');if(r)document.documentElement.style.setProperty('--prowh',r.offsetHeight+'px')}
   window.addEventListener('resize',setHdr);setTimeout(setHdr,0);setTimeout(setHdr,600);
   /* the month name on top follows the month you are looking at */
   /* full year: twelve small months, arrows for other years, tap a month to jump there */
@@ -428,7 +426,9 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
     if(d>=T&&!/\b(mine|hit)\b/.test(c.className)&&!c.querySelector('.mt')){tap();openAdd(d);return}
     gs=null;showBar();selD=d;sheet='day';renderGrid();renderSheet();
   });
-  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;window.scrollTo({top:0,behavior:'smooth'})};
+  /* the calendar opens on this week; past days stay above in grey, scroll up to see them */
+  function toToday(smooth){var c=document.querySelector('#grid .cell.today');if(!c)return;window.scrollTo({top:Math.max(0,c.getBoundingClientRect().top+window.scrollY-stickH()-6),behavior:smooth?'smooth':'auto'})}
+  $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;toToday(true)};
   var swiped=0;
 
   function row(p,a,b,attrs,tagged){
@@ -1356,7 +1356,7 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       $('gate').hidden=true;$('app').hidden=false;
       var d0=qs.get('d');if(d0&&ISO.test(d0)){var p=parts(d0);vy=p.y;vm=p.m}
       if(location.search)history.replaceState(null,'','/');
-      renderAll();
+      renderAll();setHdr();if(tab==='cal')requestAnimationFrame(function(){toToday(false)});
       ready=true;splashOff();
     }
     /* open straight away with what we had last time, then refresh it */
