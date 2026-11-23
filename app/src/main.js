@@ -673,7 +673,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
         +'<button type="button" class="ghost" id="out">Sign out</button>'
         +'<button type="button" class="link delsm" id="delme">Delete my account</button>'
         +'<button type="button" class="ghost" id="aboutb">About Overlap</button>'
-        +'<p class="hint" style="text-align:center"><a href="/privacy.html" data-ext="1" target="_blank" rel="noopener">Privacy</a> \u00b7 <a href="/support.html" data-ext="1" target="_blank" rel="noopener">Help and contact</a></p>';
+        +'<p class="hint" style="text-align:center"><a href="/privacy.html" data-ext="1" target="_blank" rel="noopener">Privacy</a> \u00b7 <a href="/support.html" data-ext="1" target="_blank" rel="noopener">Help and contact</a></p>'+'<p class="ver">Version '+(function(){var b=Number(__BUILD__);if(!b)return 'dev';var t=new Date(b);return t.getDate()+' '+MN[t.getMonth()].slice(0,3)+' '+('0'+t.getHours()).slice(-2)+':'+('0'+t.getMinutes()).slice(-2)})()+(api.native?' \u00b7 iPhone app':' \u00b7 web')+'</p>';
     }else{
       if(!me.stays[trip]){sheet=null;renderSheet();return}
       openEdit(trip);return;
