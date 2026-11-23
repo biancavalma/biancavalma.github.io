@@ -3,13 +3,18 @@ document.documentElement.setAttribute('data-look','a');
 import './style.css';
 import * as api from './api.js';
 /* updates arrive at once: phones keep the old page for a few minutes, so compare with the newest build number and reload when it changed */
+/* returns true when a newer version is loading, so nothing old is ever shown */
 function checkUpdate(){
-  try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
-    if(!d||!d.v||d.v===__BUILD__)return;var u=new URL(location.href);if(u.searchParams.get('v')===d.v)return;
-    u.searchParams.set('v',d.v);location.replace(u.toString());
-  }).catch(function(){})}catch(e){}
+  return new Promise(function(done){
+    var t=setTimeout(function(){done(false)},1500);
+    try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
+      clearTimeout(t);
+      if(!d||!d.v||d.v===__BUILD__){done(false);return}var u=new URL(location.href);if(u.searchParams.get('v')===d.v){done(false);return}
+      u.searchParams.set('v',d.v);location.replace(u.toString());done(true);
+    }).catch(function(){clearTimeout(t);done(false)})}catch(e){clearTimeout(t);done(false)}
+  });
 }
-if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychange',function(){if(!document.hidden)checkUpdate()})}
+if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){if(!document.hidden)checkUpdate()});
 
   var COL=['#9fe3c9','#ffc59e','#cbb8ff','#a6d4ff','#ffb0d0','#d3e98a','#ffd98a','#b5ead7'];
   var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1389,4 +1394,5 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   function renderAll(){renderTop();renderReqs();renderAlerts();renderTabs();renderOverlaps();renderPills();renderGrid();renderList();renderFriends();renderSheet()}
   $('keyh').innerHTML=HEART;
-  boot();
+  /* check for a newer version first (the splash covers this), then start */
+  if(import.meta.env.PROD)checkUpdate().then(function(newer){if(!newer)boot()});else boot();
