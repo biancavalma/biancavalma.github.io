@@ -113,6 +113,26 @@ if (!av.ok || !av.json || !av.json.data) {
   } else say('territories', terr);
 } else console.log('OK   countries already set');
 
+// not in China mainland: it needs government permits (ICP licence, security assessment)
+{
+  const cur = await api('GET', `/v1/apps/${APP}/appAvailabilityV2`);
+  const aid = cur.json && cur.json.data && cur.json.data.id;
+  if (aid) {
+    let url = `/v2/appAvailabilities/${aid}/territoryAvailabilities?include=territory&limit=200`, done = false;
+    while (url && !done) {
+      const ta = await api('GET', url);
+      if (!ta.ok) { say('china check', ta); break; }
+      const row = (ta.json.data || []).find((x) => x.relationships && x.relationships.territory && x.relationships.territory.data && x.relationships.territory.data.id === 'CHN');
+      if (row) {
+        done = true;
+        if (row.attributes.available) must('removed China mainland', await api('PATCH', `/v1/territoryAvailabilities/${row.id}`, { data: { type: 'territoryAvailabilities', id: row.id, attributes: { available: false } } }));
+        else console.log('OK   China mainland already off');
+      }
+      url = ta.json.links && ta.json.links.next ? ta.json.links.next.replace('https://api.appstoreconnect.apple.com', '') : null;
+    }
+  }
+}
+
 // screenshots (6.7-inch iPhone)
 if (loc) {
   const sets = await api('GET', `/v1/appStoreVersionLocalizations/${loc.id}/appScreenshotSets`);
@@ -148,6 +168,12 @@ const ra = { contactFirstName: 'Bianca', contactLastName: 'Valmarana', contactEm
 if (rd.ok && rd.json && rd.json.data) must('review information', await api('PATCH', `/v1/appStoreReviewDetails/${rd.json.data.id}`, { data: { type: 'appStoreReviewDetails', id: rd.json.data.id, attributes: ra } }));
 else must('review information', await api('POST', '/v1/appStoreReviewDetails', { data: { type: 'appStoreReviewDetails', attributes: ra, relationships: { appStoreVersion: { data: { type: 'appStoreVersions', id: ver.id } } } } }));
 
+// is the demo password typed in? (only says yes or no, never prints it)
+{
+  const r2 = await api('GET', `/v1/appStoreVersions/${ver.id}/appStoreReviewDetail`);
+  const pw = r2.json && r2.json.data && r2.json.data.attributes && r2.json.data.attributes.demoAccountPassword;
+  if (pw) console.log('OK   demo password is filled in'); else { console.log('MISSING demo password: type it in App Review Information'); problems++; }
+}
 console.log(problems ? `\n${problems} step(s) need a look.` : '\nAll set.');
 
 if (SUBMIT) {
