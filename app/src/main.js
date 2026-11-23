@@ -281,8 +281,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
   var NM=12, lastKey='', scrolling=false;
   var TRASH='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
-  function monthCells(y,m){
-    var lead=(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p, D=[];
+  function monthCells(y,m,from){
+    from=from||1;
+    var lead=from>1?0:(new Date(y,m,1).getDay()+6)%7, n=new Date(y,m+1,0).getDate(), h='', i, p, D=[];
     /* first pass: who is there each day, and what kind of band the day gets */
     for(i=1;i<=n;i++){
       var d=iso(y,m,i), who=[];
@@ -308,8 +309,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }
     var lab=[];for(i=0;i<n;i++){if(!D[i].key||(i>0&&D[i-1].key===D[i].key))continue;var e=i;while(e+1<n&&D[e+1].key===D[i].key)e++;var t=label(i,e);for(var j=i;j<=e;j++)lab[j]=t}
     for(i=0;i<lead;i++)h+='<span></span>';
-    for(i=1;i<=n;i++){
-      var x=D[i-1], d=x.d, col=(lead+i-1)%7, k=x.key;
+    for(i=from;i<=n;i++){
+      var x=D[i-1], d=x.d, col=(lead+i-from)%7, k=x.key;
       var bp=k&&col>0&&i>1&&D[i-2].key===k, bn=k&&col<6&&i<n&&D[i].key===k;
       var band=k?(x.isH?' hit'+(x.soft?' soft':''):' mine')+(bp?' hp':'')+(bn?' hn':''):'';
       var cls='cell'+(col>4?' we'+(col===5?' sat':''):'')+(d<T?' past':'')+(d===T?' today':'')+band+(d===selD||d===gs?' sel':'');
@@ -327,8 +328,10 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   function startYM(){var y=n0.getFullYear(),m=n0.getMonth();if(vy<y||(vy===y&&vm<m)){y=vy;m=vm}return [y,m]}
   function renderGrid(){
     calcOften();var s0=startYM(), h='', k;
+    /* this month starts from the current week: past weeks are in Full calendar */
+    var cur=s0[0]===n0.getFullYear()&&s0[1]===n0.getMonth(), wk0=Math.max(1,n0.getDate()-(n0.getDay()+6)%7);
     for(k=0;k<NM;k++){var y=s0[0]+Math.floor((s0[1]+k)/12), m=(s0[1]+k)%12;
-      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m)+'</div></section>'}
+      h+='<section class="mon" data-y="'+y+'" data-m="'+m+'"><div class="mhd">'+MN[m]+(y!==n0.getFullYear()?' '+y:'')+'</div><div class="grid">'+monthCells(y,m,cur&&k===0?wk0:1)+'</div></section>'}
     $('grid').innerHTML=h;
     var key=vy+'-'+vm;
     if(key!==lastKey){lastKey=key;var sec=$('grid').querySelector('.mon[data-y="'+vy+'"][data-m="'+vm+'"]');
