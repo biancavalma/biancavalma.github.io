@@ -113,7 +113,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   var n0=new Date(), T=iso(n0.getFullYear(),n0.getMonth(),n0.getDate());
   var setEdit=false, onlyMe=false, tab='cal', selC=null, selP=null, selD=null, q='', vy=n0.getFullYear(), vm=n0.getMonth(), sheet=null, trip=null;
-  var saved=true, UP=[], uid=null, myCode='', requests=[], booted=false, tripInv=[], guests=[], invOk=false, wfSel=[], meetups=[], closeIds=[], v10=false, visSel='all', meetF=0, meetD='', meetC='', meetA='', meetB='';
+  var UP=[], uid=null, myCode='', requests=[], booted=false, tripInv=[], guests=[], invOk=false, wfSel=[], meetups=[], closeIds=[], v10=false, visSel='all', meetF=0, meetD='', meetC='', meetA='', meetB='';
 
   function index(){
     UP=[];
@@ -262,7 +262,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   $('t-cal').onclick=function(){tab='cal';renderAll()};
   $('t-fr').onclick=function(){tab='fr';renderAll()};
 
-  var cq='';
   /* filters: everyone, only me, one city, one friend */
   /* one filter button: it says what you are looking at, tap it to choose */
   /* filters in one row, one tap each: Everyone, Me, a city, a friend */
@@ -416,7 +415,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   }
   function openRange(a,d){
     gs=null;showBar();pkHide=true;
-    edit=null;trip=null;pe=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
+    edit=null;trip=null;ra=a;rb=d;var p=parts(a);ry=p.y;rm=p.m;
     wfSel=[];sheet='add';renderGrid();renderSheet();
   }
   $('grid').addEventListener('click',function(e){
@@ -424,7 +423,8 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     if(Date.now()-swiped<400)return;
     var c=e.target.closest('.cell');if(!c)return;
     var d=c.getAttribute('data-d');
-    /* tapping a day shows who is where; new trips are added with the + button */
+    /* an empty future day goes straight to adding a trip from that day; any other day shows who is where */
+    if(d>=T&&!/\b(mine|hit)\b/.test(c.className)&&!c.querySelector('.mt')){tap();openAdd(d);return}
     gs=null;showBar();selD=d;sheet='day';renderGrid();renderSheet();
   });
   $('tod').onclick=function(){vy=n0.getFullYear();vm=n0.getMonth();lastKey=vy+'-'+vm;selD=null;window.scrollTo({top:0,behavior:'smooth'})};
@@ -551,7 +551,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       h+=head(wd+' '+day(selD));
       people.forEach(function(x,i){
         var c=where(i,selD);if(!c)return;any=true;
-        var away=!!tripAt(i,selD), w=i>0&&c===where(0,selD)&&(away||tripAt(0,selD));
+        var away=!!tripAt(i,selD);
         if(i===0){
           h+=(away?'<div class="rowmine"><button type="button" class="row mine" id="mine">':'<div class="row">')+face(0,36,false)+'<span class="tx"><b>You</b><i>'+(away?ec(0,c,stayAt(0,selD)):esc(c)+', home')+'</i></span>'+(away?'<span class="edt">Edit \u203a</span></button><button type="button" class="dtrip" id="dtrip" aria-label="Remove this trip">'+TRASH+'</button></div>':'</div>');
           return;
@@ -663,7 +663,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
             +(!people[0].av?'<label class="ghost avpick avsm">Add a photo<input id="avin" type="file" accept="image/*" hidden></label>':'')
           :'<div class="avrow"><span class="avbig">'+face(0,72,false)+'</span><div class="avbtns"><label class="ghost avpick">'+(people[0].av?'Change photo':'Add a photo')+'<input id="avin" type="file" accept="image/*" hidden></label>'+'<span class="avnote">Only your friends see it</span>'+(people[0].av?'<button type="button" class="linkb" id="avrm">Remove photo</button>':'')+'</div></div>'
           +'<div class="f" id="setf"><label for="fn">Your name</label><input id="fn" type="text" maxlength="40" placeholder="Bianca" autocomplete="given-name" autocapitalize="words" value="'+esc(me.full||'')+'">'
-        +(!people[0].userCol||!people[0].phoneCol?'<p class="err" style="margin:0 0 10px">The database update has not been run yet, so your username and number cannot be saved. See the steps in the chat with Claude.</p>':'')
         +'<label for="fu">Username</label><div class="ufield"><span>@</span><input id="fu" type="text" maxlength="20" placeholder="bianca" autocomplete="off" autocapitalize="none" spellcheck="false" value="'+esc(me.user||'')+'"></div>'
         +'<label for="fp">WhatsApp number</label><input id="fp" type="tel" inputmode="tel" maxlength="20" placeholder="+41 79 123 45 67" autocomplete="tel" value="'+esc(me.phone||'')+'"><label for="fh">Where you live</label><input id="fh" type="text" maxlength="30" placeholder="Zurich" autocomplete="off" autocapitalize="words" value="'+esc(me.home)+'"><div class="sug" id="hsug"></div>'+palPicker()
         +'<p class="hint" style="margin-top:8px">You show up here every day. Add a trip whenever you travel and it takes over for those days.</p>'
@@ -697,6 +696,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }
     if(sheet==='add'){
       if(edit!==null&&me.stays[edit])$('fc').value=me.stays[edit].city;
+      /* a new trip starts with the city you travel to most; tap the field and type to change it */
+      else if(edit===null&&!trip){var cnt={},top='';me.stays.forEach(function(x){if(x.city&&x.city!==me.home)cnt[x.city]=(cnt[x.city]||0)+1});for(var c in cnt)if(!top||cnt[c]>cnt[top])top=c;
+        if(top){$('fc').value=top;$('fc').addEventListener('focus',function(){var f=this;setTimeout(function(){try{f.select()}catch(e){}},0)},{once:true})}}
       $('save').onclick=saveTrip;renderPick();
       if($('wfnew'))$('wfnew').onclick=function(){var t=tripInviteText();if(api.canShare)api.shareText(t);else api.openExternal('https://wa.me/?text='+encodeURIComponent(t))};
       document.querySelectorAll('[data-wf]').forEach(function(b){b.onclick=function(){var id=b.getAttribute('data-wf'),k=wfSel.indexOf(id);if(k>=0)wfSel.splice(k,1);else wfSel.push(id);b.classList.toggle('on',k<0)}});
@@ -812,7 +814,6 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* suggestions: your own past cities first, then where friends are going, then a few common ones */
   var COMMON=['Florence','Milan','London','Paris','Rome','Barcelona','Lisbon','Munich'];
   var KNOWN=['Zurich','Geneva','Basel','Bern','Venice','Turin','Naples','Bologna','Madrid','Berlin','Vienna','Amsterdam','New York','Los Angeles','Bali','Athens','Copenhagen','Stockholm','Brussels','Prague','Dublin','Edinburgh','Nice','Monaco','Genoa','Verona','Pisa','Siena','Lucca','Como','Palermo','Bari','Cagliari'];
-  var pe=null;
   function tripCities(){
     var count={}, list=[], seen={};
     people[0].stays.forEach(function(s){if(!count[s.city]){count[s.city]=0;list.push(s.city)}count[s.city]++});
@@ -851,12 +852,12 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   $('sheet').addEventListener('click',function(e){var a=e.target.closest('a[data-ext]');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   function openEdit(i){
     var s=people[0].stays[i];if(!s)return;
-    edit=i;trip=null;ra=s.a;rb=s.b;pe=s.e||null;
+    edit=i;trip=null;ra=s.a;rb=s.b;
     var p=parts(s.a<T?T:s.a);ry=p.y;rm=p.m;
     wfSel=[];sheet='add';renderSheet();
   }
   function openAdd(d){
-    edit=null;trip=null;pe=null;wfSel=[];ra=d&&d>=T?d:null;rb=null;
+    edit=null;trip=null;wfSel=[];ra=d&&d>=T?d:null;rb=null;
     var p=parts(ra||T);ry=p.y;rm=p.m;
     sheet='add';renderSheet();
   }
@@ -875,7 +876,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     }
     $('pkg').innerHTML=h;$('pkl').textContent=MN[rm]+' '+ry;
     $('pkp').disabled=ry===n0.getFullYear()&&rm===n0.getMonth();
-    $('when').textContent=!ra?'Tap the day you arrive, then your last day':!rb?'From '+day(ra)+'. Now tap your last day':range(ra,rb);
+    $('when').textContent=!ra?'Tap the day you arrive, then your last day':!rb?'From '+day(ra)+'. Tap your last day, or the same day again for one day':range(ra,rb);
   }
 
   /* ---------- one name per city ----------
@@ -1045,7 +1046,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       undoToast('Trip added',function(){var k=people[0].stays.indexOf(ns);if(k>=0)people[0].stays.splice(k,1);made.then(function(id){if(id)keep(api.deleteTrip(id))});index();renderAll()});
       if(every){var lim=addDays(a,92);for(var k=every;addDays(a,k)<=lim;k+=every){var cp={city:c,a:addDays(a,k),b:addDays(b,k),e:e,note:ns.note,priv:ns.priv,close:ns.close};addMine(cp)}}
     }
-    pe=null;
+    
     edit=null;index();
     selC=null;selP=null;sheet=null;selD=null;var p=parts(a);vy=p.y;vm=p.m;renderAll();
     });
@@ -1113,7 +1114,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     people[0].home=r;people[0].full=n;people[0].phone=ph;keep(api.saveProfile(uid,{name:n,home:people[0].home,phone:people[0].phone}));index();sheet=null;renderAll();
     });
   }
-  $('add').onclick=function(){sheet='add';edit=null;wfSel=[];pe=null;selD=null;ra=rb=null;ry=vy;rm=vm;if(iso(ry,rm,28)<T){ry=n0.getFullYear();rm=n0.getMonth()}renderSheet()};
+  $('add').onclick=function(){sheet='add';edit=null;wfSel=[];selD=null;ra=rb=null;ry=vy;rm=vm;if(iso(ry,rm,28)<T){ry=n0.getFullYear();rm=n0.getMonth()}renderSheet()};
 
   /* ---------- real data ---------- */
 

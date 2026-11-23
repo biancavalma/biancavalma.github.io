@@ -111,7 +111,8 @@ export async function unfriend(id) {
 // Me, my friends, all trips we can see (from two months ago on), and requests waiting for me
 export async function loadAll(uid) {
   const [p, t, r, ti, tg, mu, cf] = await Promise.all([
-    sb.from('profiles').select('id, name, home, invite_code, phone, username, avatar_url').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone, username') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone') : r)).then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code') : r)),
+    /* every database update has been run, so ask for all columns; one retry if the network hiccups */
+    sb.from('profiles').select('id, name, home, invite_code, phone, username, avatar_url').then((r) => (r.error ? sb.from('profiles').select('id, name, home, invite_code, phone, username, avatar_url') : r)),
     tripsQuery(),
     sb.rpc('my_requests'),
     sb.rpc('my_trip_invites'),
