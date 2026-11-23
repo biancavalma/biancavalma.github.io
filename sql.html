@@ -6,13 +6,13 @@ button{width:100%;height:60px;border:0;border-radius:999px;background:#FF8FB8;co
 a{display:block;text-align:center;margin-top:14px;font-size:17px;font-weight:700;color:#2A1420}
 pre{white-space:pre-wrap;font-size:11px;background:#fff;border-radius:14px;padding:12px;margin-top:18px;max-height:40vh;overflow:auto}
 </style></head><body>
-<h1>Overlap notification test</h1>
+<h1>Overlap photo check</h1>
 <p>1. Tap the pink button to copy.<br>2. Open the Supabase editor with the link below.<br>3. Delete what is in the box, paste, press Run.</p>
 <button id="b">Copy the update</button>
 <a href="https://supabase.com/dashboard/project/ngsvrqecszehmskkunku/sql/new" target="_blank" rel="noopener">Open the Supabase editor &rarr;</a>
 <pre id="t"></pre>
 <script>
-var S="-- Test: send yourself one notification. It should reach your iPhone within 1-2 minutes.\ninsert into public.notifications (user_id, title, body, url)\nselect id, 'Overlap', 'Notifications work \ud83c\udf89', '/' from public.profiles where name ilike 'bianca%';\n\n-- shows how many of your iPhones can receive notifications (should be 1 or more)\nselect count(*) as iphones_ready from public.push_subscriptions s join public.profiles p on p.id = s.user_id\n where p.name ilike 'bianca%' and s.endpoint like 'ExponentPushToken%';\n";
+var S="-- Check: who has a profile photo saved (shows only names and yes/no)\nselect name, (avatar_url is not null) as has_photo\nfrom public.profiles order by name;\n";
 document.getElementById('t').textContent=S;
 document.getElementById('b').onclick=function(){var b=this;
  function done(){b.textContent='Copied \u2713 Now open the editor';}
