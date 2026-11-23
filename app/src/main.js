@@ -269,22 +269,18 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
 
   /* filters: everyone, only me, one city, one friend */
   /* one filter button: it says what you are looking at, tap it to choose */
-  /* filters in one row, one tap each: Everyone, Me, a city, a friend */
+  /* one filter button: it says what you are looking at; tap it to choose, × goes back to everyone */
   function renderPills(){
     var cs=cities();if(selC&&cs.indexOf(selC)<0)selC=null;
-    var all=!onlyMe&&!selC&&selP===null;
-    var chip=function(f,on,lab){return '<button type="button" class="pillb fchip'+(on?' on':'')+'" data-f="'+f+'">'+lab+'</button>'};
-    $('pills').innerHTML=chip('all',all,'Everyone')+chip('me',onlyMe,'Just me')
-      +chip('city',!!selC,selC?esc(selC)+' <span class="car">\u00d7</span>':'City <span class="car">\u25be</span>')
-      +chip('friend',selP!==null,selP!==null?face(selP,20,false)+esc(people[selP].n)+' <span class="car">\u00d7</span>':'Friend <span class="car">\u25be</span>');
+    var lab=onlyMe?'\ud83d\ude4b Just me':selC?'\ud83d\udccd '+esc(selC):selP!==null?face(selP,22,false)+esc(people[selP].n):'\ud83d\udc65 Everyone';
+    var on=onlyMe||selC||selP!==null;
+    $('pills').innerHTML='<button type="button" class="pillb on fsel" data-f="menu">'+lab+' <span class="car">\u25be</span></button>'
+      +(on?'<button type="button" class="pillb fclr" data-f="all" aria-label="Show everyone">\u00d7</button>':'');
   }
   $('pills').addEventListener('click',function(e){
-    var b=e.target.closest('button.pillb');if(!b)return;var f=b.getAttribute('data-f');tap();selD=null;
-    if(f==='all'){onlyMe=false;selC=null;selP=null;renderAll();return}
-    if(f==='me'){onlyMe=true;selC=null;selP=null;renderAll();return}
-    /* tapping a chosen city or friend again clears it */
-    if(f==='city'){if(selC){selC=null;renderAll()}else{sheet='pickc';renderSheet()}return}
-    if(f==='friend'){if(selP!==null){selP=null;renderAll()}else{sheet='pickf';renderSheet()}return}
+    var b=e.target.closest('button.pillb');if(!b)return;var f=b.getAttribute('data-f');tap();
+    if(f==='all'){onlyMe=false;selC=null;selP=null;selD=null;renderAll();return}
+    sheet='filter';selD=null;renderSheet();
   });
 
   /* the calendar is one long list of months: scroll down to go forward, no left and right */
@@ -624,9 +620,12 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
         +'<label for="mnote">Where or when? (optional)</label><input id="mnote" maxlength="200" placeholder="Aperitivo at 7?">'
         +'<button type="button" class="add hd" id="msend">Send to '+esc(fm.n)+'</button></div>';
     }else if(sheet==='filter'){
-      var cur=onlyMe?'me':selC?'city':selP!==null?'friend':'all';
-      var ops=[['all','👥','Everyone','All your friends and you'],['me','🙋','Just me','Only your own trips'],['city','📍','A city ›',selC?selC:'Who will be in one city'],['friend','🧑','A friend ›',selP!==null?people[selP].n:'Only one friend’s plans']];
-      h+=head('Show on the calendar')+ops.map(function(o){return '<button type="button" class="fopt'+(o[0]===cur?' on':'')+'" data-fo="'+o[0]+'"><span class="fe">'+o[1]+'</span><span class="tx"><b>'+o[2]+'</b><i>'+esc(o[3])+'</i></span>'+(o[0]===cur?'<span class="fck">✓</span>':'')+'</button>'}).join('');
+      /* everything one tap away: everyone and just me on top, then each city and each friend */
+      var cur=onlyMe?'me':selC||selP!==null?'x':'all';
+      h+=head('Show on the calendar')+[['all','\ud83d\udc65','Everyone'],['me','\ud83d\ude4b','Just me']].map(function(o){return '<button type="button" class="fopt'+(o[0]===cur?' on':'')+'" data-fo="'+o[0]+'"><span class="fe">'+o[1]+'</span><span class="tx"><b>'+o[2]+'</b></span>'+(o[0]===cur?'<span class="fck">\u2713</span>':'')+'</button>'}).join('');
+      var cl=cities();
+      if(cl.length)h+='<p class="fsub2">A city</p><div class="picks">'+cl.map(function(c){return '<button type="button" class="pickb'+(c===selC?' on':'')+'" data-c="'+esc(c)+'">'+emoFor(0,c)+' '+esc(c)+'</button>'}).join('')+'</div>';
+      if(people.length>1){h+='<p class="fsub2">A friend</p><div class="picks">';for(var pf=1;pf<people.length;pf++)h+='<button type="button" class="pickb'+(pf===selP?' on':'')+'" data-p="'+pf+'">'+face(pf,26,false)+esc(people[pf].n)+'</button>';h+='</div>'}
     }else if(sheet==='about'){
       h+=head('About Overlap')
         +'<div class="about"><div class="wel">'+document.querySelector('.brand svg').outerHTML+'</div>'
@@ -786,10 +785,10 @@ if(import.meta.env.PROD)document.addEventListener('visibilitychange',function(){
       $('fsee').onclick=function(){var i=selF;sheet=null;selP=i;selC=null;selD=null;tab='cal';jump();renderAll();window.scrollTo(0,0)};
     }
     if(sheet==='install')$('ok').onclick=close;
-    if(sheet==='pickc'||sheet==='pickf'){
-      document.querySelector('.picks').onclick=function(e){var b=e.target.closest('.pickb');if(!b)return;onlyMe=false;
+    if(sheet==='pickc'||sheet==='pickf'||sheet==='filter'){
+      [].forEach.call(document.querySelectorAll('.picks'),function(pk){pk.onclick=function(e){var b=e.target.closest('.pickb');if(!b)return;onlyMe=false;
         onlyMe=false;if(b.getAttribute('data-c')){selC=b.getAttribute('data-c');selP=null;sheet=null;jump()}else{selP=+b.getAttribute('data-p');selC=null;sheet=null}
-        selD=null;renderAll()};
+        selD=null;renderAll()}});
     }
     if(sheet==='delete'){
       $('delno').onclick=function(){sheet='home';renderSheet()};
