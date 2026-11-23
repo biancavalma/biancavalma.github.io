@@ -744,3 +744,14 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .row.mine{flex:1;min-width:0}
 #mine + .dtrip{flex:none;width:44px;height:44px;border-radius:50%;background:var(--pill);color:#8A7480;display:inline-flex;align-items:center;justify-content:center;margin-left:8px}
 .sheet .rowwrap,.rowmine{display:flex;align-items:center}
+
+/* bigger touch area (at least 44pt, Apple's guide) without making the buttons look bigger */
+.req button,#onbx,.pillb,#share,#ctipok,#yearb,.edt,.x{position:relative}
+.req button::after,#onbx::after,.pillb::after,#share::after,#ctipok::after,#yearb::after,.x::after{content:"";position:absolute;inset:-8px -4px}
+#share{width:44px;height:44px}
+
+/* pull down to refresh */
+#ptr{position:fixed;left:50%;top:calc(var(--hdr,60px) + 6px);width:36px;height:36px;margin-left:-18px;border-radius:50%;background:#fff;box-shadow:0 4px 14px rgba(42,20,32,.18);z-index:40;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(-30px) scale(.6);pointer-events:none;transition:opacity .15s}
+#ptr svg{width:20px;height:20px;color:#2A1420}
+#ptr.spin svg{animation:ptrs .8s linear infinite}
+@keyframes ptrs{to{transform:rotate(360deg)}}

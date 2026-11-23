@@ -257,7 +257,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   
   $('ovlist').addEventListener('click',function(e){if(e.target.closest('[data-home]')){sheet='home';renderSheet()}});
   $('add2').onclick=function(){$('add').click()};
-  $('tadd').onclick=function(){$('add').click()};
+  $('tadd').onclick=function(){tap();$('add').click()};
   $('ovlist').addEventListener('click',function(e){var a=e.target.closest('a.wa');if(a&&api.native){e.preventDefault();api.openExternal(a.href)}});
   $('t-cal').onclick=function(){tab='cal';renderAll()};
   $('t-fr').onclick=function(){tab='fr';renderAll()};
@@ -373,6 +373,17 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* one simple rule everywhere: the whole page scrolls, the small month bar sticks on top */
   function toSec(sec){var gd=sec.querySelector('.grid')||sec;window.scrollTo(0,gd.getBoundingClientRect().top+window.scrollY-stickH()+2)}
   /* more months load by themselves when the last one gets close */
+  /* pull down at the top of the page to refresh, like every app */
+  (function(){
+    var el=document.createElement('div');el.id='ptr';el.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg>';document.body.appendChild(el);
+    var y0=null,dy=0,busy=false;
+    document.addEventListener('touchstart',function(e){if(busy||sheet||window.scrollY>0||$('app').hidden){y0=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
+    document.addEventListener('touchmove',function(e){if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy<=0||window.scrollY>0){el.style.opacity=0;return}var k=Math.min(dy/80,1);el.style.opacity=k;el.style.transform='translateY('+(Math.min(dy,110)*.5-30)+'px) rotate('+(dy*3)+'deg) scale('+(.6+.4*k)+')'},{passive:true});
+    document.addEventListener('touchend',function(){if(y0===null)return;y0=null;
+      if(dy>=80&&window.scrollY<=0){busy=true;el.classList.add('spin');el.style.transform='translateY(20px)';tap();
+        Promise.resolve(reload()).catch(function(){}).then(function(){setTimeout(function(){busy=false;el.classList.remove('spin');el.style.opacity=0;el.style.transform='translateY(-30px) scale(.6)'},300)})}
+      else{el.style.opacity=0;el.style.transform='translateY(-30px) scale(.6)'}},{passive:true});
+  })();
   /* the bottom bar gets smaller while you scroll down and comes back when you scroll up */
   var lastY=0;window.addEventListener('scroll',function(){var y=window.scrollY,tb=document.querySelector('.tabs');if(!tb)return;
     if(y<40||y<lastY-6)tb.classList.remove('mini');else if(y>lastY+6)tb.classList.add('mini');
@@ -566,7 +577,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
           return '</div><div class="vis"><div class="vish">Who sees it</div><div class="visb" id="fvis">'+opts.map(function(o){return '<button type="button" data-vis="'+o[0]+'"'+(o[0]===visSel?' class="on"':'')+'>'+o[1]+'</button>'}).join('')+'</div></div>'})()
         +'<p class="err" id="err"></p><button type="button" class="add hd" id="save">'+(edit!==null?'Save changes':'Add to my calendar')+'</button>'
         +(edit!==null?'<button type="button" class="ghost" id="share1">'+SHARE_I+'Share this trip</button>'+calLinks(people[0].stays[edit])+'<button type="button" class="ghost" id="del">Remove this trip</button>':'')+'</div>'
-        +(edit===null?'<div class="imp"><button type="button" id="ipaste">\ud83d\udccb Paste plans</button>'+(api.calendarSupported?'<button type="button" id="ical">\ud83d\udcc5 From my calendar</button>':'')+'</div>':'');
+        ;
     }else if(sheet==='hello'){
       h+='<div class="shd"><span></span><button type="button" class="x" id="x" aria-label="Close">×</button></div>'
         +'<div class="wel">'+document.querySelector('.brand svg').outerHTML+'<div class="hd">Welcome to Overlap</div><p class="hint">Tell friends who you are and which city you live in. You show up there every day, and any trip you add takes over while you travel.</p></div>'
@@ -713,7 +724,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
       if($('poff'))$('poff').onclick=function(){api.disablePush().then(function(){toast('Alerts off');renderAll()})};
       if($('phow'))$('phow').onclick=function(){sheet='install';renderSheet()};
       $('delme').onclick=function(){sheet='delete';renderSheet()};
-      $('out').onclick=function(){api.disablePush().catch(function(){}).then(api.signOut).then(function(){location.replace('/')})};
+      $('out').onclick=function(){api.disablePush().catch(function(){}).then(api.signOut).then(function(){try{localStorage.removeItem('ov-cache')}catch(e){}location.replace('/')})};
     }
     if(sheet==='year'){
       $('ypr').onclick=function(){yv--;renderSheet()};$('ynx').onclick=function(){yv++;renderSheet()};
@@ -1184,7 +1195,9 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
 
   function toast(t){var el=$('toast');if(undoToast.on){undoToast.next=t;return}el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
   /* a message with Undo, like Gmail: 6 seconds to take back what you just did */
-  function undoToast(t,fn){var el=$('toast');el.innerHTML='<span>'+esc(t)+'</span><button type="button" class="undo">Undo</button>';el.hidden=false;clearTimeout(toast.t);undoToast.on=true;
+  /* a small tap on the phone (iPhone app only; older app versions just skip it) */
+  function tap(k){try{if(window.OverlapNative&&window.OverlapNative.haptic&&window.ReactNativeWebView)window.ReactNativeWebView.postMessage(JSON.stringify({type:'haptic',k:k||'light'}))}catch(e){}}
+  function undoToast(t,fn){tap('success');var el=$('toast');el.innerHTML='<span>'+esc(t)+'</span><button type="button" class="undo">Undo</button>';el.hidden=false;clearTimeout(toast.t);undoToast.on=true;
     var end=function(){el.hidden=true;undoToast.on=false;if(undoToast.next){var n=undoToast.next;undoToast.next=null;toast(n)}};
     el.querySelector('.undo').onclick=function(){clearTimeout(toast.t);undoToast.next=null;end();fn()};toast.t=setTimeout(end,7000)}
   /* show changes straight away; if the save fails, say so and reload what is really saved */
@@ -1236,6 +1249,7 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     else if(b.id==='ctipok'){lsSet('ov-tip','1');renderOnb()}
   });
   $('reqs').addEventListener('click',function(e){
+    if(e.target.closest('[data-myes],[data-tyes],[data-yes]'))tap('success');
     var my=e.target.closest('[data-myes]'),mn=e.target.closest('[data-mno]');
     if(my||mn){var mid=(my||mn).getAttribute(my?'data-myes':'data-mno');meetups=meetups.map(function(m){if(m.id===mid)m.status=my?'yes':'no';return m}).filter(function(m){return m.status!=='no'});renderReqs();renderGrid();
       api.answerMeetup(mid,!!my).then(function(){toast(my?'See you there 🥂':'Answered')},function(){toast('Could not answer, try again.')});return}
@@ -1290,11 +1304,14 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     people=[people[0]].concat(allF.filter(function(f){return !MUTE[f.id]}));
     index();
   }
+  /* keep a copy of the last data on the phone, so the app opens instantly next time */
+  function saveCache(d){try{localStorage.setItem('ov-cache',JSON.stringify({uid:uid,t:Date.now(),d:d}))}catch(e){}}
+  function readCache(){try{var c=JSON.parse(localStorage.getItem('ov-cache')||'null');if(c&&c.uid===uid&&c.d&&Date.now()-c.t<30*864e5)return c.d}catch(e){}return null}
   var loading=null;
   function reload(){
     if(loading)return loading;
     loading=api.loadAll(uid).then(function(d){
-      loading=null;
+      loading=null;saveCache(d);
       var open=sheet==='add'||sheet==='home'||sheet==='hello'||sheet==='invite';
       apply(d);
       if(open){renderTop();renderReqs();renderAlerts();renderPills();renderGrid();renderList();renderFriends()}else renderAll();
@@ -1394,16 +1411,25 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     uid=s.user.id;
     if(!booted){booted=true;api.watch(reload);document.addEventListener('visibilitychange',function(){if(!document.hidden)reload()})}
     var acc=invite?api.acceptCode(invite).catch(function(){}):Promise.resolve();
-    return acc.then(function(){try{localStorage.removeItem('ov-invite')}catch(e){}invite='';return api.loadAll(uid)}).then(function(d){
+    var shown=false;
+    function show(d){
       apply(d);
+      if(shown){var open=sheet==='add'||sheet==='home'||sheet==='hello'||sheet==='invite';if(open){renderTop();renderReqs();renderAlerts();renderPills();renderGrid();renderList();renderFriends()}else renderAll();return}
+      shown=true;
       $('gate').hidden=true;$('app').hidden=false;
       var d0=qs.get('d');if(d0&&ISO.test(d0)){var p=parts(d0);vy=p.y;vm=p.m}
       if(location.search)history.replaceState(null,'','/');
       renderAll();
-      ready=true;splashOff();welcome();
-      if(qs.get('add')==='1'&&!sheet&&people[0].home)$('add').click();
+      ready=true;splashOff();
+    }
+    /* open straight away with what we had last time, then refresh it */
+    var c=invite?null:readCache();if(c){try{show(c)}catch(e){shown=false}}
+    return acc.then(function(){try{localStorage.removeItem('ov-invite')}catch(e){}invite='';return api.loadAll(uid)}).then(function(d){
+      saveCache(d);var first=!shown;show(d);
+      welcome();
+      if(first&&qs.get('add')==='1'&&!sheet&&people[0].home)$('add').click();
       api.syncPush().then(function(){renderAlerts();if(sheet==='home')renderSheet()},function(){});
-    },function(){gate('<div class="hd">Could not load Overlap</div><p class="hint">Check your connection and try again.</p><button type="button" class="add hd" id="gretry">Try again</button>');$('gretry').onclick=function(){location.reload()}});
+    },function(){if(shown){toast('Offline: showing your last saved plans');return}gate('<div class="hd">Could not load Overlap</div><p class="hint">Check your connection and try again.</p><button type="button" class="add hd" id="gretry">Try again</button>');$('gretry').onclick=function(){location.reload()}});
   }
   function boot(){
     if(!api.configured){gate('<div class="hd">Almost there</div><p class="hint">Overlap is not connected to its database yet. Follow SETUP.md.</p>');return}

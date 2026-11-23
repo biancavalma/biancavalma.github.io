@@ -8,6 +8,7 @@ import type { ShouldStartLoadRequest } from 'react-native-webview/lib/WebViewTyp
 import * as Notifications from 'expo-notifications';
 import * as Calendar from 'expo-calendar';
 import * as Device from 'expo-device';
+import * as Haptics from 'expo-haptics';
 import Constants from 'expo-constants';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
@@ -32,11 +33,11 @@ Notifications.setNotificationHandler({
 
 // tells the page it runs inside the iPhone app, before any of its code runs
 const BRIDGE = `
-  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true, safe: true, photo: true };
+  window.OverlapNative = { platform: ${JSON.stringify(Platform.OS)}, calendar: true, share: true, safe: true, photo: true, haptic: true };
   true;
 `;
 
-type Msg = { type: 'push-state' | 'push-request' | 'open-external' | 'calendar-events' | 'share'; url?: string; text?: string; id?: number };
+type Msg = { type: 'push-state' | 'push-request' | 'open-external' | 'calendar-events' | 'share' | 'haptic'; url?: string; text?: string; id?: number; k?: string };
 
 // Next 6 months of events from the phone's calendars, read only when the person taps "From my calendar".
 async function calendarEvents() {
@@ -126,6 +127,14 @@ export default function App() {
       }
       if (m.type === 'open-external' && m.url && /^(https?|mailto|tel|sms):/i.test(m.url)) {
         Linking.openURL(m.url).catch(() => {});
+        return;
+      }
+      // a small tap on the phone when something is saved, removed or accepted
+      if (m.type === 'haptic') {
+        (m.k === 'success'
+          ? Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          : Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+        ).catch(() => {});
         return;
       }
       if (m.type === 'share' && m.text) {
