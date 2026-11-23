@@ -1232,15 +1232,23 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
   /* keep a copy of the last data on the phone, so the app opens instantly next time */
   function saveCache(d){try{localStorage.setItem('ov-cache',JSON.stringify({uid:uid,t:Date.now(),d:d}))}catch(e){}}
   function readCache(){try{var c=JSON.parse(localStorage.getItem('ov-cache')||'null');if(c&&c.uid===uid&&c.d&&Date.now()-c.t<30*864e5)return c.d}catch(e){}return null}
+  /* when the server can't be reached: say so clearly and keep trying, never show old plans silently */
+  var offT=0;
+  function offline(on){
+    var el=$('offbar');
+    if(!on){if(el)el.remove();clearTimeout(offT);return}
+    if(!el){el=document.createElement('div');el.id='offbar';el.textContent='No connection to Overlap. Showing your saved plans, trying again\u2026';document.body.appendChild(el)}
+    clearTimeout(offT);offT=setTimeout(function(){reload()},5000);
+  }
   var loading=null;
   function reload(){
     if(loading)return loading;
     loading=api.loadAll(uid).then(function(d){
-      loading=null;saveCache(d);
+      loading=null;saveCache(d);offline(false);
       var open=sheet==='add'||sheet==='home'||sheet==='hello'||sheet==='invite';
       apply(d);
       if(open){renderTop();renderReqs();renderAlerts();renderPills();renderGrid();renderList();renderFriends()}else renderAll();
-    },function(){loading=null});
+    },function(){loading=null;if(ready)offline(true)});
     return loading;
   }
 
@@ -1350,11 +1358,11 @@ if(import.meta.env.PROD){checkUpdate();document.addEventListener('visibilitychan
     /* open straight away with what we had last time, then refresh it */
     var c=invite?null:readCache();if(c){try{show(c)}catch(e){shown=false}}
     return acc.then(function(){try{localStorage.removeItem('ov-invite')}catch(e){}invite='';return api.loadAll(uid)}).then(function(d){
-      saveCache(d);var first=!shown;show(d);
+      saveCache(d);offline(false);var first=!shown;show(d);
       welcome();
       if(first&&qs.get('add')==='1'&&!sheet&&people[0].home)$('add').click();
       api.syncPush().then(function(){renderAlerts();if(sheet==='home')renderSheet()},function(){});
-    },function(){if(shown){toast('Offline: showing your last saved plans');return}gate('<div class="hd">Could not load Overlap</div><p class="hint">Check your connection and try again.</p><button type="button" class="add hd" id="gretry">Try again</button>');$('gretry').onclick=function(){location.reload()}});
+    },function(){if(shown){offline(true);return}gate('<div class="hd">Could not load Overlap</div><p class="hint">Check your connection and try again.</p><button type="button" class="add hd" id="gretry">Try again</button>');$('gretry').onclick=function(){location.reload()}});
   }
   function boot(){
     if(!api.configured){gate('<div class="hd">Almost there</div><p class="hint">Overlap is not connected to its database yet. Follow SETUP.md.</p>');return}
