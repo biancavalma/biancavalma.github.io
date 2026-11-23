@@ -748,7 +748,7 @@ html,body,#app,#v-ov,#v-cal,#v-fr,#v-ov:not([hidden]),#v-cal:not([hidden]),#v-fr
 .link.delsm{font-size:12.5px;font-weight:600;color:#A99AA2;text-decoration:none;margin-top:6px}
 
 /* filter chips: one row, scrolls inside itself on small phones */
-#pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;padding:2px 0}
+#pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1;padding:2px 0;margin:0}
 #pills::-webkit-scrollbar{display:none}
 .pillb.fchip{flex:none;height:34px;padding:0 13px;border-radius:999px;font-size:14px;font-weight:800;display:inline-flex;align-items:center;gap:5px;background:#F3ECEF;color:#5E4654;white-space:nowrap}
 .pillb.fchip.on{background:#2A1420;color:#fff}
