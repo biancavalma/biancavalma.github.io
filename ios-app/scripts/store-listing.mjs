@@ -55,6 +55,12 @@ let ver = v.json && v.json.data.find((x) => ['PREPARE_FOR_SUBMISSION', 'DEVELOPE
 if (!ver) { const c = must('create version ' + VERSION, await api('POST', '/v1/appStoreVersions', { data: { type: 'appStoreVersions', attributes: { platform: 'IOS', versionString: VERSION }, relationships: { app: { data: { type: 'apps', id: APP } } } } })); ver = c.json && c.json.data; }
 if (!ver) process.exit(1);
 console.log('Version', ver.attributes.versionString, ver.attributes.appStoreState || ver.attributes.appVersionState);
+// check only: say where the review stands and change nothing
+if (process.env.CHECK_ONLY === 'true') {
+  const subs = await api('GET', `/v1/reviewSubmissions?filter[app]=${APP}&limit=5`);
+  for (const x of (subs.json && subs.json.data) || []) console.log('Submission', x.attributes.state, x.attributes.submittedDate || '');
+  process.exit(0);
+}
 must('copyright and release', await api('PATCH', `/v1/appStoreVersions/${ver.id}`, { data: { type: 'appStoreVersions', id: ver.id, attributes: { copyright: TEXT.copyright, releaseType: 'AFTER_APPROVAL' } } }));
 
 // texts on the version

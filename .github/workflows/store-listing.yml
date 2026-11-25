@@ -8,6 +8,10 @@ on:
         description: Send to Apple for review after filling the page
         type: boolean
         default: false
+      check:
+        description: Only show where the review stands, change nothing
+        type: boolean
+        default: false
 
 jobs:
   listing:
@@ -31,3 +35,4 @@ jobs:
         run: node scripts/store-listing.mjs
         env:
           SUBMIT: ${{ inputs.submit && '1' || '0' }}
+          CHECK_ONLY: ${{ inputs.check && 'true' || 'false' }}
